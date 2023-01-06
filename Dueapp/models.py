@@ -45,6 +45,7 @@ class Due(models.Model):
     scheduletype = models.CharField(choices=ScheduleTypes.choices,default='day_of_week',max_length=200)
     schedule = models.JSONField(null=True)
     chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True)
+    alumni_year = models.DateField(default=None,null=True,blank=True)
 
     def __str__(self) -> str:
         return self.Name
