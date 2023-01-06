@@ -50,6 +50,7 @@ def run(file):
                     if cell.value is None:
                         raise CustomError({'alumni_year':f'row {cell_line} for alumni_year can not be empty'})
                     else:
+                        print(cell.value)
                         check_date_formatISO8601(cell.value)
         datas["usersInfo"].append(data)
         cell_line+=1

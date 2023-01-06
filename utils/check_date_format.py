@@ -10,4 +10,8 @@ def check_date_formatISO8601(date_string:str):
     # If the date validation goes wrong
     except ValueError:
         # printing the appropriate text if ValueError occurs
-        raise CustomError({'alumni_year':"Incorrect data format, should be YYYY-MM-DD"})
+        raise CustomError({'':"Incorrect data format, should be YYYY-MM-DD"})
+
+    except TypeError:
+        "this means it a date error we can use it"
+        return True
