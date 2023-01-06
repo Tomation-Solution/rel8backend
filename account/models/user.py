@@ -133,6 +133,7 @@ class Memeber(models.Model):
     is_exco= models.BooleanField(default=False)
     # ones this person miss out on payment he doent become a finicial user
     is_financial = models.BooleanField(default=True)
+    alumni_year= models.DateField()
     # def __str__(self) -> str:
     #     return f'{self.first_name} {self.last_name}'
 
