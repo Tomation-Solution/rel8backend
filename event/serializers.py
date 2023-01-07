@@ -19,7 +19,7 @@ class EventSerializer(serializers.Serializer):
     is_paid_event =serializers.BooleanField(required=True)
     re_occuring= serializers.BooleanField(required=True)# due_type Once  Re-occuring|
     is_virtual=serializers.BooleanField(required=True)
-    is_for_excos = serializers.BooleanField(required=True)#embers | excos
+    # is_for_excos = serializers.BooleanField(required=True)#embers | excos
     commitee_id = serializers.IntegerField(required=False)
     exco_id = serializers.IntegerField(required=False)
     amount=  serializers.CharField(required=True)

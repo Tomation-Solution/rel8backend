@@ -6,13 +6,16 @@ from . import models
 from utils import permissions as custom_permission
 from . import serializers,filter as custom_filter
 from account.models import user as user_related_models
-from utils import custom_response
+from utils import custom_response,custom_parsers
 from django.shortcuts import get_object_or_404
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+
 
 class AdminManagePublication(viewsets.ModelViewSet):
     queryset = models.Publication.objects.all()
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin,custom_permission.Normal_Admin_Must_BelongToACHapter]
     serializer_class = serializers.AdminManagePublicationSerializer
+    parser_classes =(custom_parsers.NestedMultipartParser,FormParser,)
 
     def create(self,request,format=None):
         'create Publication'
