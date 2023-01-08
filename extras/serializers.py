@@ -28,6 +28,26 @@ class GalleryV2Serializer(serializers.ModelSerializer):
         read_only_fields = ['images']
 
 
+class AdminManageGalleryV2Serializer(serializers.ModelSerializer):
+    upload_images =serializers.ListField(
+        child= serializers.ImageField(max_length=10000000,allow_empty_file=False,use_url=False,write_only=True)
+    )
+
+
+    def create(self, validated_data):
+        upload_images= validated_data.pop('upload_images')
+
+        gallery = models.GalleryV2.objects.create(**validated_data)
+        # ImagesForGalleryV2
+        for image in upload_images:
+            models.ImagesForGalleryV2.objects.create(
+                image=image,
+                gallery=gallery)
+        return gallery
+
+    class Meta:
+        model = models.GalleryV2
+        fields = ['name','date_taken','chapters','upload_images']
 
 
 

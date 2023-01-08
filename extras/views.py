@@ -72,6 +72,23 @@ class GalleryV2View(viewsets.ModelViewSet):
 
         return Success_response(msg="Success",data=clean_data.data,status_code=status.HTTP_200_OK)
 
+
+
+class AdminManageGalleryV2View(GalleryV2View):
+    queryset= models.GalleryV2.objects.all()
+
+    permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
+    serializer_class = serializers.GalleryV2Serializer
+    pagination_class=CustomPagination
+    filterset_class = custom_filter.GalleryV2Filter
+
+    def create(self, request, *args, **kwargs):
+        serialzed = serializers.AdminManageGalleryV2Serializer(data=request.data)
+        serialzed.is_valid(raise_exception=True)
+        data = serialzed.save()
+        clean_data = self.serializer_class(data)
+        return Success_response(msg='Created',data=clean_data.data,status_code=status.HTTP_201_CREATED)
+
 class TicketingView(viewsets.ModelViewSet):
     queryset = models.Ticketing.objects.all()
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
