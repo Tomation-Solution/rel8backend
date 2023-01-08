@@ -1,5 +1,5 @@
 from rest_framework.routers import  DefaultRouter
-from .views import MeetingMemberViewSet
+from .views import MeetingMemberViewSet,AdminManagesMeetingViewset
 
 
 
@@ -9,7 +9,7 @@ from .views import MeetingMemberViewSet
 router = DefaultRouter()
 
 router.register('meeting_member',MeetingMemberViewSet,basename='meeting_member')
-
+router.register('admin_manage_meeting',AdminManagesMeetingViewset)
 
 urlpatterns = [
    

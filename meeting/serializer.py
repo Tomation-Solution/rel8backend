@@ -5,6 +5,19 @@ from utils.custom_exceptions import CustomError
 from django.shortcuts import get_object_or_404
 
 
+
+class AdminManageMeetingSerializer(serializers.ModelSerializer):
+
+
+    class Meta:
+        model = models.Meeting
+        fields = '__all__'
+        extra_kwargs  = {
+            'chapters':{
+                'read_only':True
+            }
+        }
+
 class MeetingSerializer(serializers.ModelSerializer):
 
 

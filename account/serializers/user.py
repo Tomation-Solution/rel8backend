@@ -6,7 +6,7 @@ from django.db import connection, IntegrityError
 from django.contrib.auth import get_user_model
 from ..models import user as user_models
 from account.models import auth as  user_auth_models
-
+from django.shortcuts import get_object_or_404
 import os
 
 User = get_user_model()
@@ -142,32 +142,34 @@ class CreateExcoRole(serializers.Serializer):
 
     def update(self, instance, validated_data):
 
-        member_id = validated_data.get('member_id',instance.member_id)
+        member_id = validated_data.get('member_id',None)
         if validated_data.get("is_remove_member",None):#this means u want to remove a member from this role
-            member = user_models.Memeber.objects.get(id=member_id)
+            member = get_object_or_404(user_models.Memeber,id=member_id)
             member.is_exco=False
             member.save()
-            instance.member=None
+            instance.member.remove(member)
+            instance.save()
         else:
             previous_member =None
 
             if member_id:#this means this admin wants add this member as an exco
-                member = user_models.Memeber.objects.get(id=member_id)
+                member = get_object_or_404(user_models.Memeber,id=member_id)
+
                 if instance.chapter is not None:
                     if member.user.chapter is None: raise CustomError({"chapter":'member does not belong to a chapter yet'})
                     if instance.chapter.id !=member.user.chapter.id:
                         raise CustomError({'chapter':f'member does not belong to {instance.chapter.name} chapter'})
-                if instance.member is not None:
-                    if instance.member.id !=member_id:
-                        'this means we are setting a new member we have to set the previous_member exco to fals'
+                # if instance.member.count() !=0 :
+                #     if instance.member.id !=member_id:
+                #         'this means we are setting a new member we have to set the previous_member exco to fals'
 
-                        previous_member_id=instance.member.id 
-                        previous_member = user_models.Memeber.objects.get(id=previous_member_id)
-                        previous_member.is_exco=False
-                        previous_member.save()
-                instance.member= member
-                member.is_exco=True
+                #         previous_member_id=instance.member.id 
+                #         previous_member = user_models.Memeber.objects.get(id=previous_member_id)
+                #         previous_member.is_exco=False
+                #         previous_member.save()
                 member.save()
+                member.is_exco=True 
+                instance.member.add( member)
         validated_data.get('name',instance.name)
         instance.name= validated_data.get('name',instance.name)
         instance.about= validated_data.get('about',instance.about)
