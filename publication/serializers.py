@@ -16,7 +16,7 @@ class AdminManagePublicationSerializer(serializers.ModelSerializer):
         publication_paragraph = validated_data.pop('publication_paragraph',[])
         publication =models.Publication.objects.create(**validated_data)
         for each_data in publication_paragraph:
-            models.Publication.objects.create(
+            models.PublicationParagraph.objects.create(
                 publication= publication,
                 paragragh=each_data.get('paragragh',None),
                 heading=each_data.get('heading',None),
