@@ -11,7 +11,14 @@ class Meeting(models.Model):
     exco = models.ForeignKey(user_models.ExcoRole,null=True ,default=None,on_delete=models.SET_NULL,blank=True)
     chapters = models.ForeignKey(auth_models.Chapters,null=True ,default=None,on_delete=models.SET_NULL,blank=True)
     date_for = models.DateTimeField(null=True,default=None)
+    addresse = models.TextField(default='')
+    event_date = models.DateTimeField(null=True,default=None)
 
+    organiserName =models.CharField(max_length=400,default='')
+    organiserDetails =models.CharField(max_length=400,default='')
+
+    def __str__(self):
+        return self.name
 
 class MeetingAttendies(models.Model):
     members = models.ForeignKey(user_models.Memeber,on_delete=models.CASCADE)
