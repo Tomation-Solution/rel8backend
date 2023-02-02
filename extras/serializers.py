@@ -12,16 +12,17 @@ class GallerySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-
+class ImageStuff(serializers.Serializer):
+    image  = serializers.ImageField()
 class GalleryV2Serializer(serializers.ModelSerializer):
     images =serializers.SerializerMethodField()
 
 
     def get_images(self,galleryv2:models.GalleryV2):
-        get_img  = self.context.get('get_img',True)
-        if get_img: 
-            return models.ImagesForGalleryV2.objects.filter(gallery=galleryv2).values('image')
-        return []
+        instance = models.ImagesForGalleryV2.objects.filter(gallery=galleryv2)
+
+        clean_data =ImageStuff(instance,many=True)
+        return clean_data.data
     class Meta:
         model = models.GalleryV2
         fields = "__all__"
