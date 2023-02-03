@@ -181,6 +181,7 @@ class MemberListInfo(viewsets.ViewSet):
     @action(detail=False,methods=['get'])
     def get_all_exco(self,request,pk=None):
         exco_members = user_models.Memeber.objects.all().filter(is_exco=True)
+        # exco_members = user_models.ExcoRole.objects.all()
 
         serialized = self.serializer_class(exco_members,many=True)
         return custom_response.Success_response(msg='successful',data=serialized.data,status_code=status.HTTP_200_OK)

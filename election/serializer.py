@@ -8,15 +8,42 @@ class AdminManageBallotBox(serializers.ModelSerializer):
 
     class Meta:
         model = models.BallotBox
-        fields  = ['name','role_name','role_detail','id']
+        fields  = ['name','role_name','role_detail','id',
+        'election_startDate',
+        'election_endDate',
+        'election_endTime',
+        'election_startTIme',
+        ]
 
+class ContestantCleaner(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
 
+    def get_user(self,instance:models.Contestant):
+        photo = ''
+        try:photo = instance.member.user.photo.url
+        except:photo=''
+
+        return {
+            'photo':photo
+        }
+
+    class Meta:
+        model  = models.Contestant
+        fields  = [
+            'id','member',
+            'amount_vote','youtubeVidLink',
+            'aspirantBio','upload_manifesto_docs',
+            'upload_manifesto_image','user'
+        ]
 class AdminManageContest(serializers.Serializer):
 
     "admin manages adding adding and removing members as contestant"
     member =serializers.IntegerField()
     ballotbox =serializers.IntegerField()
     youtubeVidLink = serializers.CharField()
+    aspirantBio = serializers.JSONField()
+    upload_manifesto_docs = serializers.FileField()
+    upload_manifesto_image = serializers.FileField()
 
 
     def validate(self, attrs):
@@ -32,11 +59,19 @@ class AdminManageContest(serializers.Serializer):
         ballotbox = models.BallotBox.objects.get(id=validated_data.get('ballotbox'))
         if models.Contestant.objects.all().filter(member=member,ballotbox=ballotbox).exists():
             raise CustomError({"error":"This Member is Already Contesting For This Election"})
+        
+        youtubeVidLink =validated_data.get('youtubeVidLink','')
+        aspirantBio = validated_data.get('aspirantBio')
+        upload_manifesto_docs =validated_data.get('upload_manifesto_docs')
+        upload_manifesto_image = validated_data.get('upload_manifesto_image')
         contestant= models.Contestant.objects.create(
             member =member,
             ballotbox =ballotbox,
             amount_vote =0,
-            youtubeVidLink=".."
+            youtubeVidLink=youtubeVidLink,
+            aspirantBio =aspirantBio,
+            upload_manifesto_docs=upload_manifesto_docs,
+            upload_manifesto_image=upload_manifesto_image,
             )
         # contestant.youtubeVidLink = validated_data.get('youtubeVidLink',contestant.youtubeVidLink)
 

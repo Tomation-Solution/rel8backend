@@ -5,6 +5,8 @@ from . import models,serializer
 from utils import permissions as custom_permission
 from utils import custom_response,custom_exceptions
 from account.models import user as user_models
+from rest_framework.parsers import  FormParser
+from utils import custom_parsers
 
 # Create your views here.
 
@@ -33,13 +35,14 @@ class  AdminManageBallotBox(viewsets.ModelViewSet):
             raise custom_exceptions.CustomError({"election_id":"Election Not Found"})
         if not self.queryset.filter(id = election_id).exists():
             raise custom_exceptions.CustomError({"err":"Election Not found"})
-        list_of_contesntant = models.Contestant.objects.all().filter(ballotbox__id =election_id).values(
-            "member__user__email","member","ballotbox","amount_vote","youtubeVidLink",'id'
-        )
-        return custom_response.Success_response(msg='Success',data=list_of_contesntant)
+
+        clean_data = serializer.ContestantCleaner(instance=models.Contestant.objects.filter(ballotbox__id =election_id),many=True)
+        return custom_response.Success_response(msg='Success',data=clean_data.data)
         
 
-    @action(detail=False,methods=['post'],serializer_class=serializer.AdminManageContest)
+    @action(detail=False,methods=['post'],serializer_class=serializer.AdminManageContest,
+    parser_classes = (custom_parsers.NestedMultipartParser,FormParser,)
+    )
     def create_contestant(self,request,pk=None):
         serialzied_data = self.serializer_class(data=request.data)
         serialzied_data.is_valid(raise_exception=True)
@@ -65,11 +68,7 @@ class  AdminManageBallotBox(viewsets.ModelViewSet):
         serialzied_data.is_valid(raise_exception=True)
         self._check_is_close(request.data.get('ballotBoxID'))
         data = serialzied_data.save()
-        return custom_response.Success_response(msg='Vote Successfull',data=[{
-                    # "member": data.member.id,
-                    # "ballotbox": data.ballotbox.id,
-                    # "amount_vote": data.amount_vote,
-                    # "youtubeVidLink": data.youtubeVidLink,
-                }],status_code=status.HTTP_201_CREATED)
+        clean_data = serializer.ContestantCleaner(instance=data,many=True)
+        return custom_response.Success_response(msg='Vote Successfull',data=clean_data.data,status_code=status.HTTP_201_CREATED)
 
 

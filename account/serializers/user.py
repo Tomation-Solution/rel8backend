@@ -167,8 +167,8 @@ class CreateExcoRole(serializers.Serializer):
                 #         previous_member = user_models.Memeber.objects.get(id=previous_member_id)
                 #         previous_member.is_exco=False
                 #         previous_member.save()
-                member.save()
                 member.is_exco=True 
+                member.save()
                 instance.member.add( member)
         validated_data.get('name',instance.name)
         instance.name= validated_data.get('name',instance.name)
@@ -271,7 +271,7 @@ class MemberSerializer(serializers.ModelSerializer):
     def get_email(self,member):return member.user.email
     def get_exco_info(self,member):
         '# if the user is a exco it would return list of the exco info else empty list'
-        if(member.is_exco==False): return []
+        # if(member.is_exco==False): return []
         return user_models.ExcoRole.objects.filter(member=member.id).values()
 
     
