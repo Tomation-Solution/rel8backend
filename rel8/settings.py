@@ -295,6 +295,8 @@ CORS_ALLOWED_ORIGINS = [
 'https://cool-liger-caec7e.netlify.app',
 'http://cool-liger-caec7e.netlify.app',
 ]
+if os.environ.get('databaseName',None):
+    CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
 
 CORS_ALLOW_METHODS = [
 'DELETE',
