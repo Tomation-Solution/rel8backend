@@ -147,3 +147,21 @@ class MembersGetNews(views.APIView):
                 }],status_code=status.HTTP_201_CREATED)
 
         raise CustomError({"error":"News Doesnt exist's"})
+
+
+class MemberCommentOnNews(viewsets.ModelViewSet):
+    queryset = models.NewsComment.objects.all()
+    permission_classes =[permissions.IsAuthenticated,custom_permission.IsMember]
+    serializer_class = serializers.MemberCommentOnNewsSerializer
+
+    
+    def perform_create(self, serializer):
+        serializer.save(member=self.request.user.memeber)
+
+    def list(self, request, *args, **kwargs):
+        news_id = self.request.query_params.get('news_id',None)
+        news = get_object_or_404(models.News,id=news_id)
+        data = self.queryset.filter(news=news)
+        clean_data = self.serializer_class(instance=data,many=True)
+
+        return custom_response.Success_response('Success',data=clean_data.data,)

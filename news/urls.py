@@ -9,7 +9,7 @@ from . import views
 
 router = DefaultRouter()
 router.register("newsview",views.AdminManageNews,basename='news')
-
+router.register('newsview__comment',views.MemberCommentOnNews)
 
 urlpatterns = [
     path('getyournews/',views.MembersGetNews.as_view(),name='getyournews')

@@ -28,3 +28,10 @@ class MeetingReshedule(models.Model):
     meeting = models.ForeignKey(Meeting,on_delete=models.CASCADE,null=True ,default=None,)
     members = models.ForeignKey(user_models.Memeber,on_delete=models.CASCADE)
     request_reschedule_date =models.DateTimeField(null=True,default=None)
+
+
+class MeetingApology(models.Model):
+    'people that can attend'
+    members = models.ForeignKey(user_models.Memeber,on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting,on_delete=models.CASCADE,null=True ,default=None,)
+    note = models.TextField(default='I sorry i can attend')

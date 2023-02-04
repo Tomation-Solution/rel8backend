@@ -46,6 +46,25 @@ class MeetingMemberViewSet(viewsets.ViewSet):
         serilied = serializer.RegisteredMeetingMembersSerializer(meeting,many=False)
         return custom_response.Success_response(msg='Success',data=serilied.data,status_code=status.HTTP_200_OK)
 
+    @action(methods=['post'],detail=False )
+    def non_meeting_attenders(self,request,*args,**kwargs):
+        meeting_id = request.data.get('meeting',None)
+        meeting = get_object_or_404(models.Meeting,id=meeting_id)
+        meeting_appolgies =models.MeetingApology.objects.filter(meeting=meeting)
+        serialized = serializer.NonattendersMeetingMembersSerializer(instance=meeting_appolgies,many=True)
+
+
+        return custom_response.Success_response(msg='Success',data=serialized.data,status_code=status.HTTP_200_OK)
+        
+    @action(methods=['post'],detail=False)
+    def appologise_for_not_attending(self,request,*args,**kwargs):
+        meeting_id = request.data.get('meeting',None)
+        meeting = get_object_or_404(models.Meeting,id=meeting_id)
+
+        applogy = serializer.MeetingApologies(data=request.data,context={'user':request.user})
+        applogy.is_valid(raise_exception=True)
+        applogy.save()
+        return custom_response.Success_response(msg='Appology Accepted',data=[],status_code=status.HTTP_201_CREATED)
 
 class AdminManagesMeetingViewset(viewsets.ModelViewSet):
     permission_classes = [ permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]

@@ -48,3 +48,9 @@ class NewsParagraph(models.Model):
     heading = models.TextField(default=' ',null=True,blank=True)
 
 
+
+class NewsComment(models.Model):
+    news = models.ForeignKey(News,on_delete=models.CASCADE)
+    # member that commented
+    member = models.ForeignKey(user_models.Memeber,on_delete=models.CASCADE)
+    comment = models.TextField()

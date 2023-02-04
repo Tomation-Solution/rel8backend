@@ -1,6 +1,7 @@
 from . import models
 from rest_framework import serializers
-
+from account.models.user import UserMemberInfo
+from account.serializers.user import MemberSerializer
 
 
 class NewsParagraphSerializer(serializers.Serializer):
@@ -43,3 +44,20 @@ class AdminManageNewSerializer(serializers.ModelSerializer):
         model = models.News
         fields = "__all__"
 
+
+class MemberCommentOnNewsSerializer(serializers.ModelSerializer):
+
+    member =  serializers.SerializerMethodField()
+    
+    def get_member(self,news_comment:models.NewsComment):
+        clean_data = MemberSerializer(instance=news_comment.member,many=False)
+        return clean_data.data
+
+    def create(self, validated_data):
+        data = super().create(validated_data)
+        # clean_data =MemberCommentOnNewsSerializer(instance=data,many=False)
+        return data
+    class Meta:
+        model = models.NewsComment
+        fields ='__all__'
+        read_only_fields = ['member']
