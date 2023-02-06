@@ -193,7 +193,7 @@ class ManageMemberValidation(viewsets.ViewSet):
         #     raise CustomError({"alumni_year":"alumni_year is needed"})
         password = request.data.pop('password')
         email = request.data.pop('rel8Email')
-        alumni_year =  request.data.get('alumni_year').split(' ')[0]
+        # alumni_year =  request.data.get('alumni_year').split(' ')[0]
         if(self._validateData(request).get('isValid')==False):
             raise CustomError({"error":"Invalid Data"})
         
@@ -206,10 +206,10 @@ class ManageMemberValidation(viewsets.ViewSet):
             )
             member = user_models.Memeber.objects.create(
                 user =user,
-                alumni_year=alumni_year
+                alumni_year=''
             )
             for key in request.data.keys():
-                if not key =='password' and  not key == 'alumni_year':
+                if not key =='password':
                     user_models.UserMemberInfo.objects.create(
                         name= key,
                         value= request.data[key],

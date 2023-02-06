@@ -47,7 +47,7 @@ class AdminManageDuesSerializer(serializers.Serializer):
     startTime = serializers.TimeField()
     scheduletype = serializers.CharField(required=False)#day_of_week or month_of_year
     schedule = serializers.ListField(required=False)
-    alumni_year= serializers.DateField(required=True,)
+    alumni_year= serializers.DateField(required=False,)
     # alumni_year
 
     # for_chapters=serializers.BooleanField(default=False,)
@@ -103,7 +103,7 @@ class AdminManageDuesSerializer(serializers.Serializer):
         startTime =  validated_data.get('startTime')
         scheduletype =  validated_data.get('scheduletype','day_of_week')
         schedule =   validated_data.get('schedule',['0'])
-        alumni_year = validated_data.get('alumni_year',None)
+        # alumni_year = validated_data.get('alumni_year',None)
         if models.Due.objects.filter(Name=name).exists():raise serializers.ValidationError({"error":'Due name exists already'})
         due = models.Due.objects.create(
             Name =name,
@@ -114,7 +114,7 @@ class AdminManageDuesSerializer(serializers.Serializer):
         startTime =  startTime,
         scheduletype = scheduletype,
         schedule =   schedule,chapters=chapter,
-        alumni_year=alumni_year
+        alumni_year=' '
         )
         due.chapters=chapter
         due.save()
