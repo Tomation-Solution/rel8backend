@@ -12,12 +12,10 @@ def regiter_user_to_chat(member_id,):
     member  = Memeber.objects.get(id=member_id)
     memberInfo = UserMemberInfo.objects.filter(
     Q(name='Name') | Q(name='full_name') | Q(name='first')
-    | Q(name='first name')| Q(name='surname'),
+    | Q(name='first name')| Q(name='surname'),| Q(name='name'),
         member=member
     ).first()
-    print({
-        'memberInfoValue':memberInfo.value
-    })
+    
     password =  ''.join(random.choices(string.ascii_uppercase +string.digits, k=7))
 
     url ='https://api.chatengine.io/users/'
