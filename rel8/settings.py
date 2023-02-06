@@ -294,6 +294,10 @@ CORS_ALLOWED_ORIGINS = [
 # 'https://guileless-stroopwafel-666090.netlify.app'
 'https://cool-liger-caec7e.netlify.app',
 'http://cool-liger-caec7e.netlify.app',
+'https://nimn-frontend-production.up.railway.app',
+'http://nimn-frontend-production.up.railway.app',
+'http://rela8.tech',
+'https://rela8.tech',
 ]
 if os.environ.get('databaseName',None):
     CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
