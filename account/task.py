@@ -6,7 +6,7 @@ import random,string,json,os
 from celery import shared_task
 
 
-@shared_task
+@shared_task()
 def regiter_user_to_chat(member_id,):
     'this creates users on the third party chat app'
     member  = Memeber.objects.get(id=member_id)

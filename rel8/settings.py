@@ -358,4 +358,7 @@ else:
         }
     }
 
+redis_url = os.environ.get('REDIS_URL',None)
+if redis_url:
+    CELERY_BROKER_URL =redis_url
 PERIODIC_TASK_TENANT_LINK_MODEL ='Rel8Tenant.PeriodicTaskTenantLink'

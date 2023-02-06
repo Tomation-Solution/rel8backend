@@ -246,7 +246,10 @@ class  RegisterUserToChapterView(serializers.Serializer):
         return user
 
 
-
+class MemberProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = user_models.UserMemberInfo,
+        fields  = '__all__'
 
 class MemberSerializer(serializers.ModelSerializer):
 
