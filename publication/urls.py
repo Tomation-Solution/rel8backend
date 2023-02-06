@@ -9,6 +9,7 @@ from . import views
 
 router = DefaultRouter()
 router.register("publicationview",views.AdminManagePublication,basename='publication')
+router.register('publicationview__comment',views.MemberCommentOnPublication)
 
 
 urlpatterns = [

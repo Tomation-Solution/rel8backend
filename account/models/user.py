@@ -99,6 +99,11 @@ class User(AbstractBaseUser,PermissionsMixin,):
     REQUIRED_FIELDS = []
 
 
+    'this is the external chat api cred we using'
+    userSecret = models.TextField(default='')
+    userName = models.TextField(default='')
+
+
     objects= MyUserManager()
 
     def __str__(self) -> str:

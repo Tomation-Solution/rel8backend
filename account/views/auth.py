@@ -1,4 +1,5 @@
 import json
+from account.task import regiter_user_to_chat
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
@@ -20,6 +21,7 @@ from rest_framework.decorators import action,permission_classes
 from rest_framework.generics import GenericAPIView
 from mailing.models import EmailInvitation
 from datetime import datetime
+from django.db.models import Q
 # create Super user of the Alumni which is the owner
 
 
@@ -101,7 +103,10 @@ class Login(ObtainAuthToken):
             ).values('name','id','chapter')
 
         return Response({
-            'token':token.key,'user_type':user.user_type,'chapter':chapter,'exco':exco})
+            'token':token.key,'user_type':user.user_type,'chapter':chapter,'exco':exco,
+            'userSecret':user.userSecret,
+            'userName':user.userName
+            })
 
 
 class UploadSecondLevelDataBaseView(CreateAPIView):
@@ -210,7 +215,9 @@ class ManageMemberValidation(viewsets.ViewSet):
                         value= request.data[key],
                         member=member
                     )
-            
+
+
+            regiter_user_to_chat(member.id)
             
             return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
         raise CustomError({"error":"Data is not complete"})
