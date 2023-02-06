@@ -12,7 +12,7 @@ def regiter_user_to_chat(member_id,):
     member  = Memeber.objects.get(id=member_id)
     memberInfo = UserMemberInfo.objects.filter(
     Q(name='Name') | Q(name='full_name') | Q(name='first')
-    | Q(name='first name')| Q(name='surname'),| Q(name='name'),
+    | Q(name='first name')| Q(name='surname')| Q(name='name'),
         member=member
     ).first()
     
