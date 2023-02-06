@@ -218,8 +218,8 @@ class MemberListInfo(viewsets.ViewSet):
     def update_profile(self,request,format=False):
         logged_in_user = user_models.User.objects.get(id=request.user.id)
         member = user_models.Memeber.objects.get(user=logged_in_user)
-        instance =user_models.UserMemberInfo.objects.filter(member=member)
-        serialized = user.MemberProfileUpdateSerializer(instance=instance,data=request.data,many=True)
+        # instance =user_models.UserMemberInfo.objects.filter(member=member)
+        serialized = user.MemberProfileUpdateSerializer(data=request.data,many=True,context={'user':request.user})
         serialized.is_valid(raise_exception=True)
         serialized.save()
         return custom_response.Success_response(msg='Updated',data=[],status_code=status.HTTP_200_OK)

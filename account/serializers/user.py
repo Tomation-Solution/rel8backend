@@ -246,10 +246,20 @@ class  RegisterUserToChapterView(serializers.Serializer):
         return user
 
 
-class MemberProfileUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model  = user_models.UserMemberInfo,
-        fields  = '__all__'
+class MemberProfileUpdateSerializer(serializers.Serializer):
+    name=  serializers.CharField()
+    value=  serializers.CharField()
+    id=  serializers.IntegerField()
+
+    def create(self, validated_data):
+        member_info_id = validated_data.get('id')
+        user = self.context.get('user')
+        if user_models.UserMemberInfo.objects.filter(id=member_info_id,member=user.memeber).exists():
+            info = user_models.UserMemberInfo.objects.filter(id=member_info_id,member=user.memeber).first()
+            info.value=validated_data.get('value',info.value)
+            info.name=validated_data.get('name',info.name)
+            info.save()
+        return dict()
 
 class MemberSerializer(serializers.ModelSerializer):
 
