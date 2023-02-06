@@ -13,7 +13,6 @@ def run(file):
     # so
     currentSheet = book.sheetnames[0]#we only looking at sheet one in this code so all the second level databae should be in one sheet
     rows = book[currentSheet].rows
-    seen_alumni_year= 0#this tracks if the person has alumni_year a header
     headers = [cell.value for cell in next(rows)]
     # this loop store the headers flagged as --valid
     for head in headers:
@@ -22,12 +21,9 @@ def run(file):
                 splittedHead=head.split('--')
                 if(splittedHead[1].lower()== 'valid'):
                     datas['useValidation'].add(splittedHead[0])
-            if head =='alumni_year':
-                seen_alumni_year+=1
 
 
-    if seen_alumni_year ==0:
-        raise CustomError({'alumni_year':'alumni_year is missing this must be in the headers'})
+
     cell_line = 0
     for row in rows:
         data =dict()
