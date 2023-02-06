@@ -189,8 +189,8 @@ class ManageMemberValidation(viewsets.ViewSet):
             raise CustomError({"password":"Password is missing"})
         if not request.data.get('rel8Email'):
             raise CustomError({"email":"Email is needed"})
-        if not request.data.get('alumni_year'):
-            raise CustomError({"alumni_year":"alumni_year is needed"})
+        # if not request.data.get('alumni_year'):
+        #     raise CustomError({"alumni_year":"alumni_year is needed"})
         password = request.data.pop('password')
         email = request.data.pop('rel8Email')
         alumni_year =  request.data.get('alumni_year').split(' ')[0]
