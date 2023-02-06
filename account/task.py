@@ -3,9 +3,12 @@ from django.db.models import Q
 import requests
 from django.contrib.auth import get_user_model
 import random,string,json,os
+from celery import shared_task
 
 
+@shared_task
 def regiter_user_to_chat(member_id,):
+    'this creates users on the third party chat app'
     member  = Memeber.objects.get(id=member_id)
     memberInfo = UserMemberInfo.objects.filter(
     Q(name='Name') | Q(name='full_name') | Q(name='first')

@@ -217,7 +217,7 @@ class ManageMemberValidation(viewsets.ViewSet):
                     )
 
 
-            regiter_user_to_chat(member.id)
+            regiter_user_to_chat.delay(member.id)
             
             return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
         raise CustomError({"error":"Data is not complete"})

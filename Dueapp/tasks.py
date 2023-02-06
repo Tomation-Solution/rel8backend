@@ -27,28 +27,23 @@ def create_due_job(due_id,chapterID=None):
             user_type='members',)
 
         due =models.Due.objects.get(id=due_id)
-        "alumni_year can be None or Date if it none then we just skip it else we check against the members if it same year we charging them"
-        filter_by_alumni_year = due.alumni_year
         for eachMember in users:
             # let set the members that are being Charge it is_financial=False
             'is_for_excos if it false that means we getting all users else if its for only excos'
             member = user_related_models.Memeber.objects.get(user=eachMember,)
             perform_operatioon = False
-            if filter_by_alumni_year:
-                if member.alumni_year == filter_by_alumni_year:
-                    perform_operatioon=True
-                else:
-                    "this person is not in the alumni year dont charge him"
-                    perform_operatioon=False
+            if due.dues_for_membership_grade.member.filter(id=member.id):
+                perform_operatioon=True
             else:
-                "this means dont filter by the alumni year just get what u want"
-                perform_operatioon = True
-            logger.info(f'perform_operatioon: {perform_operatioon}')
+                "this person is not in the alumni year dont charge him"
+                perform_operatioon=False
+
+            logger.info(f'perform_operatioon: {perform_operatioon} on member that has id of {member.id}')
             if perform_operatioon:
-                if member.is_exco==due.is_for_excos:
-                    member.is_financial=False
-                    member.amount_owing=member.amount_owing- due.amount
-                    member.save()
+                # if member.is_exco==due.is_for_excos:
+                member.is_financial=False
+                member.amount_owing=member.amount_owing- due.amount
+                member.save()
                 dueUser = models.Due_User.objects.create(
                     user = eachMember,
                     due=due,

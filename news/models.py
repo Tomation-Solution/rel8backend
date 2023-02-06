@@ -27,7 +27,8 @@ class News(models.Model):
     user_that_have_reacted = models.ManyToManyField(user_realted_models.Memeber,blank=True)
     danload = models.FileField(upload_to='newsFileDanload/%d/',null=True,default=None)
     exco = models.ForeignKey(user_models.ExcoRole,on_delete=models.SET_NULL,null=True,default=None) 
-
+    dues_for_membership_grade  =models.ForeignKey(user_models.MemberShipGrade,on_delete=models.SET_NULL,null=True,default=None)
+    
     def __str__(self):return self.name
     
     def save(self, *args,**kwargs) -> None:

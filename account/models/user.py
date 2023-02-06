@@ -139,6 +139,7 @@ class Memeber(models.Model):
     # ones this person miss out on payment he doent become a finicial user
     is_financial = models.BooleanField(default=True)
     alumni_year= models.DateField()
+
     # def __str__(self) -> str:
     #     return f'{self.first_name} {self.last_name}'
 
@@ -152,14 +153,17 @@ class UserMemberInfo(models.Model):
 
 
 class ExcoRole(models.Model):
-    member = models.ManyToManyField(Memeber,) #only one member can have a postion at time
+    member = models.ManyToManyField(Memeber,) 
     name = models.CharField(max_length=500)
     about = models.TextField(default=' ')
     can_upload_min= models.BooleanField(default=False)#this means "can upload minute & Report in the exco insights/archieve"
     "if the chapter is none this mean this is a global exco else if it tied to one chapter this means this exco is for only that chapter"
     chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True,default=None,blank=True)
 
-
+class MemberShipGrade(models.Model):
+    member = models.ManyToManyField(Memeber,) 
+    name = models.CharField(max_length=500)
+    chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True,default=None,blank=True)
 
 # class PreviousExcoRoles(models.Model):
 #     member = models.OneToOneField(Memeber,on_delete=models.SET_NULL,null=True) #only one member can have a postion at time
