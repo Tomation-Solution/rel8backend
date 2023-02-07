@@ -11,6 +11,8 @@ admin.site.register(user.UserMemberInfo)
 admin.site.register(auth.SecondLevelDatabase)
 admin.site.register(user.ExcoRole)
 admin.site.register(user.MemberShipGrade)
+admin.site.register(user.MemberEducation)
+admin.site.register(user.MemberEmploymentHistory)
 
 
 

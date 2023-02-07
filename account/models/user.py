@@ -139,7 +139,27 @@ class Memeber(models.Model):
     # ones this person miss out on payment he doent become a finicial user
     is_financial = models.BooleanField(default=True)
     alumni_year= models.DateField()
+    telephone_number = models.CharField(max_length=15,default='')
+    address = models.TextField(default='')
+    dob   = models.DateField(blank=True,null=True,default=None)
+    citizenship    = models.CharField(default='',max_length=24)
 
+class MemberEducation(models.Model):
+    member = models.ForeignKey(Memeber,on_delete=models.CASCADE)
+    name_of_institution = models.TextField(default='')
+    major = models.TextField(default='')
+    degree = models.CharField(max_length=50,default='')
+    language = models.CharField(max_length=50,default='')
+    reading = models.CharField(max_length=50,default='')
+    speaking = models.CharField(max_length=50,default='')
+    date   = models.DateField(blank=True,null=True,default=None)
+class MemberEmploymentHistory(models.Model):
+    member = models.ForeignKey(Memeber,on_delete=models.CASCADE,null=True,default=None)
+    postion_title = models.CharField(max_length=200)
+    employment_from = models.DateField(blank=True,null=True,default=None)
+    employment_to = models.DateField(blank=True,null=True,default=None)
+    employer_name_and_addresse = models.CharField(max_length=200)
+    
     # def __str__(self) -> str:
     #     return f'{self.first_name} {self.last_name}'
 

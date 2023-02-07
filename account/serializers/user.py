@@ -222,8 +222,15 @@ class CreateAnyAdminTypeSerializer(serializers.Serializer):
 
         return user
 
+class MemberEmploymentHistorySerializerCleaner(serializers.ModelSerializer):
 
-
+    class Meta:
+        model = user_models.MemberEmploymentHistory
+        fields ='__all__'
+class MemberEducationSerilizer(serializers.ModelSerializer):
+    class Meta:
+        model = user_models.MemberEducation
+        fields = '__all__'
 class  RegisterUserToChapterView(serializers.Serializer):
     user_id = serializers.IntegerField()
     chapter_id =serializers.IntegerField()
@@ -268,13 +275,24 @@ class MemberSerializer(serializers.ModelSerializer):
     is_active =serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
     photo =serializers.SerializerMethodField()
-
+    member_education = serializers.SerializerMethodField()
+    member_employment_history = serializers.SerializerMethodField()
+    
     def get_photo(self,member):
         user = member.user
         if user.photo:
             return user.photo.url
         else: return ''
 
+    def get_member_education(self,member):
+        eductation = user_models.MemberEducation.objects.filter(member=member)
+        clean_data = MemberEducationSerilizer(instance=eductation,many=True)
+        return clean_data.data
+    def get_member_employment_history(self,member):
+        employment = user_models.MemberEmploymentHistory.objects.filter(member=member)
+        clean_data = MemberEmploymentHistorySerializerCleaner(instance=employment,many=True)
+
+        return clean_data.data
     def get_is_active(self,member):return member.user.is_active
 
     def get_member_info(self,member):
@@ -291,7 +309,8 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = user_models.Memeber
         fields = '__all__'
-        read_only_fields = ['id','member_info','email']
+        read_only_fields = ['id','member_info','email',
+                            'member_education','member_employment_history']
 
 class IsOwningSerializerCleaner(serializers.ModelSerializer):
     email  = serializers.SerializerMethodField()
