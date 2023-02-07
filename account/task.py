@@ -70,12 +70,14 @@ def update_general_chat_group():
         'User-Name':first_member.user.userName,
         'User-Secret':first_member.user.userSecret,
         }
-        names = UserMemberInfo.objects.filter(Q(name='Name') | Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),).values_list('value')
+        names = UserMemberInfo.objects.filter(Q(name='Name') | Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),).values('value')
+        def clean(data):return data.get('value')
         body ={
-             'usernames':list(names),
+             'usernames':list(map(clean,names)),
              'title':'General Chat',
              'is_direct_chat':False
         }
+
         url = 'https://api.chatengine.io/chats/'
         resp = requests.put(url,headers=headers,data=json.dumps(body))
 
