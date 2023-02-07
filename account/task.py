@@ -64,7 +64,7 @@ def update_general_chat_group():
         first_member  = all_member.first()
         headers = {
         'PRIVATE-KEY':os.environ['chat_private'] ,
-        'Project-ID':os.environ['chat_projectid'],
+        'Project-ID':os.environp['chat_projectid'],
         'Content-Type' : 'application/json',
         'Accept': 'application/json',
         'User-Name':first_member.user.userName,
@@ -72,7 +72,7 @@ def update_general_chat_group():
         }
         names = UserMemberInfo.objects.filter(Q(name='Name') | Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),).values_list('value')
         body ={
-             'usernames':names,
+             'usernames':list(names),
              'title':'General Chat',
              'is_direct_chat':False
         }
