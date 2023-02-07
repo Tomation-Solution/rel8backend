@@ -5,7 +5,26 @@ from django.contrib.auth import get_user_model
 import random,string,json,os
 from celery import shared_task
 
-
+@shared_task
+def update_general_chat_group():
+        all_member  = Memeber.objects.all()
+        first_member  = all_member.first()
+        headers = {
+        'PRIVATE-KEY':os.environ['chat_private'] ,
+        'Project-ID':os.environp['chat_projectid'],
+        'Content-Type' : 'application/json',
+        'Accept': 'application/json',
+        'User-Name':first_member.user.userName,
+        'User-Secret':first_member.user.userSecret,
+        }
+        names = UserMemberInfo.objects.filter(Q(name='Name') | Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),).values_list('value')
+        body ={
+             'usernames':names,
+             'title':'General Chat',
+             'is_direct_chat':False
+        }
+        url = 'https://api.chatengine.io/chats/'
+        resp = requests.put(url,headers=headers,data=json.dumps(body))
 @shared_task
 def regiter_user_to_chat(member_id,):
     'this creates users on the third party chat app'
@@ -36,3 +55,27 @@ def regiter_user_to_chat(member_id,):
         user.userSecret=password
         user.userName=memberInfo.value
         user.save()
+        update_general_chat_group.delay()
+
+
+@shared_task
+def update_general_chat_group():
+        all_member  = Memeber.objects.all()
+        first_member  = all_member.first()
+        headers = {
+        'PRIVATE-KEY':os.environ['chat_private'] ,
+        'Project-ID':os.environp['chat_projectid'],
+        'Content-Type' : 'application/json',
+        'Accept': 'application/json',
+        'User-Name':first_member.user.userName,
+        'User-Secret':first_member.user.userSecret,
+        }
+        names = UserMemberInfo.objects.filter(Q(name='Name') | Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),).values_list('value')
+        body ={
+             'usernames':names,
+             'title':'General Chat',
+             'is_direct_chat':False
+        }
+        url = 'https://api.chatengine.io/chats/'
+        resp = requests.put(url,headers=headers,data=json.dumps(body))
+
