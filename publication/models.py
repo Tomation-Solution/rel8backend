@@ -9,7 +9,7 @@ from cloudinary_storage.storage import RawMediaCloudinaryStorage
 class Publication(models.Model):
     name = models.CharField(max_length=300)
     is_exco = models.BooleanField(default=False)
-    exco = models.ForeignKey(user_models.ExcoRole,on_delete=models.SET_NULL,null=True,default=None) 
+    exco = models.ForeignKey(user_models.ExcoRole,on_delete=models.SET_NULL,null=True,default=None,blank=True) 
     is_committe = models.BooleanField(default=False)
     is_member = models.BooleanField(default=False)
     commitee_name = models.ForeignKey(user_models.CommiteeGroup,null=True,on_delete=models.CASCADE,blank=True,default=None)
