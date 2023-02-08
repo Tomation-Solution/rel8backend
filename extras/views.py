@@ -94,3 +94,21 @@ class TicketingView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
     serializer_class = serializers.TicketingSerializer
 
+
+class AdminManagesProjectViewset(viewsets.ModelViewSet):
+    serializer_class = serializers.AdminManagesProjectSerializer
+    queryset = models.FundAProject.objects.all()
+    permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
+    
+
+
+class MemeberProjectViewset(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
+    
+    @action(detail=False,methods=['post'],)
+    def support_in_kind(self, request, *args, **kwargs):
+        serialzed = serializers.MemberSupportProjectInKindSerializer(data=request.data)
+        serialzed.is_valid(raise_exception=True)
+        data = serialzed.save(member=request.user.memeber)
+        return Success_response(msg='Created',data=[],status_code=status.HTTP_201_CREATED)
+

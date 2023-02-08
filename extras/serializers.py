@@ -60,3 +60,20 @@ class TicketingSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+
+
+
+class AdminManagesProjectSerializer(serializers.ModelSerializer):
+    
+
+    class Meta:
+        model = models.FundAProject
+        fields = ['heading','about']
+
+
+
+class MemberSupportProjectInKindSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.SupportProjectInKind
+        fields = ['heading','about','project']

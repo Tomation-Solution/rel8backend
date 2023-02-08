@@ -16,3 +16,9 @@ class GalleryV2Admin(admin.ModelAdmin):
    inlines = [ImagesForGallery,]
 
 admin.site.register(models.GalleryV2,GalleryV2Admin)
+
+
+
+admin.site.register(models.FundAProject)
+admin.site.register(models.SupportProjectInCash)
+admin.site.register(models.SupportProjectInKind)

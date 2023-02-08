@@ -12,6 +12,8 @@ router.register("galleryview",views.GalleryView,basename='gallery')
 router.register("ticketview",views.TicketingView,basename='ticketing')
 router.register('gallery_version2',views.GalleryV2View,basename='gallery_version2')
 router.register('admin_gallery_version2',views.AdminManageGalleryV2View,basename='admin_gallery_version2')
+router.register('admin_manage_project',views.AdminManagesProjectViewset,)
+router.register('member_support_project',views.MemeberProjectViewset,basename='member_support_project')
 
 urlpatterns =[
 

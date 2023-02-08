@@ -18,7 +18,7 @@ from subscription import models as subscription_related_models
 from Rel8Tenant import models as rel8tenant_related_models
 from account.models.user import Memeber
 from django.contrib.auth import get_user_model
-
+from extras  import models as extras_models
 
 
 def very_payment(request,reference=None):
@@ -96,6 +96,24 @@ class InitPaymentTran(APIView):
             instance,_ = event_models.EventDue_User.objects.get_or_create(
                 user=request.user,event=event,amount=event.amount,)
             pk = instance.id#we did this cause we accessing the eventdue_user
+        if forWhat =='fund_a_project':
+            'since this is a donation there is no fix price we get it from the query param'
+            amount  = request.query_params.get('donated_amount',None)
+            if amount is None:
+                raise CustomError({'error':'Please amount it missing'})
+            "here we check it the"
+            try:
+                amount = int(amount)
+            except ValueError:
+                raise CustomError({'error':'amount must be number '})
+            fundAProject = extras_models.FundAProject.objects.get(id=pk)
+            instance,_ = extras_models.SupportProjectInCash.objects.get_or_create(
+                member = request.user.memeber,
+                project=fundAProject,
+                
+            )
+            fundAProject.amount = amount
+            instance.save()
         if(instance==None):raise CustomError({"error":"Something went wrong"})
  
         member = user_model.Memeber.objects.get(user=request.user)
@@ -192,7 +210,14 @@ def useWebhook(request,pk=None):
             TenantSub.is_end=False
             TenantSub.save()
             subscription_related_models.setTimer(meta_data.get('instanceID'),"organization",meta_data['schema_name'],CurrentTenant)
+        if meta_data['forWhat'] == 'fund_a_project':
+            support_project_incash =  extras_models.SupportProjectInCash.objects.get(id=meta_data['instanceID'])
+            support_project_incash.is_paid=True 
+            support_project_incash.save()
+            "update project amount made"
+            project = extras_models.FundAProject.objects.get(id=support_project_incash.project.id)
+            project.amount_made =project.amount_made+  support_project_incash.amount
+            project.save()
 
-            
 
         return HttpResponse(status.HTTP_200_OK)
