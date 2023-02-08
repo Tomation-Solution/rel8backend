@@ -9,7 +9,6 @@ from account.models import auth as  user_auth_models
 from django.shortcuts import get_object_or_404
 import os
 from account.serializers import user as user_related_serializer
-from drf_writable_nested.serializers import WritableNestedModelSerializer
 User = get_user_model()
 WEBSITEURL = os.environ['websiteurl']
 def normalize_email(email):
