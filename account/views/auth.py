@@ -215,8 +215,6 @@ class ManageMemberValidation(viewsets.ViewSet):
                         value= request.data[key],
                         member=member
                     )
-            user_models.MemberEducation.objects.get_or_create(member=member)
-            user_models.MemberEmploymentHistory.objects.get_or_create(member=member)
 
             regiter_user_to_chat.delay(member.id)
             

@@ -10,7 +10,7 @@ router.register("CreateAnyAdminType",user_view.CreateAnyAdminType,basename='Crea
 router.register("RegisterUserToChapter",user_view.RegisterUserToChapter,basename='RegisterUserToChapter')
 router.register("AdminRelatedViews",user_view.AdminRelatedViews,basename='AdminRelatedViews')
 router.register('memberlist-info',user_view.MemberListInfo,basename="memberlist-info")
-
+router.register('member-bio',user_view.MemberBioViewSet,basename='member-bio')
 urlpatterns = [
     path('profile/',user_view.profile,name='profile')
 ] +router.urls

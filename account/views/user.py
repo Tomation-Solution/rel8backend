@@ -223,7 +223,28 @@ class MemberListInfo(viewsets.ViewSet):
         serialized.is_valid(raise_exception=True)
         serialized.save()
         return custom_response.Success_response(msg='Updated',data=[],status_code=status.HTTP_200_OK)
+    
 
+class MemberBioViewSet(viewsets.ModelViewSet):
+    serializer_class =user.MemberUpdateBioSerializer
+    queryset = user_models.Memeber.objects.all()
+    permission_classes = [permissions.IsAuthenticated,custom_permissions.IsMember]
+
+    # def create(self, request, *args, **kwargs):
+    #     serialized = self.serializer_class(data=request.data,context={'user':request.user})
+    #     serialized.is_valid(raise_exception=True)
+    #     d  = serialized.save()
+    #     return custom_response.Success_response(msg='Successfull',data=[])
+
+    def update(self, request, *args, **kwargs):
+        instance = user_models.Memeber.objects.get(id=request.user.memeber.id)
+        serialized = self.serializer_class(instance=instance,data=request.data,context={'user':request.user})
+        serialized.is_valid(raise_exception=True)
+        member_instance = serialized.save()
+
+        clean_data = user.MemberSerializer(instance=member_instance,context={'user':request.user})
+        return custom_response.Success_response('Updated',data=clean_data.data)
+    
 
 @api_view(['GET',])
 @permission_classes([permissions.IsAuthenticated,custom_permissions.IsMember])

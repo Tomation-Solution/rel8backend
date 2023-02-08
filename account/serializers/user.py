@@ -8,7 +8,8 @@ from ..models import user as user_models
 from account.models import auth as  user_auth_models
 from django.shortcuts import get_object_or_404
 import os
-
+from account.serializers import user as user_related_serializer
+from drf_writable_nested.serializers import WritableNestedModelSerializer
 User = get_user_model()
 WEBSITEURL = os.environ['websiteurl']
 def normalize_email(email):
@@ -223,14 +224,90 @@ class CreateAnyAdminTypeSerializer(serializers.Serializer):
         return user
 
 class MemberEmploymentHistorySerializerCleaner(serializers.ModelSerializer):
-
+    id = serializers.IntegerField(required=False)
     class Meta:
         model = user_models.MemberEmploymentHistory
-        fields ='__all__'
+        fields =[
+            'member','postion_title','employment_from',
+            'employment_to','employer_name_and_addresse','id'
+        ]
+        read_only_fields=('member',)
 class MemberEducationSerilizer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+
     class Meta:
         model = user_models.MemberEducation
-        fields = '__all__'
+        fields = [
+            'member','name_of_institution','major','degree',
+            'language','reading','speaking','date','id'
+        ]  
+        read_only_fields=('member',)
+
+class MemberUpdateBioSerializer(serializers.ModelSerializer):
+    membereducation = MemberEducationSerilizer(many=True)
+    memberemploymenthistory = MemberEmploymentHistorySerializerCleaner(many=True)
+    id = serializers.IntegerField(required=False)
+
+
+    class Meta:
+        model =user_models.Memeber
+        fields= [
+            'id',
+            'amount_owing','is_exco','is_financial',
+            'telephone_number','address','dob','citizenship','membereducation','memberemploymenthistory'
+
+        ]
+        read_only_fields = ['amount_owing','is_exco','is_financial',]
+
+    def create(self, validated_data):
+        membereducation = validated_data.pop('membereducation',)
+        Memberemploymenthistory = validated_data.pop('memberemploymenthistory',)
+        member = self.context.get('user').memeber
+        for education in membereducation:
+             user_models.MemberEducation.objects.create(**education,member=member)
+            
+        for employment in Memberemploymenthistory:
+            user_models.MemberEmploymentHistory.objects.create(**employment,member=member)
+
+        return member
+    def update(self, instance, validated_data):
+        instance.telephone_number= validated_data.get('telephone_number',instance.telephone_number)
+        instance.address= validated_data.get('address',instance.address)
+        instance.dob= validated_data.get('dob',instance.dob)
+        instance.citizenship= validated_data.get('citizenship',instance.citizenship)
+        instance.save()
+
+        membereducation = validated_data.get('membereducation')
+        memberemploymenthistory = validated_data.get('memberemploymenthistory')
+
+        for eduction in membereducation:
+            if 'id' in eduction.keys():
+                if user_models.MemberEducation.objects.filter(id=eduction['id']).exists():
+                    member_education =user_models.MemberEducation.objects.get(id=eduction['id'])
+                    member_education.name_of_institution=eduction.get('name_of_institution',member_education.name_of_institution)
+                    member_education.major=eduction.get('major',member_education.major)
+                    member_education.degree=eduction.get('degree',member_education.degree)
+                    member_education.language=eduction.get('language',member_education.language)
+                    member_education.reading=eduction.get('reading',member_education.reading)
+                    member_education.speaking=eduction.get('speaking',member_education.speaking)
+                    member_education.date=eduction.get('date',member_education.date)
+                    member_education.save()
+            else:user_models.MemberEducation.objects.create(**eduction,member=instance)
+
+        for employment in memberemploymenthistory:
+            if 'id' in employment.keys():
+                if user_models.MemberEmploymentHistory.objects.filter(id=employment['id']).exists():
+                    member_employment =  user_models.MemberEmploymentHistory.objects.get(id=employment['id'])
+                    member_employment.postion_title = employment.get('postion_title',member_employment.postion_title)
+                    member_employment.employment_from = employment.get('employment_from',member_employment.employment_from)
+                    member_employment.employment_to = employment.get('employment_to',member_employment.employment_to)
+                    member_employment.employer_name_and_addresse = employment.get('employer_name_and_addresse',member_employment.employer_name_and_addresse)
+                    member_employment.save()
+            else:user_models.MemberEmploymentHistory.objects.create(**employment,member=instance)
+        return instance
+
+
+
 class  RegisterUserToChapterView(serializers.Serializer):
     user_id = serializers.IntegerField()
     chapter_id =serializers.IntegerField()
@@ -267,6 +344,7 @@ class MemberProfileUpdateSerializer(serializers.Serializer):
             info.name=validated_data.get('name',info.name)
             info.save()
         return dict()
+
 
 class MemberSerializer(serializers.ModelSerializer):
 

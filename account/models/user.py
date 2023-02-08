@@ -144,6 +144,14 @@ class Memeber(models.Model):
     dob   = models.DateField(blank=True,null=True,default=None)
     citizenship    = models.CharField(default='',max_length=24)
 
+
+    @property
+    def member_education(self):
+        return self.membereducation_set.all()
+    @property
+    def member_employment_history(self):
+        return self.memberemploymenthistory_set.all()
+
 class MemberEducation(models.Model):
     member = models.ForeignKey(Memeber,on_delete=models.CASCADE)
     name_of_institution = models.TextField(default='')
