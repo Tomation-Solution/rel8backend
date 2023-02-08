@@ -38,7 +38,7 @@ class FundAProject(models.Model):
     heading =models.CharField(max_length=50)
     about = models.TextField(default='')
     amount_made =models.DecimalField(decimal_places=2,max_digits=10,default=0.00)
-
+    image = models.ImageField(default=None,null=True)
 
 class SupportProjectInCash(models.Model):
     member = models.ForeignKey(user_realted_models.Memeber,null=True,default=True,on_delete=models.CASCADE)
