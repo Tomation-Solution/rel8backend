@@ -112,3 +112,9 @@ class MemeberProjectViewset(viewsets.ViewSet):
         data = serialzed.save(member=request.user.memeber)
         return Success_response(msg='Created',data=[],status_code=status.HTTP_201_CREATED)
 
+    def list(self,request,*args,**kwargs):
+        all_project = models.FundAProject.objects.all()
+        clean_data = serializers.AdminManagesProjectSerializer(instance=all_project,many=True)
+        
+
+        return Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
