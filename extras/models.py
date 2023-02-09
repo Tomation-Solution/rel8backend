@@ -52,3 +52,12 @@ class SupportProjectInKind(models.Model):
     heading =models.CharField(max_length=50)
     about = models.TextField(default='')
     project = models.ForeignKey(FundAProject,null=True,default=True,on_delete=models.CASCADE)
+
+
+
+
+class ReissuanceOfCertificate(models.Model):
+    'this is where the Reissuance Of Certificate get saved when a member subbmit'
+    member = models.ForeignKey(user_realted_models.Memeber,on_delete=models.CASCADE,null=True,default=True,)
+    extra_info = models.TextField(default='')
+    file = models.FileField(upload_to='certificates_reissue/%d/')

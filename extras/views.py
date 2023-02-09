@@ -118,3 +118,13 @@ class MemeberProjectViewset(viewsets.ViewSet):
         
 
         return Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
+
+
+
+class MemberReissuanceOfCertificateViewset(viewsets.ModelViewSet):
+    serializer_class = serializers.MemberReissuanceOfCertificateSerializer
+    queryset = models.ReissuanceOfCertificate.objects.all()
+    permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
+    
+    def perform_create(self, serializer):
+        serializer.save(member=self.request.user.memeber)
