@@ -23,6 +23,7 @@ class Publication(models.Model):
         storage=RawMediaCloudinaryStorage(),
     )
     chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True,blank=True)
+    membership_grade  = models.ForeignKey(user_models.MemberShipGrade,null=True ,default=None,on_delete=models.SET_NULL,blank=True)
 
     def __str__(self):return self.name
     

@@ -10,6 +10,7 @@ class Meeting(models.Model):
     details = models.TextField(default='..')
     exco = models.ForeignKey(user_models.ExcoRole,null=True ,default=None,on_delete=models.SET_NULL,blank=True)
     chapters = models.ForeignKey(auth_models.Chapters,null=True ,default=None,on_delete=models.SET_NULL,blank=True)
+    membership_grade  = models.ForeignKey(user_models.MemberShipGrade,null=True ,default=None,on_delete=models.SET_NULL,blank=True)
     date_for = models.DateTimeField(null=True,default=None)
     addresse = models.TextField(default='')
     event_date = models.DateTimeField(null=True,default=None)

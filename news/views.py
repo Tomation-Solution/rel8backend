@@ -61,7 +61,7 @@ class AdminManageNews(viewsets.ModelViewSet):
         # 
         if self.request.query_params.get('is_chapter',None):all_news=models.News.objects.filter(chapters = request.user.chapter)
         else:all_news=models.News.objects.filter(chapters =None)
-        filter_set  = custom_filter.PublicationLookUp(request.query_params,queryset=all_news)
+        filter_set  = custom_filter.NewsLookUp(request.query_params,queryset=all_news)
         clean_data = self.serializer_class(filter_set.qs,many=True,context={'request':self.request})
         return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
 
@@ -84,38 +84,7 @@ class MembersGetNews(views.APIView):
     }
 
 
-    def get(self, request, format=None):
-        "this restrict news to be seen by the weong user_type"
-        newsTheUserIsGetting =  []
-        all_news = models.News.objects.all()
-        count = 0
-        if self.request.query_params.get('is_chapter',None):all_news=all_news.filter(chapters = request.user.chapter)
-        else:all_news=all_news.filter(chapters =None)
-        for news  in all_news:
-            if news.is_exco == request.user.memeber.is_exco:
-                "if the news is exco and the user is exco append"
-                count+=1
-                newsTheUserIsGetting.append(self._return_newsInDIct(news))
-            print({"commitee_name":news.commitee_name})
-            if count == 0:
-                if news.is_committe and user_models.CommiteeGroup.objects.filter(id=news.commitee_name.id):
-                    committee = user_models.CommiteeGroup.objects.get(id=news.commitee_name.id)
-                    member = user_models.Memeber.objects.get(user=request.user)
-                    if committee.members.all().filter(id=member.id).exists():
-                        count+=1
 
-                        newsTheUserIsGetting.append(self._return_newsInDIct(news))
-            if count ==0: 
-                if news.is_member:
-                    count+=1
-                    newsTheUserIsGetting.append(self._return_newsInDIct(news))
-            count = 0
-        # return custom_response.Success_response(msg='alumni created successfully',data=list(set(newsTheUserIsGetting)),status_code=status.HTTP_201_CREATED)
-        return custom_response.Success_response(msg='alumni created successfully',data=newsTheUserIsGetting,status_code=status.HTTP_201_CREATED)
-# mr emmanuel
-# Saturday by 2:00 pm
-# Century 21 freedom group international
-# 
     def post(self, request, format=None): 
         likes = request.data.get('like')
         dislikes= request.data.get('dislike')

@@ -3,9 +3,13 @@ from . import models
 
 class PublicationLookUp(django_filters.FilterSet):
 
-    exco = django_filters.NumberFilter(field_name='exco__id')
-    exco_name = django_filters.CharFilter(field_name='exco__name')
-    filter_by_chapters= django_filters.NumberFilter(field_name='chapters__id')
+    'to seach by council for_members has to be false'
+    council = django_filters.NumberFilter(field_name='exco')
+    for_members = django_filters.BooleanFilter(field_name='exco', lookup_expr='isnull')
+
+    'to seach by membership_grade is_for_all_grade has to be false'
+    is_for_all_grade = django_filters.BooleanFilter(field_name='membership_grade', lookup_expr='isnull')
+    membership_grade = django_filters.NumberFilter()
     class Meta:
         model = models.Publication
-        fields =['exco','exco_name','filter_by_chapters',]
+        fields =[ 'membership_grade','is_for_all_grade','council','for_members']
