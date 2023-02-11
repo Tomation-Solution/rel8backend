@@ -33,13 +33,14 @@ class ContestantCleaner(serializers.ModelSerializer):
             'id','member',
             'amount_vote','youtubeVidLink',
             'aspirantBio','upload_manifesto_docs',
-            'upload_manifesto_image','user'
+            'upload_manifesto_image','user','postion'
         ]
+        # depth =1
 class AdminManageContest(serializers.Serializer):
 
     "admin manages adding adding and removing members as contestant"
     member =serializers.IntegerField()
-    ballotbox =serializers.IntegerField()
+    position =serializers.IntegerField()
     youtubeVidLink = serializers.CharField()
     aspirantBio = serializers.JSONField()
     upload_manifesto_docs = serializers.FileField()
@@ -49,16 +50,15 @@ class AdminManageContest(serializers.Serializer):
     def validate(self, attrs):
         if not user_models.Memeber.objects.filter(id=attrs.get('member')).exists():
             raise serializers.ValidationError({"member":"member does not exist"})
-        if not models.BallotBox.objects.filter(id=attrs.get('ballotbox')).exists():
-            raise serializers.ValidationError({"ballotbox":"Election does not exist or has ended"})
+        if not models.Postions.objects.filter(id=attrs.get('position')).exists():
+            raise serializers.ValidationError({"ballotbox":"Position does not exist or has ended"})
        
         return super().validate(attrs)
     def create(self, validated_data):
-        print("Èhellpow wolrd",validated_data)
         member=user_models.Memeber.objects.get(id=validated_data.get('member'))
-        ballotbox = models.BallotBox.objects.get(id=validated_data.get('ballotbox'))
-        if models.Contestant.objects.all().filter(member=member,ballotbox=ballotbox).exists():
-            raise CustomError({"error":"This Member is Already Contesting For This Election"})
+        postion = models.Postions.objects.get(id=validated_data.get('position'))
+        if models.Contestant.objects.all().filter(member=member,postion=postion).exists():
+            raise CustomError({"error":"This Member is Already Contesting For This Position"})
         
         youtubeVidLink =validated_data.get('youtubeVidLink','')
         aspirantBio = validated_data.get('aspirantBio')
@@ -66,7 +66,7 @@ class AdminManageContest(serializers.Serializer):
         upload_manifesto_image = validated_data.get('upload_manifesto_image')
         contestant= models.Contestant.objects.create(
             member =member,
-            ballotbox =ballotbox,
+            postion =postion,
             amount_vote =0,
             youtubeVidLink=youtubeVidLink,
             aspirantBio =aspirantBio,
@@ -86,14 +86,15 @@ class MembersVoteSerializer(serializers.Serializer):
     ballotBoxID = serializers.IntegerField()
     contestantID = serializers.IntegerField()
     vote = serializers.BooleanField()
+    position =  serializers.IntegerField()
 
     def validate(self, attrs):
-        if models.BallotBox.objects.all().filter(id=attrs.get('ballotBoxID')).exists():
+        if models.Postions.objects.all().filter(id=attrs.get('position')).exists():
             # raise CustomError("")
-            ballotBox = models.BallotBox.objects.get(id=attrs.get('ballotBoxID'))
-            if ballotBox.members_that_has_cast_thier_vote.all().filter(id=self.context.get('member').id).exists():
-                "if this user exist in the ballot box that means he has voted"
-                raise CustomError({"error":"you can not vote two times"})
+            position = models.Postions.objects.get(id=attrs.get('position'))
+            if position.members_that_has_cast_thier_vote.all().filter(id=self.context.get('member').id).exists():
+                "if this user exist in the postion box that means he has voted"
+                raise CustomError({"error":"you can not vote twice for a postion"})
         else:
             raise CustomError({"error":"Election Does not exist"})
 
@@ -103,8 +104,17 @@ class MembersVoteSerializer(serializers.Serializer):
     #     contestant = models.Contestant.objects.get(id=validated_data.get('contestantID'))
     #     return super().create(validated_data)
     def update(self, instance, validated_data):
-        ballotBox = models.BallotBox.objects.get(id=validated_data.get('ballotBoxID'))
-        ballotBox.members_that_has_cast_thier_vote.add(self.context.get('member'))
+        postion = models.Postions.objects.get(id=validated_data.get('position'))
+        postion.members_that_has_cast_thier_vote.add(self.context.get('member'))
         instance.amount_vote+=1
         instance.save()
         return instance
+    
+
+
+class PostionSerializer(serializers.ModelSerializer):
+
+
+    class Meta:
+        model = models.Postions
+        fields =[ 'id','ballotbox','postion_name']

@@ -7,3 +7,4 @@ from . import models
 
 admin.site.register(models.Contestant)
 admin.site.register(models.BallotBox)
+admin.site.register(models.Postions)

@@ -6,7 +6,7 @@ from . import views
 
 router = DefaultRouter()
 router.register("adminmanageballotbox",views.AdminManageBallotBox,basename='adminmanageballotbox')
-
+router.register('postion_manager',views.PostionViewset)
 
 urlpatterns =[
     # path('')
