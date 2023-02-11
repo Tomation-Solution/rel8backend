@@ -42,9 +42,12 @@ class BallotBox(models.Model):
     
     election_endTime=models.TimeField(null=True,default=None)
     election_startTIme=models.TimeField(null=True,default=None)
+
+# class Postions(models.Model):
+#     postion_name= models.CharField(max_length=90)
 class Contestant(models.Model): 
     member =  models.ForeignKey(user_models.Memeber,on_delete=models.CASCADE,)
-    ballotbox  = models.ForeignKey(BallotBox,on_delete=models.CASCADE)
+    # ballotbox  = models.ForeignKey(BallotBox,on_delete=models.CASCADE)
     amount_vote = models.IntegerField()
     youtubeVidLink = models.TextField()#this works as manifesto
     aspirantBio = models.JSONField(default=None,null=True)#this works as m anifesto
