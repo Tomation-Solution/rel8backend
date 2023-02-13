@@ -86,7 +86,7 @@ class CreateAnyAdminType(viewsets.ViewSet):
 
 class ManageAssigningExos(viewsets.ViewSet):
     # permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdmin]
-    # permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]#chnage to admin late
+    permission_classes = [permissions.IsAuthenticated,]#chnage to admin late
 
     def get_permissions(self):
         if self.request.method == 'GET':
