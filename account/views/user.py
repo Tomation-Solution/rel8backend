@@ -86,9 +86,14 @@ class CreateAnyAdminType(viewsets.ViewSet):
 
 class ManageAssigningExos(viewsets.ViewSet):
     # permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdmin]
-    permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]#chnage to admin late
+    # permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]#chnage to admin late
 
-
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            self.permission_classes =  [permissions.IsAuthenticated]
+        else:
+            self.permission_classes=[permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]
+        return super(ManageAssigningExos,self).get_permissions()
     def create(self,request,format=None):
         'here admin can create more exco postion type'
         serialized = user_serializer.CreateExcoRole(data=request.data,context={'request':request})
