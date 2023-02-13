@@ -193,7 +193,7 @@ class ManageMemberValidation(viewsets.ViewSet):
         #     raise CustomError({"alumni_year":"alumni_year is needed"})
         password = request.data.pop('password')
         email = request.data.pop('rel8Email')
-        alumni_year =  request.data.get('alumni_year','8/7/2023').split(' ')[0]
+        alumni_year =  '2023-08-3'
         if(self._validateData(request).get('isValid')==False):
             raise CustomError({"error":"Invalid Data"})
         
@@ -235,7 +235,10 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
 
     @action(['get'],detail=False,permission_classes=[IsAuthenticated])
     def get_commitee(self,request,format=None):
-        all_commitee_group =self.queryset.all()
+        if request.user.user_type in ['admin','super_admin']:
+            all_commitee_group =self.queryset.all()
+        else:
+            all_commitee_group =self.queryset.filter(members__in=[request.user.memeber.id])
         clead_data = self.serializer_class(all_commitee_group,many=True)
         return Success_response(msg="Success",data =clead_data.data)
 
