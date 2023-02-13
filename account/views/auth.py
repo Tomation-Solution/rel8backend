@@ -233,13 +233,19 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
 
     # @permission_classes([IsAuthenticated])
 
-    @action(['get'],detail=False,permission_classes=[IsAuthenticated])
+    @action(['get','post'],detail=False,permission_classes=[IsAuthenticated])
     def get_commitee(self,request,format=None):
-        if request.user.user_type in ['admin','super_admin']:
-            all_commitee_group =self.queryset.all()
+        if request.method.lower() == 'get':
+            if request.user.user_type in ['admin','super_admin']:
+                all_commitee_group =self.queryset.all()
+            else:
+                all_commitee_group =self.queryset.filter(members__in=[request.user.memeber.id])
+            clead_data = self.serializer_class(all_commitee_group,many=True)
         else:
-            all_commitee_group =self.queryset.filter(members__in=[request.user.memeber.id])
-        clead_data = self.serializer_class(all_commitee_group,many=True)
+            commitee_id = request.query_params.get('commitee_id',None)
+            if commitee_id is None:raise CustomError({'error':'please provide commitee_id'})
+            commitee = self.queryset.get(id=commitee_id)
+            clead_data = self.serializer_class(commitee,many=False,context={'detail':True})
         return Success_response(msg="Success",data =clead_data.data)
 
 

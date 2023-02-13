@@ -4,6 +4,7 @@ from utils import  custom_exceptions
 from utils import validators,convertXslsTOJson
 from ..models import auth as auth_models
 from .. models import user as user_models
+from account.serializers import user as user_related_serializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import json
 # this gets tge current user model which has been set in the setting useing "AUTH_USER_MODEL"
@@ -154,7 +155,13 @@ class AdminManageCommiteeGroupSerializer(serializers.ModelSerializer):
         return instance
 
 
-    def get_connected_members(self,obj):return obj.members.all().values()
+    def get_connected_members(self,obj):
+        members = []
+        if self.context.get('detail',False):
+            members = obj.members.all()
+            clean_data = user_related_serializer.MemberSerializer(instance=members,many=True)
+            return clean_data.data
+        else:return[]
 
     class Meta:
         model = user_models.CommiteeGroup
