@@ -101,11 +101,11 @@ class Login(ObtainAuthToken):
             exco =user_models.ExcoRole.objects.filter(
                 member= user.memeber
             ).values('name','id','chapter')
-
+            commitee = user_models.CommiteeGroup.objects.filter(members=user.memeber).values('name','id')
         return Response({
-            'token':token.key,'user_type':user.user_type,'chapter':chapter,'exco':exco,
+            'token':token.key,'user_type':user.user_type,'chapter':chapter,'council':exco,'commitee':commitee,
             'userSecret':user.userSecret,
-            'userName':user.userName
+            'userName':user.userName,
             })
 
 
