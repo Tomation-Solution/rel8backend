@@ -1,9 +1,21 @@
-from account.models.user import Memeber,UserMemberInfo
+from account.models.user import (Memeber,UserMemberInfo,ExcoRole,
+CommiteeGroup
+)
 from django.db.models import Q
 import requests
 from django.contrib.auth import get_user_model
 import random,string,json,os
 from celery import shared_task
+
+
+def create_chat(names:list,group_name:str,headers:dict):
+    body ={
+    'usernames':names,
+    'title':group_name,
+    'is_direct_chat':False
+    }
+    url = 'https://api.chatengine.io/chats/'
+    resp = requests.put(url,headers=headers,data=json.dumps(body))
 
 @shared_task
 def update_general_chat_group():
@@ -17,7 +29,11 @@ def update_general_chat_group():
         'User-Name':first_member.user.userName,
         'User-Secret':first_member.user.userSecret,
         }
-        names = UserMemberInfo.objects.filter(Q(name='Name') | Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),).values_list('value')
+        names = UserMemberInfo.objects.filter(
+                              Q(name='Name')|Q(name='NAMES') | 
+                  Q(name='names')|
+                  Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),
+        ).values_list('value')
         body ={
              'usernames':names,
              'title':'General Chat',
@@ -30,8 +46,9 @@ def regiter_user_to_chat(member_id,):
     'this creates users on the third party chat app'
     member  = Memeber.objects.get(id=member_id)
     memberInfo = UserMemberInfo.objects.filter(
-    Q(name='Name') | Q(name='full_name') | Q(name='first')
-    | Q(name='first name')| Q(name='surname')| Q(name='name'),
+                Q(name='Name')|Q(name='NAMES') | 
+                  Q(name='names')|
+                  Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),
         member=member
     ).first()
     
@@ -70,7 +87,11 @@ def update_general_chat_group():
         'User-Name':first_member.user.userName,
         'User-Secret':first_member.user.userSecret,
         }
-        names = UserMemberInfo.objects.filter(Q(name='Name') | Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),).values('value')
+        names = UserMemberInfo.objects.filter(
+                Q(name='Name')|Q(name='NAMES') | 
+                  Q(name='names')|
+                  Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),
+        ).values('value')
         def clean(data):return data.get('value')
         body ={
              'usernames':list(map(clean,names)),
@@ -80,4 +101,56 @@ def update_general_chat_group():
 
         url = 'https://api.chatengine.io/chats/'
         resp = requests.put(url,headers=headers,data=json.dumps(body))
+
+@shared_task
+def update_exco_chat(excoRole_id:int):
+      exco_role = ExcoRole.objects.get(id=excoRole_id)
+      all_members = exco_role.member.all()
+      '''
+      #the reason for the this firs member is to gain access to the chat app because any 
+      member can create group we just doing it programtically'''  
+      first_member  = all_members.first()
+      headers = {
+        'PRIVATE-KEY':os.environ['chat_private'] ,
+        'Project-ID':os.environ['chat_projectid'],
+        'Content-Type' : 'application/json',
+        'Accept': 'application/json',
+        'User-Name':first_member.user.userName,
+        'User-Secret':first_member.user.userSecret,}
+      all_names = []
+      for member in all_members:
+            
+            member_info = UserMemberInfo.objects.filter(
+                  Q(name='Name')|Q(name='NAMES') | 
+                  Q(name='names')|
+                  Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),member=member)
+            info = member_info.first()
+            print({'info':info,'member':member})
+            if info is not None:
+                all_names.append(info.value)
+      create_chat(names=all_names,group_name=exco_role.name,headers=headers)
+
+@shared_task
+def update_commitee_chat(commitee_id:int):
+    commtee_group = CommiteeGroup.objects.get(id=commitee_id)
+    all_members = commtee_group.members.all()
+    first_member  = all_members.first()
+    headers = {
+        'PRIVATE-KEY':os.environ['chat_private'] ,
+        'Project-ID':os.environ['chat_projectid'],
+        'Content-Type' : 'application/json',
+        'Accept': 'application/json',
+        'User-Name':first_member.user.userName,
+        'User-Secret':first_member.user.userSecret,}  
+    all_names = []
+    for member in all_members:
+        member_info = UserMemberInfo.objects.filter(
+                  Q(name='Name')|Q(name='NAMES') | 
+                  Q(name='names')|
+                  Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),member=member)
+        info = member_info.first()
+        if info is not None:
+             all_names.append(info.value)
+    create_chat(names=all_names,
+                group_name=commtee_group.name+'(CommiteeGroup)',headers=headers)
 

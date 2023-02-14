@@ -9,7 +9,7 @@ from utils.custom_exceptions import CustomError
 from utils.usefulFunc import get_localized_time
 from account.models import auth as auth_realted_models
 from .tasks import create_deactivating_user_model
-
+from django.shortcuts import get_object_or_404
 
 def convert12Hour(hour):
     'convert 12 hrs to 24 hr for e.g we have 13hr the function returns 1'
@@ -47,7 +47,8 @@ class Due(models.Model):
     chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True,blank=True)
     alumni_year = models.DateField(default=None,null=True,blank=True)
     dues_for_membership_grade  =models.ForeignKey(user_model.MemberShipGrade,on_delete=models.SET_NULL,null=True,default=None,blank=True)
-
+    # this will be manual the date dont really matter it charges the  person on when the manully_create_due_job is manually called e.g(when a member is create)
+    is_on_create = models.BooleanField(default=False)
     def __str__(self) -> str:
         return self.Name
 
@@ -55,83 +56,94 @@ class Due(models.Model):
         return super().save(*args,**kwargs)
         # self.create_due_job()
         # return saved
-
+    @classmethod
+    def manually_create_due(cls,due,user_instance):
+        'this manaually create a due for a user'
+        due = Due_User.objects.create(
+            user= user_instance,
+            amount=due.amount,
+            due=due
+        )
+    
     def create_due_job(self):
         "this fucntion create a cron job that helps to create due for the users"
         # day_of_week-0,1 - means run sunday and monday
         # month_of_year0-1,2,3 means run jan feb march
         print("called")
         tenant = connection.tenant
-        if PeriodicTask.objects.all().filter(name=f"{self.Name} {str(self.id)}").exists():
-            raise CustomError({"error":"Try another name this name has been taken"})
-        if self.re_occuring:
-            if self.schedule == None:
-                # ["2","3"] should be like this
-                raise CustomError({'error':"schedule must be a array of numberString"})
-            # self.startDate Note this is a date object
-            if(self.scheduletype == 'day_of_week'):            
-                schedule,_ =CrontabSchedule.objects.get_or_create(
-                    day_of_week=','.join( self.schedule),
-            hour=convert12Hour(self.startTime.hour), minute=self.startTime.minute,#means it will work on 8:30, of each day of week u choose
-
-                )
-            if(self.scheduletype =='month_of_year'):
-                schedule,_ =CrontabSchedule.objects.get_or_create(
-                hour=convert12Hour(self.startTime.hour), minute=self.startTime.minute,#means it will work on 8:30, month of year u choose
-                            month_of_year=','.join( self.schedule)
-                    )
-            
-            chapterID = None
-            if self.chapters:chapterID=self.chapters.id
-            PeriodicTask.objects.create(
-                crontab=schedule,
-                name=f"{self.Name} {str(self.id)}",  # task name
-                task="Dueapp.tasks.create_due_job",   # task.
-                args=json.dumps(
-                    [
-                        self.id,
-                      chapterID
-                    ]
-                ),  # arguments
-                description="this changes the task status to active at start time",
-                one_off=False,
-                headers=json.dumps(
-                    {
-                        "_schema_name": tenant.schema_name,
-                        "_use_tenant_timezone": True,
-                    }
-                ),
-            )
+        if self.is_on_create:
+            print('Dont do shit')
         else:
-            "just run once"
-            tenant = connection.tenant
-            localized_time = get_localized_time(
-                self.startDate, self.startTime, tenant.timezone
-            )
-            clocked, _ = ClockedSchedule.objects.get_or_create(
-            clocked_time=localized_time
-            )
-            chapterID = None
-            if self.chapters:chapterID=self.chapters.id
-            PeriodicTask.objects.create(
-               clocked=clocked,
-                name=f"{self.Name} {str(self.id)}",  # task name
-                task="Dueapp.tasks.create_due_job",  # task.
-                args=json.dumps(
-                [
-                self.id,
-                chapterID
-                ]
-                ),  # arguments
-                description="this changes the task status to active at start time",
-                one_off=True,
-                headers=json.dumps(
-                {
-                "_schema_name": tenant.schema_name,
-                "_use_tenant_timezone": True,
-                }
+            if PeriodicTask.objects.all().filter(name=f"{self.Name} {str(self.id)}").exists():
+                raise CustomError({"error":"Try another name this name has been taken"})
+            if self.re_occuring:
+                if self.schedule == None:
+                    # ["2","3"] should be like this
+                    raise CustomError({'error':"schedule must be a array of numberString"})
+                # self.startDate Note this is a date object
+                if(self.scheduletype == 'day_of_week'):            
+                    schedule,_ =CrontabSchedule.objects.get_or_create(
+                        day_of_week=','.join( self.schedule),
+                hour=convert12Hour(self.startTime.hour), minute=self.startTime.minute,#means it will work on 8:30, of each day of week u choose
+
+                    )
+                if(self.scheduletype =='month_of_year'):
+                    schedule,_ =CrontabSchedule.objects.get_or_create(
+                    hour=convert12Hour(self.startTime.hour), minute=self.startTime.minute,#means it will work on 8:30, month of year u choose
+                                month_of_year=','.join( self.schedule)
+                        )
+                
+                chapterID = None
+                if self.chapters:chapterID=self.chapters.id
+                PeriodicTask.objects.create(
+                    crontab=schedule,
+                    name=f"{self.Name} {str(self.id)}",  # task name
+                    task="Dueapp.tasks.create_due_job",   # task.
+                    args=json.dumps(
+                        [
+                            self.id,
+                        chapterID
+                        ]
+                    ),  # arguments
+                    description="this changes the task status to active at start time",
+                    one_off=False,
+                    headers=json.dumps(
+                        {
+                            "_schema_name": tenant.schema_name,
+                            "_use_tenant_timezone": True,
+                        }
+                    ),
                 )
-            )
+            else:
+                "just run once"
+                tenant = connection.tenant
+                localized_time = get_localized_time(
+                    self.startDate, self.startTime, tenant.timezone
+                )
+                clocked, _ = ClockedSchedule.objects.get_or_create(
+                clocked_time=localized_time
+                )
+                chapterID = None
+                if self.chapters:chapterID=self.chapters.id
+                PeriodicTask.objects.create(
+                clocked=clocked,
+                    name=f"{self.Name} {str(self.id)}",  # task name
+                    task="Dueapp.tasks.create_due_job",  # task.
+                    args=json.dumps(
+                    [
+                    self.id,
+                    chapterID
+                    ]
+                    ),  # arguments
+                    description="this changes the task status to active at start time",
+                    one_off=True,
+                    headers=json.dumps(
+                    {
+                    "_schema_name": tenant.schema_name,
+                    "_use_tenant_timezone": True,
+                    }
+                    )
+                )
 
 
 
@@ -148,8 +160,10 @@ class Due_User(models.Model):
 
 
     def __str__(self) -> str:
-        return f'{self.user.email} {self.due.Name}'
-
+        try:
+            return f'{self.user.email} {self.due.Name}'
+        except:
+            return  f' {self.due.Name}'
 
 
 

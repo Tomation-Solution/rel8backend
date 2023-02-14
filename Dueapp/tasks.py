@@ -53,7 +53,7 @@ def create_due_job(due_id,chapterID=None):
             
     except models.Due.DoesNotExist:
         logger.info('hello the Due DOes not exist')
-    
+ 
 # @shared_task
 def create_deactivating_user_model(id,chapterID=None):
     "this would create DeactivatingDue for each user so they can pay"

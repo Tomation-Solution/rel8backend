@@ -1,9 +1,25 @@
-from account.models.user import User
+from account.models.user import User,ExcoRole,CommiteeGroup
 from django.db.models.signals import post_save,pre_save
 from django.dispatch import receiver
 from mailing.models import EmailInvitation
 from utils.unique_account_creation_key_generator import key_generator
 from django.db import connection
+from . import task
+from Dueapp import models as due_models
+
+
+@receiver(post_save,sender=ExcoRole)
+def add_member_to_ExcoRole_group(sender,**kwargs):
+    instance = kwargs['instance']
+
+    "celery fuction that add new members to the group"
+    task.update_exco_chat.delay(instance.id)
+
+@receiver(post_save,sender=CommiteeGroup)
+def add_member_to_Commitee_group(sender,**kwargs):
+    instance = kwargs['instance']
+    "celery fuction that add new members to the group"
+
 
 
 @receiver(post_save,sender=User)
@@ -22,6 +38,14 @@ def send_confirmation_mail_to_user_after_save(sender,**kwargs):
             if not instance.is_invited:
                 email_activation_obj.send_confirmation(first_name=" ", last_name="")
 
+@receiver(post_save,sender=User)
+def create_due(sender,**kwargs):
+    instance = kwargs['instance']
+    if kwargs['created']:
+        all_mannual =  due_models.Due.objects.filter(is_on_create=True)
+        for due in all_mannual:
+            due_models.Due.manually_create_due(due=due,user_instance=instance)
+
 
 
 @receiver(post_save,sender=EmailInvitation)
@@ -34,3 +58,4 @@ def pre_save_email_activation(sender,**kwargs):
                 instance.key = key_generator(instance)
 
                 instance.save()
+        
