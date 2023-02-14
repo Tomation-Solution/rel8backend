@@ -17,6 +17,10 @@ class NewsLookUp(django_filters.FilterSet):
     'to seach by membership_grade is_for_all_grade has to be false'
     is_for_all_grade = django_filters.BooleanFilter(field_name='dues_for_membership_grade', lookup_expr='isnull')
     membership_grade = django_filters.NumberFilter(field_name='dues_for_membership_grade',)
+    commitee = django_filters.NumberFilter(field_name='commitee_name')
+    chapters = django_filters.NumberFilter(field_name='chapters')
+
     class Meta:
         model = models.News
-        fields =[ 'membership_grade','is_for_all_grade','council','for_members']
+        fields =[ 'membership_grade','is_for_all_grade','council','for_members','commitee','chapters']
+

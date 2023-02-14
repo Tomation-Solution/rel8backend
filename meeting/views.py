@@ -16,11 +16,11 @@ class MeetingMemberViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         "we getting the query set but if the person choose is_chapter we get the chapter data"
-        is_chapter = self.request.query_params.get('is_chapter',None)
-        user_chapter = self.request.user.chapter
-        if is_chapter:
-            return self.queryset.filter(chapters=user_chapter)
-        return self.queryset.filter(chapters=None)
+        # is_chapter = self.request.query_params.get('is_chapter',None)
+        # user_chapter = self.request.user.chapter
+        # if is_chapter:
+        #     return self.queryset.filter(chapters=user_chapter)
+        return self.queryset.filter()
     def list(self,request,format=None):
 
         filter_set = custom_filter.MeetingFitlter(request.query_params,queryset=self.get_queryset())

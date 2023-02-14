@@ -53,14 +53,8 @@ class AdminManageNews(viewsets.ModelViewSet):
 
     @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember])
     def get_news(self,request,format=None):
-        # models.Event.objects.all().filter(id=instance.id).values()
-        # print(self.request.query_params.)
-        # is_for_excos
-        # is_commitee 
-        all_news = None
-        # 
-        if self.request.query_params.get('is_chapter',None):all_news=models.News.objects.filter(chapters = request.user.chapter)
-        else:all_news=models.News.objects.filter(chapters =None)
+
+        all_news=models.News.objects.all()
         filter_set  = custom_filter.NewsLookUp(request.query_params,queryset=all_news)
         clean_data = self.serializer_class(filter_set.qs,many=True,context={'request':self.request})
         return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)

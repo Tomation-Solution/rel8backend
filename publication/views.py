@@ -58,10 +58,8 @@ class MembersGetNews(views.APIView):
 
     def get(self, request, format=None):
         "this wil get the publication based on the news specs"
-        all_publication=[]
-        if self.request.query_params.get('is_chapter',None):all_publication=models.Publication.objects.filter(chapters = request.user.chapter)
-        else:all_publication=models.Publication.objects.filter(chapters =None)
 
+        all_publication=models.Publication.objects.all()
         filter_set = custom_filter.PublicationLookUp(request.query_params,queryset=all_publication)
         serialized = serializers.AdminManagePublicationSerializer(filter_set.qs,many=True,context={"request":request})
         return custom_response.Success_response(msg='success',data=serialized.data,status_code=status.HTTP_200_OK)

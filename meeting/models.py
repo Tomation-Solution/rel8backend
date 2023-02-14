@@ -14,6 +14,7 @@ class Meeting(models.Model):
     date_for = models.DateTimeField(null=True,default=None)
     addresse = models.TextField(default='')
     event_date = models.DateTimeField(null=True,default=None)
+    commitee = models.ForeignKey(user_models.CommiteeGroup,null=True,on_delete=models.CASCADE,blank=True,default=None)
 
     organiserName =models.CharField(max_length=400,default='')
     organiserDetails =models.CharField(max_length=400,default='')
