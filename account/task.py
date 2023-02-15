@@ -1,12 +1,12 @@
 from account.models.user import (Memeber,UserMemberInfo,ExcoRole,
-CommiteeGroup
+CommiteeGroup ,User,MemberShipGrade
 )
 from django.db.models import Q
 import requests
 from django.contrib.auth import get_user_model
 import random,string,json,os
 from celery import shared_task
-
+from Dueapp import models as due_models
 
 def create_chat(names:list,group_name:str,headers:dict):
     body ={
@@ -17,13 +17,37 @@ def create_chat(names:list,group_name:str,headers:dict):
     url = 'https://api.chatengine.io/chats/'
     resp = requests.put(url,headers=headers,data=json.dumps(body))
 
+
+@shared_task
+def update_membership_grade_chat(membership_id:str):
+    grade=MemberShipGrade.objects.get(id=membership_id)
+    all_member = grade.member.all()
+    # auth_member is a member that has the extarnal chat api key
+    auth_member  = all_member.first()
+    if len(auth_member.user.userSecret) == 0:
+        auth_member = all_member.last()
+            
+    headers = {
+    'PRIVATE-KEY':os.environ['chat_private'] ,
+    'Project-ID':os.environ['chat_projectid'],
+    'Content-Type' : 'application/json',
+    'Accept': 'application/json',
+    'User-Name':auth_member.user.userName,
+    'User-Secret':auth_member.user.userSecret,
+    }
+    print({
+            'all_member':all_member,
+            'group name':grade.name
+    })
+    # create_chat(all_member,group_name=grade.name,headers=headers)
+
 @shared_task
 def update_general_chat_group():
         all_member  = Memeber.objects.all()
         first_member  = all_member.first()
         headers = {
         'PRIVATE-KEY':os.environ['chat_private'] ,
-        'Project-ID':os.environp['chat_projectid'],
+        'Project-ID':os.environ['chat_projectid'],
         'Content-Type' : 'application/json',
         'Accept': 'application/json',
         'User-Name':first_member.user.userName,
@@ -153,4 +177,34 @@ def update_commitee_chat(commitee_id:int):
              all_names.append(info.value)
     create_chat(names=all_names,
                 group_name=commtee_group.name+'(CommiteeGroup)',headers=headers)
+
+
+
+@shared_task
+def charge_new_member_dues(user_id:int):
+     'This Charge Members on Manul Dues'
+     all_mannual =  due_models.Due.objects.filter(is_on_create=True)
+     user = User.objects.get(id=user_id)
+     names = UserMemberInfo.objects.filter(Q(name='MEMBERSHIP_GRADE')|Q(name='MEMBERSHIP_GRADE'.lower()),
+                                           member=user.memeber
+                                           ).first()
+     if names:
+        'get the member grade and add this user to it'
+        grade,_ =MemberShipGrade.objects.get_or_create(name=names.value)
+        grade.member.add(user.memeber)
+        grade.save()
+        update_membership_grade_chat.delay(grade.id)
+     for due in all_mannual:
+          if due.dues_for_membership_grade is  not None:
+            if due.dues_for_membership_grade.name ==names.value:
+                 due_models.Due_User.objects.create(
+                    user=user,
+                    due=due,
+                    amount=due.amount)
+          else:
+                due_models.Due_User.objects.create(
+                    user=user,
+                    due=due,
+                    amount=due.amount
+                )
 

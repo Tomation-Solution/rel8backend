@@ -193,6 +193,7 @@ class MemberShipGrade(models.Model):
     name = models.CharField(max_length=500)
     chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True,default=None,blank=True)
 
+    def __str__(self) -> str:return self.name
 # class PreviousExcoRoles(models.Model):
 #     member = models.OneToOneField(Memeber,on_delete=models.SET_NULL,null=True) #only one member can have a postion at time
 #     name = models.CharField(max_length=500)

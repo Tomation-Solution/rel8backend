@@ -38,14 +38,6 @@ def send_confirmation_mail_to_user_after_save(sender,**kwargs):
             if not instance.is_invited:
                 email_activation_obj.send_confirmation(first_name=" ", last_name="")
 
-@receiver(post_save,sender=User)
-def create_due(sender,**kwargs):
-    instance = kwargs['instance']
-    if kwargs['created']:
-        all_mannual =  due_models.Due.objects.filter(is_on_create=True)
-        for due in all_mannual:
-            due_models.Due.manually_create_due(due=due,user_instance=instance)
-
 
 
 @receiver(post_save,sender=EmailInvitation)

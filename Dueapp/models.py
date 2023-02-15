@@ -56,14 +56,7 @@ class Due(models.Model):
         return super().save(*args,**kwargs)
         # self.create_due_job()
         # return saved
-    @classmethod
-    def manually_create_due(cls,due,user_instance):
-        'this manaually create a due for a user'
-        due = Due_User.objects.create(
-            user= user_instance,
-            amount=due.amount,
-            due=due
-        )
+
     
     def create_due_job(self):
         "this fucntion create a cron job that helps to create due for the users"
@@ -72,7 +65,7 @@ class Due(models.Model):
         print("called")
         tenant = connection.tenant
         if self.is_on_create:
-            print('Dont do shit')
+            print('Dont do shit... this gives the power of charging the user to the logic not celery')
         else:
             if PeriodicTask.objects.all().filter(name=f"{self.Name} {str(self.id)}").exists():
                 raise CustomError({"error":"Try another name this name has been taken"})

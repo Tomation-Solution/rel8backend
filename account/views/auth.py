@@ -1,5 +1,5 @@
 import json
-from account.task import regiter_user_to_chat
+from account.task import regiter_user_to_chat,charge_new_member_dues
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
@@ -96,6 +96,7 @@ class Login(ObtainAuthToken):
 
         chapter = None
         exco=None
+        commitee = []
         if user.chapter:chapter=user.chapter.name
         if user.user_type =='members':
             exco =user_models.ExcoRole.objects.filter(
@@ -217,6 +218,7 @@ class ManageMemberValidation(viewsets.ViewSet):
                     )
 
             regiter_user_to_chat.delay(member.id)
+            charge_new_member_dues.delay(user.id)
             
             return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
         raise CustomError({"error":"Data is not complete"})
