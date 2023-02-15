@@ -19,7 +19,7 @@ def create_chat(names:list,group_name:str,headers:dict):
 
 
 @shared_task
-def update_membership_grade_chat(membership_id:str):
+def update_membership_grade_chat(membership_id:int):
     grade=MemberShipGrade.objects.get(id=membership_id)
     all_member = grade.member.all()
     # auth_member is a member that has the extarnal chat api key
@@ -35,36 +35,34 @@ def update_membership_grade_chat(membership_id:str):
     'User-Name':auth_member.user.userName,
     'User-Secret':auth_member.user.userSecret,
     }
-    print({
-            'all_member':all_member,
-            'group name':grade.name
-    })
-    # create_chat(all_member,group_name=grade.name,headers=headers)
 
-@shared_task
-def update_general_chat_group():
-        all_member  = Memeber.objects.all()
-        first_member  = all_member.first()
-        headers = {
-        'PRIVATE-KEY':os.environ['chat_private'] ,
-        'Project-ID':os.environ['chat_projectid'],
-        'Content-Type' : 'application/json',
-        'Accept': 'application/json',
-        'User-Name':first_member.user.userName,
-        'User-Secret':first_member.user.userSecret,
-        }
-        names = UserMemberInfo.objects.filter(
-                              Q(name='Name')|Q(name='NAMES') | 
-                  Q(name='names')|
-                  Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),
-        ).values_list('value')
-        body ={
-             'usernames':names,
-             'title':'General Chat',
-             'is_direct_chat':False
-        }
-        url = 'https://api.chatengine.io/chats/'
-        resp = requests.put(url,headers=headers,data=json.dumps(body))
+    create_chat(all_member,group_name=grade.name,headers=headers)
+
+# @shared_task
+# def update_general_chat_group():
+#         all_member  = Memeber.objects.all()
+#         first_member  = all_member.first()
+#         headers = {
+#         'PRIVATE-KEY':os.environ['chat_private'] ,
+#         'Project-ID':os.environ['chat_projectid'],
+#         'Content-Type' : 'application/json',
+#         'Accept': 'application/json',
+#         'User-Name':first_member.user.userName,
+#         'User-Secret':first_member.user.userSecret,
+#         }
+#         names = UserMemberInfo.objects.filter(
+#                               Q(name='Name')|Q(name='NAMES') | 
+#                   Q(name='names')|
+#                   Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),
+#         ).values_list('value')
+#         body ={
+#              'usernames':names,
+#              'title':'General Chat',
+#              'is_direct_chat':False
+#         }
+#         url = 'https://api.chatengine.io/chats/'
+#         resp = requests.put(url,headers=headers,data=json.dumps(body))
+
 @shared_task
 def regiter_user_to_chat(member_id,):
     'this creates users on the third party chat app'
