@@ -35,8 +35,17 @@ def update_membership_grade_chat(membership_id:int):
     'User-Name':auth_member.user.userName,
     'User-Secret':auth_member.user.userSecret,
     }
+    all_names = []
 
-    create_chat(all_member,group_name=grade.name,headers=headers)
+    for member in all_member:
+         member_info = UserMemberInfo.objects.filter(
+                  Q(name='Name')|Q(name='NAMES') | 
+                  Q(name='names')|
+                  Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'),member=member)
+         info = member_info.first()
+         if info is not None:
+              all_names.append(info.value)
+    create_chat(names=all_names,group_name=grade.name,headers=headers)
 
 # @shared_task
 # def update_general_chat_group():
