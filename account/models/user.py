@@ -189,7 +189,7 @@ class ExcoRole(models.Model):
     chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True,default=None,blank=True)
 
 class MemberShipGrade(models.Model):
-    member = models.ManyToManyField(Memeber,) 
+    member = models.ManyToManyField(Memeber,default=None,blank=True,) 
     name = models.CharField(max_length=500)
     chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True,default=None,blank=True)
 
