@@ -7,7 +7,7 @@ from typing import Dict
 from utils.custom_exceptions import CustomError
 from . import auth as auth_related_models
 from django.db import connection
-
+from django.db.models import Q
 
 class MyUserManager(BaseUserManager):
     "this class helps manage the Custom user Model"
@@ -144,6 +144,18 @@ class Memeber(models.Model):
     dob   = models.DateField(blank=True,null=True,default=None)
     citizenship    = models.CharField(default='',max_length=24)
 
+# filter(
+# )
+    @property
+    def full_name(self,):
+        possible_name_outcomes = self.usermemberinfo_set.filter(
+            Q(name='Name')|Q(name='NAMES') | 
+            Q(name='names')|
+            Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'))
+        if len(possible_name_outcomes) == 0:
+            return self.user.email
+        name = possible_name_outcomes.first()
+        return name.value
 
     @property
     def member_education(self):

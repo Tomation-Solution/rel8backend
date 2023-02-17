@@ -354,7 +354,7 @@ class MemberSerializer(serializers.ModelSerializer):
     photo =serializers.SerializerMethodField()
     member_education = serializers.SerializerMethodField()
     member_employment_history = serializers.SerializerMethodField()
-    
+    full_name = serializers.SerializerMethodField()
     def get_photo(self,member):
         user = member.user
         if user.photo:
@@ -382,12 +382,15 @@ class MemberSerializer(serializers.ModelSerializer):
         # if(member.is_exco==False): return []
         return user_models.ExcoRole.objects.filter(member=member.id).values()
 
+
+    def get_full_name(self,member):
+        return member.full_name
     
     class Meta:
         model = user_models.Memeber
         fields = '__all__'
         read_only_fields = ['id','member_info','email',
-                            'member_education','member_employment_history']
+                            'member_education','member_employment_history','full_name']
 
 class IsOwningSerializerCleaner(serializers.ModelSerializer):
     email  = serializers.SerializerMethodField()

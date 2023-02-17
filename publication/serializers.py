@@ -42,10 +42,23 @@ class MemberCommentOnPublicationSerializer(serializers.ModelSerializer):
 
     member =  serializers.SerializerMethodField()
     
-    def get_member(self,publication_comment:models.PublicationComment):
-        clean_data = MemberSerializer(instance=publication_comment.member,many=False)
-        return clean_data.data
+    # def get_member(self,publication_comment:models.PublicationComment):
+    #     clean_data = MemberSerializer(instance=publication_comment.member,many=False)
+    #     return clean_data.data
 
+    def get_member(self,publication_comment:models.PublicationComment):
+        user = publication_comment.member.user
+        photo_url =''
+        if user.photo:
+            photo_url= user.photo.url
+
+        full_name = publication_comment.member.full_name
+        
+        return {
+            'full_name':full_name,
+            'photo_url':photo_url,
+            'id':publication_comment.member.id
+        }
     def create(self, validated_data):
         data = super().create(validated_data)
         # clean_data =MemberCommentOnNewsSerializer(instance=data,many=False)

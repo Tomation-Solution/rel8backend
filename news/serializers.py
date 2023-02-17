@@ -50,8 +50,18 @@ class MemberCommentOnNewsSerializer(serializers.ModelSerializer):
     member =  serializers.SerializerMethodField()
     
     def get_member(self,news_comment:models.NewsComment):
-        clean_data = MemberSerializer(instance=news_comment.member,many=False)
-        return clean_data.data
+        user = news_comment.member.user
+        photo_url =''
+        if user.photo:
+            photo_url= user.photo.url
+
+        full_name = news_comment.member.full_name
+        
+        return {
+            'full_name':full_name,
+            'photo_url':photo_url,
+            'id':news_comment.member.id
+        }
 
     def create(self, validated_data):
         data = super().create(validated_data)
