@@ -34,6 +34,10 @@ class EventSerializer(serializers.Serializer):
     address = serializers.CharField(write_only=True)
     event_access = serializers.SerializerMethodField()
 
+
+    organiser_extra_info = serializers.CharField(required=False)
+    organiser_name = serializers.CharField(required=False)
+    event_extra_details = serializers.CharField(required=False)
     # for_chapters=serializers.BooleanField(default=False,)
     # def validate(self, attrs):
         
@@ -84,7 +88,9 @@ class EventSerializer(serializers.Serializer):
         schedule = validated_data.get("schedule",None)
         re_occuring = validated_data.get("re_occuring",None)
         exco_id = validated_data.get('exco_id',None)
-
+        # organiser_extra_info = validated_data.get('organiser_extra_info','')
+        # organiser_name = validated_data.get('organiser_name','')
+        # event_extra_details = validated_data.get('event_extra_details','')
         if(re_occuring==True):
             if scheduletype is None:
                 raise CustomError({'scheduletype':'required'})
