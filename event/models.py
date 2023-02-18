@@ -37,11 +37,11 @@ class Event(models.Model):
     exco = models.ForeignKey(user_model.ExcoRole,on_delete=models.SET_NULL,null=True,default=None) 
     # is_commitee = models.BooleanField(default=False)
     # commitee_name = models.CharField(max_length=300,null=True,default=None)
-    commitee = models.ForeignKey(user_model.CommiteeGroup,on_delete=models.CASCADE,null=True)
+    commitee = models.ForeignKey(user_model.CommiteeGroup,on_delete=models.CASCADE,null=True,blank=True)
     amount=  models.DecimalField(decimal_places=4,max_digits=19,default=0.00)
     is_active = models.BooleanField(default=False)
     # if it for chapters then we filter the event for only users that belongs to that chapter
-    chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True)
+    chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True,blank=True)
     image = models.ImageField(null=True,default=None,upload_to='events/image/')
     address = models.TextField(default=" ")
 
