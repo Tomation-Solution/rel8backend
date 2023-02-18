@@ -97,7 +97,11 @@ class Login(ObtainAuthToken):
         chapter = None
         exco=None
         commitee = []
-        if user.chapter:chapter=user.chapter.name
+        if user.chapter:
+            chapter={
+                'name':user.chapter.name,
+                'id':user.chapter.id
+            }
         if user.user_type =='members':
             exco =user_models.ExcoRole.objects.filter(
                 member= user.memeber
