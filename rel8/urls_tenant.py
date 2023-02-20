@@ -33,6 +33,7 @@ urlpatterns = [
     path("tenant/reminder/",include('reminders.urls')),
     path("tenant/chat/",include('chat.urls')),
     path("tenant/meeting/",include('meeting.urls')),
+    path('tenant/services_request/',include('servicerequest.urls')),
 
 ]
 

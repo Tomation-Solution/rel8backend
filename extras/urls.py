@@ -14,7 +14,6 @@ router.register('gallery_version2',views.GalleryV2View,basename='gallery_version
 router.register('admin_gallery_version2',views.AdminManageGalleryV2View,basename='admin_gallery_version2')
 router.register('admin_manage_project',views.AdminManagesProjectViewset,)
 router.register('member_support_project',views.MemeberProjectViewset,basename='member_support_project')
-router.register('member_reissuance_of_certificate',views.MemberReissuanceOfCertificateViewset)
 urlpatterns =[
 
 ] + router.urls

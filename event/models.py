@@ -47,6 +47,7 @@ class Event(models.Model):
 
     organiser_name = models.CharField(max_length=200,default='',blank=True)
     organiser_extra_info = models.CharField(max_length=200,default='',blank=True)
+    organiserImage = models.ImageField(default=None,null=True,upload_to='event_organiser/%d/')
 
     event_extra_details = models.TextField(default='',blank=True)
     """    

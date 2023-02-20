@@ -77,8 +77,3 @@ class MemberSupportProjectInKindSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.SupportProjectInKind
         fields = ['heading','about','project']
-
-class MemberReissuanceOfCertificateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.ReissuanceOfCertificate
-        fields ='__all__'
