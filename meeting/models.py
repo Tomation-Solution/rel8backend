@@ -18,6 +18,7 @@ class Meeting(models.Model):
 
     organiserName =models.CharField(max_length=400,default='')
     organiserDetails =models.CharField(max_length=400,default='')
+    organiserImage = models.ImageField(default=None,null=True,upload_to='meeting_organiser/%d/')
 
     def __str__(self):
         return self.name
