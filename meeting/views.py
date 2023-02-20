@@ -25,7 +25,7 @@ class MeetingMemberViewSet(viewsets.ViewSet):
 
         filter_set = custom_filter.MeetingFitlter(request.query_params,queryset=self.get_queryset())
 
-        clean_data = serializer.MeetingSerializer(filter_set.qs,many=True)
+        clean_data = serializer.MeetingSerializer(filter_set.qs,many=True,context={'user':request.user})
         return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
 
     def create(self,request,*args,**kwargs):
