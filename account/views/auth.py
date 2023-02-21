@@ -111,6 +111,7 @@ class Login(ObtainAuthToken):
             'token':token.key,'user_type':user.user_type,'chapter':chapter,'council':exco,'commitee':commitee,
             'userSecret':user.userSecret,
             'userName':user.userName,
+            'user_id':user.id
             })
 
 
