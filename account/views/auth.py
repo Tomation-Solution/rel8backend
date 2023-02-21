@@ -199,8 +199,14 @@ class ManageMemberValidation(viewsets.ViewSet):
         password = request.data.pop('password')
         email = request.data.pop('rel8Email')
         alumni_year =  '2023-08-3'
+        MEMBERSHIP_NO  = request.data.get('MEMBERSHIP_NO',None)
+        if MEMBERSHIP_NO is None: raise CustomError({'error':'Please MEMBERSHIP_NO is missing'})
         if(self._validateData(request).get('isValid')==False):
             raise CustomError({"error":"Invalid Data"})
+        
+        if user_models.UserMemberInfo.objects.filter(name='MEMBERSHIP_NO',value=MEMBERSHIP_NO).exists():
+            raise CustomError({'error':'Membership info has been registered already'})
+        
         
         if(len(alum_db['usersInfo'][0].keys())==len(request.data.keys())):
             if get_user_model().objects.filter(email=email).exists():raise CustomError({'error':'email already exists'})
