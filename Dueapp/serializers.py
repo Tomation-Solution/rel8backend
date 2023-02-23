@@ -7,6 +7,23 @@ from account.models import auth as auth_related_models
 from account.models import user as user_related_models
 
 
+class MemberDueUSerSerializer(serializers.ModelSerializer):
+    user__email = serializers.SerializerMethodField()
+    due__Name = serializers.SerializerMethodField()
+    due__startDate = serializers.SerializerMethodField()
+
+    def get_due__startDate(self,instance):
+        return instance.due.startDate
+    def get_due__Name(self,instamce):
+        return instamce.due.Name
+    def get_user__email(self,instance):
+        return instance.user.email
+
+    class Meta:
+        model = models.Due_User
+        fields = [ 
+  "id","user__email","is_overdue","amount","is_paid",'due__startDate','due__Name'
+        ]
 
 
 

@@ -146,7 +146,9 @@ class ManageMemberValidation(viewsets.ViewSet):
         valid_user = self._validateData(request)
 
         if valid_user:
-            return Success_response(msg="Success",data=[valid_user],status_code=status.HTTP_200_OK)
+            if valid_user.get('isValid')==True:
+                return Success_response(msg="Success",data=[valid_user],status_code=status.HTTP_200_OK)
+            else:return Success_response(msg="error",data=[valid_user],status_code=status.HTTP_400_BAD_REQUEST)
 
         raise CustomError({"error":"Validation UnSuccessfull"})
 

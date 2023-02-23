@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from ..models import DeactivatingDue, DeactivatingDue_User, Due_User
 from account.models import user as  user_related_models
 from account.serializers import user as user_serializer
+
 # from 
 
 class AdminManageDue(viewsets.ViewSet):
@@ -106,11 +107,10 @@ class MemberDues(viewsets.ViewSet):
 
 
     def list(self,request,format=None):
-        my_dues = Due_User.objects.all().filter(user=request.user).values(
-            "id","user__email","due__Name","is_overdue","amount","is_paid")
-
+        my_dues = Due_User.objects.all().filter(user=request.user)
+        clean_data= serializers.MemberDueUSerSerializer(instance=my_dues,many=True)
         return custom_response.Success_response(msg='Success',
-                        data=my_dues)
+                        data=clean_data.data)
                         
     @action(detail=False,methods=['get'])
     def get_due_detail(self,request,format=None):
