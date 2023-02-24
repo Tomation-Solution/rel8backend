@@ -194,8 +194,13 @@ class MemberListInfo(viewsets.ViewSet):
 
         serialized = self.serializer_class(exco_members,many=True)
         return custom_response.Success_response(msg='successful',data=serialized.data,status_code=status.HTTP_200_OK)
-    
+    @action(detail=False,methods=['post'])
+    def delete_member_bio(self,request,pk=None):
+        serializer = user.HandleDeleteMemberBioSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
+        return custom_response.Success_response(msg='deleted successfully',status_code=status.HTTP_204_NO_CONTENT)
 
 
     @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permissions.IsMember])
