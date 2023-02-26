@@ -289,6 +289,7 @@ sentry_sdk.init(
 CORS_ALLOWED_ORIGINS = [
 # 'ws://localhost:6000',
 "http://localhost:3000",
+"http://localhost:5500",
 'https://spectacular-beignet-868060.netlify.app',
 'https://fancy-dragon-bad276.netlify.app',
 # "http://localhost:8000",
