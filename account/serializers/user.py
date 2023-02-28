@@ -265,9 +265,11 @@ class MemberUpdateBioSerializer(serializers.ModelSerializer):
         Memberemploymenthistory = validated_data.pop('memberemploymenthistory',)
         member = self.context.get('user').memeber
         for education in membereducation:
+             education.pop('is_delete',None)
              user_models.MemberEducation.objects.create(**education,member=member)
             
         for employment in Memberemploymenthistory:
+            employment.pop('is_delete',None)
             user_models.MemberEmploymentHistory.objects.create(**employment,member=member)
 
         return member
@@ -296,7 +298,9 @@ class MemberUpdateBioSerializer(serializers.ModelSerializer):
                         member_education.speaking=eduction.get('speaking',member_education.speaking)
                         member_education.date=eduction.get('date',member_education.date)
                         member_education.save()
-            else:user_models.MemberEducation.objects.create(**eduction,member=instance)
+            else:
+                eduction.pop('is_delete',None)
+                user_models.MemberEducation.objects.create(**eduction,member=instance)
 
         for employment in memberemploymenthistory:
             if 'id' in employment.keys():
@@ -312,7 +316,9 @@ class MemberUpdateBioSerializer(serializers.ModelSerializer):
                         member_employment.employment_to = employment.get('employment_to',member_employment.employment_to)
                         member_employment.employer_name_and_addresse = employment.get('employer_name_and_addresse',member_employment.employer_name_and_addresse)
                         member_employment.save()
-            else:user_models.MemberEmploymentHistory.objects.create(**employment,member=instance)
+            else:
+                employment.pop('is_delete',None)
+                user_models.MemberEmploymentHistory.objects.create(**employment,member=instance)
         return instance
 
 
