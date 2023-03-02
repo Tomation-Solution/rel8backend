@@ -120,4 +120,18 @@ class MemeberProjectViewset(viewsets.ViewSet):
         return Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
 
 
+class MemeberCustomerSupportViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
+    queryset = models.CustomerSupport.objects.all()
+    serializer_class = serializers.MemeberCustomerSupporSerializer
 
+    def partial_update(self, request, *args, **kwargs):
+        return False
+    def update(self, request, *args, **kwargs):return False
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(member=self.request.user.memeber)
+
+    def perform_create(self, serializer):
+        serializer.save(member=self.request.user.memeber)

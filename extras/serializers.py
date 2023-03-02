@@ -77,3 +77,10 @@ class MemberSupportProjectInKindSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.SupportProjectInKind
         fields = ['heading','about','project']
+
+class MemeberCustomerSupporSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.CustomerSupport
+        fields = ['heading','body','status','id']
+        read_only_fields=['member','status','id']

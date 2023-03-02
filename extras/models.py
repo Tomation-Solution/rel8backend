@@ -63,13 +63,12 @@ class SupportProjectInKind(models.Model):
 #     file = models.FileField(upload_to='certificates_reissue/%d/')
 
 
-# class CustomerSupport(models.Model):
-#     member = models.ForeignKey(user_realted_models.Memeber,null=True,default=True,on_delete=models.SET_NULL,null=True,blank=True)
-#     heading = models.TextField()
-#     body = models.TextField()
-#     class StatusChoice(models.TextField):
-#         pending = 'pending'
-#         fixing = 'fixing'
-#         attended_to='attended_to'
-#     status = models.CharField(max_length=50,choices=StatusChoice.choices)
-
+class CustomerSupport(models.Model):
+    member = models.ForeignKey(user_realted_models.Memeber,default=True,on_delete=models.SET_NULL,null=True,blank=True)
+    heading = models.TextField()
+    body = models.TextField()
+    class StatusChoice(models.TextChoices):
+        pending = 'pending'
+        fixing = 'fixing'
+        attended_to='attended_to'
+    status = models.CharField(max_length=50,choices=StatusChoice.choices,default=StatusChoice.pending)
