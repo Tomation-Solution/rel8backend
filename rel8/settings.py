@@ -108,7 +108,8 @@ TENANT_APPS = (
      'channels',
     'anymail',
      'meeting',
-     'servicerequest'
+     'servicerequest',
+     'interswitchapp'
 
     # my apps
 

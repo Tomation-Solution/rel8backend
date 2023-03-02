@@ -14,3 +14,10 @@ class CustomError(PermissionDenied):
         
 
     
+class PaymentError(PermissionDenied):
+    'this made for only interswitch payment gateway'
+
+
+    def __init__(self,error_ob:dict, status_code=status.HTTP_400_BAD_REQUEST):
+        self.detail = error_ob
+        self.status_code =status_code
