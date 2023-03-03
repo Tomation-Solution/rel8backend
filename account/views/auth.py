@@ -107,11 +107,19 @@ class Login(ObtainAuthToken):
                 member= user.memeber
             ).values('name','id','chapter')
             commitee = user_models.CommiteeGroup.objects.filter(members=user.memeber).values('name','id')
+        profile_image = ''
+        try:
+            profile_image = user.photo.url
+        except:
+            profile_image =''
         return Response({
             'token':token.key,'user_type':user.user_type,'chapter':chapter,'council':exco,'commitee':commitee,
             'userSecret':user.userSecret,
             'userName':user.userName,
-            'user_id':user.id
+            'user_id':user.id,
+            'member_id': user.memeber.id if user.user_type=='members' else None,
+            
+            'profile_image':profile_image
             })
 
 
