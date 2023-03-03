@@ -305,6 +305,8 @@ CORS_ALLOWED_ORIGINS = [
 'https://rela8.tech',
 'https://www.rela8.tech',
 'https://www.rela8.tech',
+'https://rel8-man-production.up.railway.app',
+'http://rel8-man-production.up.railway.app',
 ]
 if os.environ.get('databaseName',None):
     CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
