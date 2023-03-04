@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.apps import apps
 
 # from .tasks.send_invitation_email_task import send_invitation_email
-from .tasks.send_confirmation_email_task import send_confirmation_email
+# from .tasks.send_confirmation_email_task import send_confirmation_email
 
 
 DEFAULT_ACTIVATION_DAYS = getattr(settings, "DEFAULT_ACTIVATION_DAYS", 7)
@@ -107,74 +107,74 @@ class EmailInvitation(models.Model):
         """
         return self.activated
 
-    def can_activate(self):
-        """
-        check if email can be activated
-        :return:
-        """
-        email_activation_query = EmailInvitation.objects.filter(
-            pk=self.pk
-        ).confirmable()
-        if email_activation_query.exists():
-            return True
-        return False
+    # def can_activate(self):
+    #     """
+    #     check if email can be activated
+    #     :return:
+    #     """
+    #     email_activation_query = EmailInvitation.objects.filter(
+    #         pk=self.pk
+    #     ).confirmable()
+    #     if email_activation_query.exists():
+    #         return True
+    #     return False
 
-    def activate(self, password=None):
-        """
-        activate a user
-        :return:
-        """
-        if self.can_activate():
-            user = self.user
-            user.is_active = True
-            if password is not None:
-                user.set_password(password)
-            user.save()
-            self.activated = True
-            self.save()
-            return True
-        return False
+    # def activate(self, password=None):
+    #     """
+    #     activate a user
+    #     :return:
+    #     """
+    #     if self.can_activate():
+    #         user = self.user
+    #         user.is_active = True
+    #         if password is not None:
+    #             user.set_password(password)
+    #         user.save()
+    #         self.activated = True
+    #         self.save()
+    #         return True
+    #     return False
 
-    def send_confirmation(self, first_name: str, last_name: str):
-        """
-        send activation email
-        :return:
-        """
+    # def send_confirmation(self, first_name: str, last_name: str):
+    #     """
+    #     send activation email
+    #     :return:
+    #     """
 
-        if not self.activated and not self.forced_expired:
+    #     if not self.activated and not self.forced_expired:
 
-            if self.key:
-                from_email = settings.DEFAULT_FROM_EMAIL
-                base_url = settings.BASE_DOMAIN
-                key_path = "account/verify/?key={}".format(self.key)
-                verification_path = f"{base_url}{key_path}"
+    #         if self.key:
+    #             from_email = settings.DEFAULT_FROM_EMAIL
+    #             base_url = settings.BASE_DOMAIN
+    #             key_path = "account/verify/?key={}".format(self.key)
+    #             verification_path = f"{base_url}{key_path}"
 
-                context = {
-                    "verification_path": verification_path,
-                    "first_name": first_name,
-                }
-                html_template = render_to_string(
-                    "email_verification.html", context=context
-                )
+    #             context = {
+    #                 "verification_path": verification_path,
+    #                 "first_name": first_name,
+    #             }
+    #             html_template = render_to_string(
+    #                 "email_verification.html", context=context
+    #             )
 
-                mail_sender = from_email 
-                mail_recipient = self.email
+    #             mail_sender = from_email 
+    #             mail_recipient = self.email
 
-                # return send_confirmation_email.delay(
-                #     sender=mail_sender,
-                #     content=html_template,
-                #     first_name=first_name,
-                #     last_name=last_name,
-                #     recipient_email=mail_recipient,
-                # )
-                return send_confirmation_email(
-                    sender=mail_sender,
-                    content=html_template,
-                    first_name=first_name,
-                    last_name=last_name,
-                    recipient_email=mail_recipient,
-                )
-        return False
+    #             # return send_confirmation_email.delay(
+    #             #     sender=mail_sender,
+    #             #     content=html_template,
+    #             #     first_name=first_name,
+    #             #     last_name=last_name,
+    #             #     recipient_email=mail_recipient,
+    #             # )
+    #             return send_confirmation_email(
+    #                 sender=mail_sender,
+    #                 content=html_template,
+    #                 first_name=first_name,
+    #                 last_name=last_name,
+    #                 recipient_email=mail_recipient,
+    #             )
+    #     return False
 
     # def send_invitation(self):
     #     """

@@ -6,6 +6,8 @@ from utils.unique_account_creation_key_generator import key_generator
 from django.db import connection
 from . import task
 from Dueapp import models as due_models
+from mailing.tasks import send_activation_mail
+
 
 
 @receiver(post_save,sender=ExcoRole)
@@ -51,3 +53,13 @@ def pre_save_email_activation(sender,**kwargs):
 
                 instance.save()
         
+
+@receiver(post_save,sender=User)
+def send_confirmation_mail_to_user_after_save(sender,**kwargs):
+    if kwargs['created']:
+        print('Sending Boss')
+        user = kwargs['instance']
+        if user.user_type == 'members':
+            'if it a member send the person a auth link'
+            print('sending oo')
+            send_activation_mail.delay(user.id,user.email)
