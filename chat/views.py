@@ -1,12 +1,11 @@
 from django.shortcuts import render
 
 from utils.custom_exceptions import CustomError
-from . import models
+from . import models,serailzer
 from rest_framework import mixins,viewsets,status
 from utils import custom_response
 from rest_framework.decorators import action
 from account.models import User
-
 # Create your views here.
 
 
@@ -25,8 +24,10 @@ class ChatRoomViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
             status_code=status.HTTP_400_BAD_REQUEST)
         
         room_name_intance  =models.ChatRoom.objects.get(room_name=room_name)
-        data = models.Chat.objects.filter(chat_room=room_name_intance).order_by('-id').values('message','user__id')[:10]
-        data = reversed(data)
+        data = models.Chat.objects.filter(chat_room=room_name_intance)[:10]
+        serialzed = serailzer.ChatSerializer(instance=data,many=True)
+        # .order_by('-id').values('message','user__id')[:10]
+        data = reversed(serialzed.data)
 
         return custom_response.Success_response(msg='Successful',data=data,status_code=status.HTTP_200_OK) 
 
