@@ -62,6 +62,17 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
             message='User does not exist',
             status_code=status.HTTP_400_BAD_REQUEST
         )
+        self.fill_user_name(send_user_id) 
+    
+    @sync_to_async
+    def fill_user_name(self,send_user_id:int):
+        user =get_user_model().objects.get(id=send_user_id)
+        if user:
+            if user.user_type== 'members':
+                self.user_full_name = user.memeber.full_name
+            else:
+                self.user_full_name= f'admin: {user.email}'
+    
     @sync_to_async
     def create_chat(self,send_user_id,message):
         "we get or create a group name"
@@ -87,6 +98,8 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'message': message,
             'send_user_id': send_user_id,
+            'full_name':self.user_full_name
+
         }))
 
     pass
@@ -100,6 +113,7 @@ class CommiteeChatRoomConsumer(AsyncWebsocketConsumer):
         self.commitee_id = self.scope['url_route']['kwargs']['commitee_id']
         self.room_group_name= self.commitee_id
         self.tenant = self.scope['url_route']['kwargs']['tenant_name']
+        self.user_full_name = None
 
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -155,6 +169,17 @@ class CommiteeChatRoomConsumer(AsyncWebsocketConsumer):
                 status_code=status.HTTP_400_BAD_REQUEST
             )
 
+        self.fill_user_name(send_user_id) 
+    @sync_to_async
+    def fill_user_name(self,send_user_id:int):
+        user =get_user_model().objects.get(id=send_user_id)
+        if user:
+            if user.user_type== 'members':
+                self.user_full_name = user.memeber.full_name
+            else:
+                self.user_full_name= f'admin: {user.email}'
+    
+
     @sync_to_async
     def create_chat(self,send_user_id,message):
         "we get or create a group name"
@@ -176,9 +201,11 @@ class CommiteeChatRoomConsumer(AsyncWebsocketConsumer):
         message = event['message']
         send_user_id = event['send_user_id']
 
+       
         await self.send(text_data=json.dumps({
             'message': message,
             'send_user_id': send_user_id,
+            'full_name':self.user_full_name
         }))
 
     pass
