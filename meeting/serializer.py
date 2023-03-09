@@ -100,8 +100,11 @@ class RegisteredMeetingMembersSerializer(serializers.ModelSerializer):
         ).values('id','members__user__email')
 
     def get_proxy_participants(self,instance:models.Meeting):
-        meeting_proxy_attendies = models.MeetingProxyAttendies.objects.get(meeting=instance)
-        return meeting_proxy_attendies.participants
+        try:
+            meeting_proxy_attendies = models.MeetingProxyAttendies.objects.get(meeting=instance)
+            return meeting_proxy_attendies.participants
+        except:
+            return []
 
     class Meta:
         model = models.Meeting
