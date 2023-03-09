@@ -38,6 +38,7 @@ class EventSerializer(serializers.Serializer):
     organiser_extra_info = serializers.CharField(required=False)
     organiser_name = serializers.CharField(required=False)
     event_extra_details = serializers.CharField(required=False)
+    event_docs = serializers.FileField(required=False)
     # for_chapters=serializers.BooleanField(default=False,)
     # def validate(self, attrs):
         
@@ -88,6 +89,7 @@ class EventSerializer(serializers.Serializer):
         schedule = validated_data.get("schedule",None)
         re_occuring = validated_data.get("re_occuring",None)
         exco_id = validated_data.get('exco_id',None)
+        # event_docs = validated_data.get('event_docs',None)
         # organiser_extra_info = validated_data.get('organiser_extra_info','')
         # organiser_name = validated_data.get('organiser_name','')
         # event_extra_details = validated_data.get('event_extra_details','')
@@ -159,21 +161,26 @@ class AdminManageEventActiveStatus(serializers.Serializer):
         raise  CustomError({'error':'Not Available '})
 
 
-
+class EventProxyAttendiesSerializer(serializers.Serializer):
+    full_name = serializers.CharField()
+    email = serializers.EmailField()
 
 class RegiterForFreeEvent(serializers.Serializer):
     event_id =serializers.IntegerField()
+    proxy_participants = EventProxyAttendiesSerializer(many=True,required=False)
 
 
 
     def create(self, validated_data):
+        proxy_participants = validated_data.get('proxy_participants',[])
         event_id =validated_data.get('event_id')
         if not models.Event.objects.filter(id=event_id,).exists():
             raise  CustomError({'error':'Event Does Not Exists'})
 
         event = models.Event.objects.get(id=event_id)        
         if event.is_paid_event == True: raise CustomError({'error':'You Need to pay cus this event is paid'})
-
+        if models.EventDue_User.objects.filter(event=event, user = self.context.get('request').user,).exists():
+            raise CustomError({'error':'You have registered already'})
         # is_paid_event=True
         registration = models.EventDue_User.objects.create(
             user = self.context.get('request').user,
@@ -182,4 +189,35 @@ class RegiterForFreeEvent(serializers.Serializer):
             paystack_key="free_evnt",
             is_paid=True
         )
+        if len(proxy_participants)!=0:
+            models.EventProxyAttendies.objects.get_or_create(
+                participants= proxy_participants,
+                event_due_user=registration
+            )
         return registration
+    
+
+
+
+class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
+    proxy_participants = serializers.SerializerMethodField()
+    memeber = serializers.SerializerMethodField()
+
+    def get_memeber(self,instance:models.EventDue_User):
+        member =user_related_models.Memeber.objects.get(user=instance.user)
+        return {
+            'full_name':member.full_name,
+            'email':instance.user.email,
+            'member_id':member.id
+        }
+
+    def get_proxy_participants(self,instance:models.EventDue_User):
+        meeting_proxy_attendies = models.EventProxyAttendies.objects.get(event_due_user=instance)
+        return meeting_proxy_attendies.participants
+
+
+    class Meta:
+        model =models.EventDue_User
+        fields = [
+            'proxy_participants','memeber','id'
+        ]

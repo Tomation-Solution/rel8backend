@@ -10,6 +10,7 @@ from account.models import user as user_related_models
 from rest_framework.parsers import FormParser
 from utils.custom_parsers import NestedMultipartParser
 from account.serializers import user as user_related_serializer
+from django.shortcuts import get_object_or_404
 
 class EventViewSet(viewsets.ViewSet):
     queryset = models.Event.objects.all()
@@ -66,6 +67,14 @@ class EventViewSet(viewsets.ViewSet):
         data = user_related_serializer.MemberSerializer(list_of_member_instance,many=True)
         return custom_response.Success_response('Succes',data=data.data,status_code=status.HTTP_200_OK)
         # models.EventDue_User.objects.filter
+    @action(detail=False,methods=['post'],permission_classes=[permissions.IsAuthenticated,])
+    def view_attendies(self,request,*args,**kwargs):
+        event_id =  request.data.get('event_id',None)
+        event = get_object_or_404(models.Event,id=event_id)
+        event_due_user = models.EventDue_User.objects.filter(event=event)
+        clean_data = serializers.RegisteredEventMembersSerializerCleaner(instance=event_due_user,many=True)
+        
+        return custom_response.Success_response('Success',data=clean_data.data,status_code=status.HTTP_200_OK)
 
     @action(detail=False,methods=['post'],permission_classes=[permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin])
     def activate_event(self,request,format =None):

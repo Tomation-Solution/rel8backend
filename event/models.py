@@ -33,9 +33,9 @@ class Event(models.Model):
     re_occuring= models.BooleanField(default=False)# due_type Once  Re-occuring|
     is_virtual=models.BooleanField(default=False)
     
-    # event_docs = models.FileField(upload_to='meeting_docs/%d/',null=True,default=None,
-    #     storage=RawMediaCloudinaryStorage(),
-    # )
+    event_docs = models.FileField(upload_to='meeting_docs/%d/',null=True,default=None,
+        storage=RawMediaCloudinaryStorage(),
+    )
     # 
     is_for_excos = models.BooleanField(default=False)#embers | excos
     # we want to be able to filter by exco instance ....e.g president should be only able to see this thing
@@ -201,6 +201,9 @@ class EventDue_User(models.Model):
     paystack_key = models.TextField(default='')
     is_paid = models.BooleanField(default=False)
 
+class EventProxyAttendies(models.Model):
+    event_due_user = models.ForeignKey(EventDue_User,on_delete=models.CASCADE)
+    participants  = models.JSONField(default=dict({'participants':[]}))
 
 class RescheduleEventRequest(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
