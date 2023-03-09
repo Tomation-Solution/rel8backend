@@ -203,7 +203,8 @@ class EventDue_User(models.Model):
 
 class EventProxyAttendies(models.Model):
     event_due_user = models.ForeignKey(EventDue_User,on_delete=models.CASCADE)
-    participants  = models.JSONField(default=dict({'participants':[]}))
+    # {'participants':[]}
+    participants  = models.JSONField(default=dict)
 
 class RescheduleEventRequest(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)

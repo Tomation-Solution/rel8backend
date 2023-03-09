@@ -39,7 +39,8 @@ class MeetingProxyAttendies(models.Model):
     #     full_name:string;
     #     email:string
     # }
-    participants  = models.JSONField(default=dict({'participants':[]}))
+    # {'participants':[]}
+    participants  = models.JSONField(default=dict)
 
 class MeetingReshedule(models.Model):
     meeting = models.ForeignKey(Meeting,on_delete=models.CASCADE,null=True ,default=None,)

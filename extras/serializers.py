@@ -68,7 +68,7 @@ class AdminManagesProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.FundAProject
-        fields = ['heading','about','id','image']
+        fields = ['heading','about','id','image','what_project_needs']
 
 
 
@@ -83,4 +83,4 @@ class MemeberCustomerSupporSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CustomerSupport
         fields = ['heading','body','status','id']
-        read_only_fields=['member','status','id']
+        read_only_fields=['member','status','id',]
