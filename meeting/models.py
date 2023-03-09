@@ -2,6 +2,7 @@ from django.db import models
 from account.models import user as user_models
 from account.models import auth as auth_models
 # Create your models here.
+from cloudinary_storage.storage import RawMediaCloudinaryStorage
 
 
 
@@ -20,12 +21,25 @@ class Meeting(models.Model):
     organiserDetails =models.CharField(max_length=400,default='')
     organiserImage = models.ImageField(default=None,null=True,upload_to='meeting_organiser/%d/')
 
+    meeting_docs = models.FileField(upload_to='meeting_docs/%d/',null=True,default=None,
+        storage=RawMediaCloudinaryStorage(),
+    )
+
     def __str__(self):
         return self.name
 
 class MeetingAttendies(models.Model):
     members = models.ForeignKey(user_models.Memeber,on_delete=models.CASCADE)
     meeting = models.ForeignKey(Meeting,on_delete=models.CASCADE,null=True ,default=None,)
+
+class MeetingProxyAttendies(models.Model):
+    member = models.ForeignKey(user_models.Memeber,on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting,on_delete=models.CASCADE)
+    # {
+    #     full_name:string;
+    #     email:string
+    # }
+    participants  = models.JSONField(default=dict({'participants':[]}))
 
 class MeetingReshedule(models.Model):
     meeting = models.ForeignKey(Meeting,on_delete=models.CASCADE,null=True ,default=None,)

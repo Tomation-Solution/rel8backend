@@ -7,6 +7,8 @@ from utils.custom_exceptions import CustomError
 from . import serializer
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
+from utils import custom_response,custom_parsers
+from rest_framework.parsers import  FormParser
 
 
 class MeetingMemberViewSet(viewsets.ViewSet):
@@ -70,6 +72,7 @@ class AdminManagesMeetingViewset(viewsets.ModelViewSet):
     permission_classes = [ permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
     queryset =models.Meeting.objects.all()
     serializer_class = serializer.AdminManageMeetingSerializer
+    parser_classes =(custom_parsers.NestedMultipartParser,FormParser,)
 
 
     def get_queryset(self):

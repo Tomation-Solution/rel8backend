@@ -4,7 +4,7 @@ from utils.custom_exceptions import CustomError
 
 from django.shortcuts import get_object_or_404
 from account.serializers.user import MemberSerializer
-
+import json
 
 class AdminManageMeetingSerializer(serializers.ModelSerializer):
 
@@ -25,20 +25,34 @@ class MeetingSerializer(serializers.ModelSerializer):
         if user is None: return False
         is_attending = instance.meetingattendies_set.filter(members=user.memeber).exists()
         return is_attending
+
+
     class Meta:
         model = models.Meeting
         fields = '__all__'
 
+class MeetingProxyAttendiesSerializer(serializers.Serializer):
+    full_name = serializers.CharField()
+    email = serializers.EmailField()
 class MeetingRegister(serializers.Serializer):
     meeting = serializers.IntegerField()
+    proxy_participants = MeetingProxyAttendiesSerializer(many=True,required=False)
+
     def create(self, validated_data):
         memeber = self.context.get('user').memeber
         meeting =get_object_or_404( models.Meeting,id=validated_data.get('meeting',-1))
-        if models.MeetingAttendies.objects.filter(meeting=meeting,members=memeber).exists():CustomError({'error':'You have registered already'})
+        proxy_participants = validated_data.get('proxy_participants',[])
+        if models.MeetingAttendies.objects.filter(meeting=meeting,members=memeber).exists(): raise CustomError({'error':'You have registered already'})
 
         meeting_attendies = models.MeetingAttendies.objects.create(
             meeting=meeting
             ,members=memeber)
+        if len(proxy_participants)!=0:
+            models.MeetingProxyAttendies.objects.get_or_create(
+                participants= proxy_participants,
+                meeting= meeting,
+                member=memeber
+            )
 
         return meeting_attendies
 
@@ -78,17 +92,21 @@ class NonattendersMeetingMembersSerializer(serializers.ModelSerializer):
 
 
 class RegisteredMeetingMembersSerializer(serializers.ModelSerializer):
-
+    proxy_participants = serializers.SerializerMethodField()
     memebers = serializers.SerializerMethodField()
     def get_memebers(self,meeting):
         return models.MeetingAttendies.objects.filter(
             meeting=meeting
         ).values('id','members__user__email')
 
+    def get_proxy_participants(self,instance:models.Meeting):
+        meeting_proxy_attendies = models.MeetingProxyAttendies.objects.get(meeting=instance)
+        return meeting_proxy_attendies.participants
+
     class Meta:
         model = models.Meeting
         fields = [
-            'name','date_for','memebers'
+            'name','date_for','memebers','proxy_participants'
         ]
 
 
