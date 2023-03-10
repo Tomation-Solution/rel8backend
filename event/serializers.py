@@ -78,7 +78,7 @@ class EventSerializer(serializers.Serializer):
 
             return {
                 'has_paid':has_paid,
-                'link':link
+                'link':event.address
             }
     def create(self, validated_data):
         # for_chapters=validated_data.pop('for_chapters',None)
