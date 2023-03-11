@@ -34,9 +34,10 @@ urlpatterns = [
     path("tenant/chat/",include('chat.urls')),
     path("tenant/meeting/",include('meeting.urls')),
     path('tenant/services_request/',include('servicerequest.urls')),
-    path('interswitch_payment/',include('interswitchapp.urls')),
+    path('tenant/latestupdate/',include('LatestUpdate.urls')),
 
     path('tenant/mailing/',include('mailing.urls')),
+    path('interswitch_payment/',include('interswitchapp.urls')),
 ]
 
 # if settings.DEBUG:
