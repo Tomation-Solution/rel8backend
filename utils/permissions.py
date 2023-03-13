@@ -74,3 +74,12 @@ class IsExco(BasePermission):
 
 
         return member.is_exco
+
+
+class IsMemberOwing(BasePermission):
+
+    def has_permission(self, request, view):
+        member = user_realted_models.Memeber.objects.get(user=request.user)
+        if member.amount_owing < 0:
+            raise CustomError({'error':'Please Clear your out standing payment'})
+        return True
