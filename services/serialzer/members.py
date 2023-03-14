@@ -43,7 +43,13 @@ def _createReIssuanceForm(data,):
 
 # 
 class ReissuanceOfCertCleaner(serializers.ModelSerializer):
+    member = serializers.SerializerMethodField()
 
+    def get_member(self,instance):
+        return {
+            'full_name':instance.member.full_name,
+            'id':instance.member.id,
+        }
     class Meta:
         model = models.ReissuanceOfCertServices
         fields = '__all__'
@@ -107,7 +113,13 @@ class ReissuanceOfCertSerializer(serializers.ModelSerializer):
 
 class MemberLossOfCeriticateServiceCleaner(serializers.ModelSerializer):
     yearly_turn_over = serializers.SerializerMethodField()
+    member = serializers.SerializerMethodField()
 
+    def get_member(self,instance):
+        return {
+            'full_name':instance.member.full_name,
+            'id':instance.member.id,
+        }
     def get_yearly_turn_over(self,instance:models.LossOfCertificateServices):
         return models.YearlyTurnOver.objects.filter(reissuance_of_cert_form=instance.reissuance_of_cert_form.id).values(
             'year','attachment'
@@ -251,7 +263,13 @@ class MemberChangeOfNameSerializers(serializers.ModelSerializer):
         read_only_fields=['status','member']
 class MemberChangeOfNameCleaner(serializers.ModelSerializer):
     yearly_turn_over = serializers.SerializerMethodField()
+    member = serializers.SerializerMethodField()
 
+    def get_member(self,instance):
+        return {
+            'full_name':instance.member.full_name,
+            'id':instance.member.id,
+        }
     def get_yearly_turn_over(self,instance:models.ChangeOfName):
         try:
             return models.YearlyTurnOver.objects.filter(reissuance_of_cert_form=instance.reissuance_of_cert_form.id).values(
@@ -303,7 +321,13 @@ class MemberMergerOfMemberCompaniesSerializer(serializers.ModelSerializer):
 
 
 class MemberDeactivationOfMembershipSerializer(serializers.ModelSerializer):
+    member = serializers.SerializerMethodField()
 
+    def get_member(self,instance):
+        return {
+            'full_name':instance.member.full_name,
+            'id':instance.member.id,
+        }
     class Meta:
         model = models.DeactivationOfMembership
         fields = (
@@ -314,7 +338,13 @@ class MemberDeactivationOfMembershipSerializer(serializers.ModelSerializer):
         read_only_fields=['status','member']
 
 class MemberActivationOfDeactivatedMemberSerializer(serializers.ModelSerializer):
-    
+    member = serializers.SerializerMethodField()
+
+    def get_member(self,instance):
+        return {
+            'full_name':instance.member.full_name,
+            'id':instance.member.id,
+        }
 
     class Meta:
         model = models.ActivationOfDeactivatedMember
@@ -324,7 +354,13 @@ class MemberActivationOfDeactivatedMemberSerializer(serializers.ModelSerializer)
 
 class UpdateOnProductsManufacturedSerializer(serializers.ModelSerializer):
 
+    member = serializers.SerializerMethodField()
 
+    def get_member(self,instance):
+        return {
+            'full_name':instance.member.full_name,
+            'id':instance.member.id,
+        }
     class Meta:
         model = models.UpdateOnProductsManufactured
         fields= (
