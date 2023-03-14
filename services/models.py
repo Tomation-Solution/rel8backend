@@ -49,7 +49,9 @@ class ReissuanceOfCertForm(models.Model):
 class YearlyTurnOver(models.Model):
     reissuance_of_cert_form = models.ForeignKey(ReissuanceOfCertForm,on_delete=models.CASCADE,null=True,default=None,blank=True)
     year = models.CharField(max_length=10)
-    attachment = models.FileField(upload_to='attachment_finicial_statement/%d/')
+    attachment = models.FileField(upload_to='attachment_finicial_statement/%d/',
+        storage=RawMediaCloudinaryStorage(),
+        )
 class ServicesStatus(models.TextChoices):
     pending = 'pending'
     in_review = 'in_review'
