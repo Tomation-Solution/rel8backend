@@ -9,6 +9,8 @@ from rest_framework import status
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from . import filter as custom_filter
+from utils import custom_parsers
+from rest_framework.parsers import  FormParser
 
 
 class GalleryView(viewsets.ModelViewSet):
@@ -99,7 +101,7 @@ class AdminManagesProjectViewset(viewsets.ModelViewSet):
     serializer_class = serializers.AdminManagesProjectSerializer
     queryset = models.FundAProject.objects.all()
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
-    
+    parser_classes = (custom_parsers.NestedMultipartParser,FormParser,)
 
 
 class MemeberProjectViewset(viewsets.ViewSet):
