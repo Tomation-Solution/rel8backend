@@ -9,7 +9,7 @@ route.register('loss_of_certificate',members_views.MemberLossOfCertificateServic
 route.register('deactivation_of_membership',members_views.DeactivationOfMembershipViewset)
 route.register('product_manufacturing_update',members_views.ProductManufacturingUpdateViewset)
 route.register('activation_of_deactivated_member',members_views.ActivationOfDeactivatedMemberViewSet)
-
+route.register('reissuance_of_cert_services',members_views.ReissuanceOfCertServicesViewSet)
 # route.register('merger_of_companies',views.MergerOfCompaniesViewset)
 # route.register('factory_location_update',views.FactoryLocationUpdateViewset)
 urlpatterns = [

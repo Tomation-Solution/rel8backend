@@ -3,12 +3,66 @@ from cloudinary_storage.storage import RawMediaCloudinaryStorage
 from account.models import user as account_models
 # Create your models here.
 
-# class ReissuanceOfCertServices(models.Model):
+
+class ReissuanceOfCertForm(models.Model):
+    name_of_company = models.CharField(max_length=200)
+    cac_reg_number = models.CharField(max_length=200)
+    tax_identification_number = models.CharField(max_length=200)
+    man_reg_number = models.CharField(max_length=200)
+    company_official_email = models.CharField(max_length=200)
+    company_official_website = models.CharField(max_length=200)
+    
+    
+    corporate_addresse = models.CharField(max_length=200)
+    # {other_locations:str[]}
+    other_factory_location = models.JSONField(default=dict)
+
+    # {products_manufactured:str[]}
+    products_manufactured = models.JSONField(default=dict)
+
+    # {list_of_imported_materials_used_in_production:str[]}
+    list_of_imported_materials_used_in_production = models.JSONField(default=dict)
+
+    # {list_of_local_materials_used_in_production:str[]}
+    list_of_local_materials_used_in_production = models.JSONField(default=dict)
+
+    managing_director_email = models.EmailField()
+    managing_director_phone = models.CharField(max_length=200)
+
+
+    chief_finance_officer_phone = models.CharField(max_length=200)
+    chief_finance_officer_email = models.CharField(max_length=200)
+
+    head_of_admin_phone = models.CharField(max_length=200)
+    head_of_admin_email = models.CharField(max_length=200)
+
+    head_of_corporate_affair_phone = models.CharField(max_length=200)
+    head_of_corporate_affair_email = models.CharField(max_length=200)
+
+
+    officer_handling_man_issues_in_your_company_phone = models.CharField(max_length=200)
+    officer_handling_man_issues_in_your_company_email = models.CharField(max_length=200)
+
+    # year_turn_over = models.ForeignKey(YearlyTurnOver,on_delete=models.CASCADE)
+
+
+class YearlyTurnOver(models.Model):
+    reissuance_of_cert_form = models.ForeignKey(ReissuanceOfCertForm,on_delete=models.CASCADE,null=True,default=None,blank=True)
+    year = models.CharField(max_length=10)
+    attachment = models.FileField(upload_to='attachment_finicial_statement/%d/')
 class ServicesStatus(models.TextChoices):
     pending = 'pending'
     in_review = 'in_review'
     approved = 'approved'
     disapprove = 'disapprove'
+
+
+class ReissuanceOfCertServices(models.Model):
+    member = models.ForeignKey(account_models.Memeber,null=True,default=None,blank=True,on_delete=models.SET_NULL)
+ 
+    status = models.CharField(max_length=300,choices=ServicesStatus.choices,default=ServicesStatus.pending)
+
+    reissuance_of_cert_form = models.ForeignKey(ReissuanceOfCertForm,on_delete=models.CASCADE)
 
 class LossOfCertificateServices(models.Model):
     # submit completed reissuance form -> pendng
@@ -16,6 +70,8 @@ class LossOfCertificateServices(models.Model):
     #This Model should have a permission checker for
         payment of all outstanding subscription(s) as advised on the latest demand notice (payment), 
     """
+    reissuance_of_cert_form = models.ForeignKey(ReissuanceOfCertForm,on_delete=models.CASCADE,null=True,default=None)
+
     #an affidavit from a court of competent jurisdiction supporting the loss of the certificate
     affidavit_from_court_of_loss_of_cert = models.FileField(upload_to='affidavit_from_court_of_loss_of_cert/',storage=RawMediaCloudinaryStorage(),)
     amount_to_be_paid = models.DecimalField(decimal_places=2,max_digits=10)
@@ -28,6 +84,8 @@ class LossOfCertificateServices(models.Model):
 
 
 class ChangeOfName(models.Model):
+    # submit completed reissuance form -> pendng
+    reissuance_of_cert_form = models.ForeignKey(ReissuanceOfCertForm,on_delete=models.CASCADE,null=True,default=None)
     """
     #This Model should have a permission checker for
         payment of all outstanding subscription(s) as advised on the latest demand notice (payment), 
