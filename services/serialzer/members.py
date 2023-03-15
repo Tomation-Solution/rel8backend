@@ -349,7 +349,7 @@ class MemberActivationOfDeactivatedMemberSerializer(serializers.ModelSerializer)
     class Meta:
         model = models.ActivationOfDeactivatedMember
         fields= (
-            'submit_most_recent_audited_financial_statement','id','member'
+            'submit_most_recent_audited_financial_statement','id','member','status'
         )
 
 class UpdateOnProductsManufacturedSerializer(serializers.ModelSerializer):
