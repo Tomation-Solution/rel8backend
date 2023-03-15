@@ -128,7 +128,7 @@ class MemberLossOfCeriticateServiceCleaner(serializers.ModelSerializer):
     class Meta:
         model = models.LossOfCertificateServices
         # fields ='__all__'
-        fields = ['affidavit_from_court_of_loss_of_cert','reissuance_of_cert_form',
+        fields = ['affidavit_from_court_of_loss_of_cert','reissuance_of_cert_form','member',
         'amount_to_be_paid','year_one_audited_finacial_statements','yearly_turn_over',
         'year_two_audited_finacial_statements','certificate_of_incorporation','status','id','reissuance_of_cert_form']
         depth=1
@@ -349,7 +349,7 @@ class MemberActivationOfDeactivatedMemberSerializer(serializers.ModelSerializer)
     class Meta:
         model = models.ActivationOfDeactivatedMember
         fields= (
-            'submit_most_recent_audited_financial_statement','id'
+            'submit_most_recent_audited_financial_statement','id','member'
         )
 
 class UpdateOnProductsManufacturedSerializer(serializers.ModelSerializer):
