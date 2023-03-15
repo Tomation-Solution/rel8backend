@@ -45,7 +45,7 @@ class AdminProductManufacturingUpdateViewset(viewsets.ModelViewSet,ChangeStatus)
     permission_classes = [permissions.IsAuthenticated,IsAdminOrSuperAdmin,]
 
 
-class AdminActivationOfDeactivatedMemberViewSet(viewsets.ModelViewSet):
+class AdminActivationOfDeactivatedMemberViewSet(viewsets.ModelViewSet,ChangeStatus):
     queryset = models.ActivationOfDeactivatedMember.objects.all()
     serializer_class = memeber_serializer.MemberActivationOfDeactivatedMemberSerializer
     permission_classes = [permissions.IsAuthenticated,IsAdminOrSuperAdmin,]
