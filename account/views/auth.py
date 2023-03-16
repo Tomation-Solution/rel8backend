@@ -216,7 +216,7 @@ class ManageMemberValidation(viewsets.ViewSet):
         if(self._validateData(request).get('isValid')==False):
             raise CustomError({"error":"Invalid Data"})
         
-        if user_models.UserMemberInfo.objects.filter(name='MEMBERSHIP_NO',value=MEMBERSHIP_NO).exists():
+        if user_models.UserMemberInfo.objects.filter(value=MEMBERSHIP_NO).exists():
             raise CustomError({'error':'Membership info has been registered already'})
         
         
