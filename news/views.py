@@ -54,7 +54,7 @@ class AdminManageNews(viewsets.ModelViewSet):
     @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember])
     def get_news(self,request,format=None):
 
-        all_news=models.News.objects.all()
+        all_news=models.News.objects.all().order_by('-created_at')
         filter_set  = custom_filter.NewsLookUp(request.query_params,queryset=all_news)
         clean_data = self.serializer_class(filter_set.qs,many=True,context={'request':self.request})
         return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)

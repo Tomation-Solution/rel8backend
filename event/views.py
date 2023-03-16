@@ -144,7 +144,7 @@ class EventViewSet(viewsets.ViewSet):
     )
     def get_events(self,request,format=None):
         
-        filter_set = custom_filter.EventLookUp(request.query_params,queryset=self.get_queryset())
+        filter_set = custom_filter.EventLookUp(request.query_params,queryset=self.get_queryset().order_by('-startDate'))
         # print({'filter_set':filter_set.qs})
         # queryset = filter_set.filter_queryset(self.get_queryset())
         clean_data = self.serializer_class(filter_set.qs,many=True,context={'request':request})
