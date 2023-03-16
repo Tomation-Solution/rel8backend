@@ -138,7 +138,7 @@ class EventViewSet(viewsets.ViewSet):
             clean_data = self.serializer_class(all_events,many=True,context={'request':request})
             return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
 
-    """ 
+    """  
     @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember],
 
     )
