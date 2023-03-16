@@ -64,6 +64,8 @@ class LoginSerializer(serializers.Serializer):
 
 
         auth_user = authenticate(email=email, password=password)
+        if not user.is_active:
+            raise serializers.ValidationError({'error':'please check your mail for verification'})
 
         if not auth_user:
             raise serializers.ValidationError({"error":'Invalid Credentials'})
