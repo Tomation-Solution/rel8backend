@@ -229,7 +229,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-SENDINBLUE_API_KEY='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'
 DEFAULT_FROM_EMAIL =os.environ['domain_mail']
 SERVER_EMAIL=DEFAULT_FROM_EMAIL
 BASE_DOMAIN=os.environ['BASE_DOMAIN']

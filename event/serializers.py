@@ -5,7 +5,7 @@ from . import models
 from account.models import auth as auth_related_models
 from account.models import user as user_related_models
 from django.shortcuts import get_object_or_404
-
+from mymailing import tasks as mailing_tasks
 
 class RescheduleEventRequestSerializer(serializers.ModelSerializer):
 
@@ -190,10 +190,16 @@ class RegiterForFreeEvent(serializers.Serializer):
             is_paid=True
         )
         if len(proxy_participants)!=0:
-            models.EventProxyAttendies.objects.get_or_create(
+            event_proxy_attendies,created= models.EventProxyAttendies.objects.get_or_create(
                 participants= proxy_participants,
                 event_due_user=registration
             )
+            mailing_tasks.send_event_invitation_mail(
+                user_id=self.context.get('request').user.id,
+                event_id = event.id,
+                event_proxy_attendies_id=event_proxy_attendies.id
+            )
+
         return registration
     
 

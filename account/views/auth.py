@@ -1,5 +1,6 @@
 import json
 from account.task import regiter_user_to_chat,charge_new_member_dues
+from mymailing import tasks as mymailing_task
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
@@ -237,8 +238,8 @@ class ManageMemberValidation(viewsets.ViewSet):
                         value= request.data[key],
                         member=member
                     )
-
-            regiter_user_to_chat.delay(member.id)
+            mymailing_task.send_activation_mail.delay(user.id,user.email)
+            # regiter_user_to_chat.delay(member.id)
             charge_new_member_dues.delay(user.id)
             
             return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)

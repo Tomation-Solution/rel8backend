@@ -38,6 +38,8 @@ urlpatterns = [
 
     path('tenant/mailing/',include('mailing.urls')),
     path('interswitch_payment/',include('interswitchapp.urls')),
+    path('mailing/',include('mymailing.urls')),
+
 ]
 
 # if settings.DEBUG:
