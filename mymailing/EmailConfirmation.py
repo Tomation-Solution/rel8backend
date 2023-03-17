@@ -15,7 +15,7 @@ def activateEmail(user,to_email):
     mail_subject = 'Activate your user account'
     data = {
         user:user,
-        'domain':os.environ['domain'],
+        'domain':connection.schema_name+'.'+os.environ['domain'],
         'uid':urlsafe_base64_encode(force_bytes(user.id)),
         'token':account_activation_token.make_token(user=user)
         # 'protocol':'https'
