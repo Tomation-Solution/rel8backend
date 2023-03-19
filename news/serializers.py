@@ -5,15 +5,15 @@ from account.serializers.user import MemberSerializer
 
 
 class NewsParagraphSerializer(serializers.Serializer):
-    paragragh = serializers.CharField(required=False)
-    heading = serializers.CharField(required=False)
+    paragragh = serializers.CharField(allow_blank=True)
+    heading = serializers.CharField(allow_blank=True)
 class AdminManageNewSerializer(serializers.ModelSerializer):
 
 
     paragraphs = serializers.SerializerMethodField()
     has_reacted = serializers.SerializerMethodField()
 
-    news_paragraph = NewsParagraphSerializer(many=True,write_only=True,required=False)
+    news_paragraph = NewsParagraphSerializer(many=True,write_only=True,)
 
     def create(self, validated_data):
         news_paragraph = validated_data.pop('news_paragraph',[])
