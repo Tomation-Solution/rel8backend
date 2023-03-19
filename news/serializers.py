@@ -13,7 +13,7 @@ class AdminManageNewSerializer(serializers.ModelSerializer):
     paragraphs = serializers.SerializerMethodField()
     has_reacted = serializers.SerializerMethodField()
 
-    news_paragraph = NewsParagraphSerializer(many=True,write_only=True)
+    news_paragraph = NewsParagraphSerializer(many=True,write_only=True,required=False)
 
     def create(self, validated_data):
         news_paragraph = validated_data.pop('news_paragraph',[])
@@ -21,8 +21,8 @@ class AdminManageNewSerializer(serializers.ModelSerializer):
         for each_data in news_paragraph:
             models.NewsParagraph.objects.create(
                 news= news,
-                paragragh=each_data.get('paragragh',None),
-                heading=each_data.get('heading',None),
+                paragragh=each_data.get('paragragh',' '),
+                heading=each_data.get('heading',' '),
             )
         return news
 
