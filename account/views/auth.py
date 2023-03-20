@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-
+from django.db import connection
 from utils.custom_exceptions import CustomError
 from utils.custom_response import Success_response
 from rest_framework import status
@@ -21,8 +21,7 @@ from utils import custom_parsers
 from rest_framework.decorators import action,permission_classes
 from rest_framework.generics import GenericAPIView
 from mailing.models import EmailInvitation
-from datetime import datetime
-from django.db.models import Q
+from account import task as acct_task
 # create Super user of the Alumni which is the owner
 
 
@@ -221,7 +220,7 @@ class ManageMemberValidation(viewsets.ViewSet):
         chapter=None
         for key in request.data.keys():
             if key == 'chapter':
-                chapter = request.data[key]  
+                chapter = request.data[key]
         if chapter is None:
             raise CustomError({'error':'Chapter not found please reach out to admin'})
         if(len(alum_db['usersInfo'][0].keys())==len(request.data.keys())):
@@ -243,6 +242,9 @@ class ManageMemberValidation(viewsets.ViewSet):
                 user =user,
                 alumni_year=alumni_year
             )
+        
+      
+
             for key in request.data.keys():
                 if not key =='password' and  not key == 'alumni_year':
                     user_models.UserMemberInfo.objects.create(
@@ -253,10 +255,23 @@ class ManageMemberValidation(viewsets.ViewSet):
             mymailing_task.send_activation_mail.delay(user.id,user.email)
             # regiter_user_to_chat.delay(member.id)
             charge_new_member_dues.delay(user.id)
-            
+
+        if connection.schema_name == 'public':
+            for key in request.data.keys():
+                if key == 'SECTOR':
+                    exco_name = request.data[key]
+                    acct_task.group_MAN_subSector_and_sector.delay(
+                        exco_name,member.id,type='sector'
+                    )
+                if key == 'SUB-SECTOR':
+                    exco_name = request.data[key]
+                    acct_task.group_MAN_subSector_and_sector.delay(
+                        exco_name,member.id,type='sector'
+                    )
+                  
             return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
         raise CustomError({"error":"Data is not complete"})
-
+        
 
 class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
     """

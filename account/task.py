@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 import random,string,json,os
 from celery import shared_task
 from Dueapp import models as due_models
-
+from account.models import user as user_related_models
 def create_chat(names:list,group_name:str,headers:dict):
     body ={
     'usernames':names,
@@ -215,3 +215,16 @@ def charge_new_member_dues(user_id:int):
                     amount=due.amount
                 )
 
+
+
+
+
+@shared_task
+def group_MAN_subSector_and_sector(exco_name,member_id,type='sector',):
+    try:
+        member = user_related_models.Memeber.objects.get(id=member_id)
+        exco,created = user_related_models.ExcoRole.objects.get_or_create(name=f'{exco_name} {type}')
+        exco.member.add(member)
+        exco.save()
+        # exco
+    except:pass
