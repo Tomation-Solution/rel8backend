@@ -226,8 +226,9 @@ class ManageMemberValidation(viewsets.ViewSet):
         #     raise CustomError({'error':'Chapter not found please reach out to admin'})
         if(len(alum_db['usersInfo'][0].keys())==len(request.data.keys())):
             if get_user_model().objects.filter(email=email).exists():raise CustomError({'error':'email already exists'})
-            if  auth_models.Chapters.objects.filter(name__icontains=chapter):
-                chapter_instance = auth_models.Chapters.objects.filter(name__icontains=chapter).first()
+            if chapter:
+                if  auth_models.Chapters.objects.filter(name__icontains=chapter):
+                    chapter_instance = auth_models.Chapters.objects.filter(name__icontains=chapter).first()
                 # raise CustomError({'error':'chapter not found'})
             user = get_user_model().objects.create_user(
                 email=email,
@@ -238,7 +239,7 @@ class ManageMemberValidation(viewsets.ViewSet):
             if chapter_instance:
                 "we going to add chapters if there is"
                 user.chapter  = chapter_instance
-            user.save()
+                user.save()
 
             member = user_models.Memeber.objects.create(
                 user =user,
