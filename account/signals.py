@@ -1,7 +1,7 @@
 from account.models.user import User,ExcoRole,CommiteeGroup
 from django.db.models.signals import post_save,pre_save
 from django.dispatch import receiver
-# from mailing.models import EmailInvitation
+from mailing.models import EmailInvitation
 from utils.unique_account_creation_key_generator import key_generator
 from django.db import connection
 from . import task

@@ -188,7 +188,7 @@ def update_commitee_chat(commitee_id:int):
 
 
 @shared_task
-def charge_new_member_dues(user_id:int):
+def charge_new_member_dues__fornimn(user_id:int):
      'This Charge Members on Manul Dues'
      all_mannual =  due_models.Due.objects.filter(is_on_create=True)
      user = User.objects.get(id=user_id)

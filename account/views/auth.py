@@ -1,5 +1,5 @@
 import json
-from account.task import regiter_user_to_chat,charge_new_member_dues
+from account.task import regiter_user_to_chat,charge_new_member_dues__fornimn
 from mymailing import tasks as mymailing_task
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -254,9 +254,10 @@ class ManageMemberValidation(viewsets.ViewSet):
                     )
             mymailing_task.send_activation_mail.delay(user.id,user.email)
             # regiter_user_to_chat.delay(member.id)
-            charge_new_member_dues.delay(user.id)
+            if connection.schema_name == 'nimn':
+                charge_new_member_dues__fornimn.delay(user.id)
 
-        if connection.schema_name == 'public':
+        if connection.schema_name == 'man':
             for key in request.data.keys():
                 if key == 'SECTOR':
                     exco_name = request.data[key]
