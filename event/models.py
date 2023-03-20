@@ -39,7 +39,7 @@ class Event(models.Model):
     # 
     is_for_excos = models.BooleanField(default=False)#embers | excos
     # we want to be able to filter by exco instance ....e.g president should be only able to see this thing
-    exco = models.ForeignKey(user_model.ExcoRole,on_delete=models.SET_NULL,null=True,default=None) 
+    exco = models.ForeignKey(user_model.ExcoRole,on_delete=models.SET_NULL,null=True,default=None,blank=True) 
     # is_commitee = models.BooleanField(default=False)
     # commitee_name = models.CharField(max_length=300,null=True,default=None)
     commitee = models.ForeignKey(user_model.CommiteeGroup,on_delete=models.CASCADE,null=True,blank=True)
