@@ -260,18 +260,18 @@ class ManageMemberValidation(viewsets.ViewSet):
             if connection.schema_name == 'nimn':
                 charge_new_member_dues__fornimn.delay(user.id)
 
-        if connection.schema_name == 'man':
-            for key in request.data.keys():
-                if key == 'SECTOR':
-                    exco_name = request.data[key]
-                    acct_task.group_MAN_subSector_and_sector.delay(
-                        exco_name,member.id,type='sector'
-                    )
-                if key == 'SUB-SECTOR':
-                    exco_name = request.data[key]
-                    acct_task.group_MAN_subSector_and_sector.delay(
-                        exco_name,member.id,type='sector'
-                    )
+            if connection.schema_name == 'man':
+                for key in request.data.keys():
+                    if key == 'SECTOR':
+                        exco_name = request.data[key]
+                        acct_task.group_MAN_subSector_and_sector.delay(
+                            exco_name,member.id,type='sector'
+                        )
+                    if key == 'SUB-SECTOR':
+                        exco_name = request.data[key]
+                        acct_task.group_MAN_subSector_and_sector.delay(
+                            exco_name,member.id,type='sector'
+                        )
                   
             return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
         raise CustomError({"error":"Data is not complete"})
