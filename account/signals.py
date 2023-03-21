@@ -24,21 +24,21 @@ def add_member_to_Commitee_group(sender,**kwargs):
 
 
 
-@receiver(post_save,sender=User)
-def send_confirmation_mail_to_user_after_save(sender,**kwargs):
-    instance = kwargs['instance']
-    print("Started" ,)
-    print({'schema anme':connection.schema_name})
-    if not connection.schema_name == 'public':
-        if kwargs['created']  and not instance.is_active and not instance.is_superuser:
-            email_activation_obj:EmailInvitation = EmailInvitation.objects.create(
-                user=instance,
-                email=instance.email
-            )
-            instance.is_registration_mail_sent = True
-            instance.save()
-            if not instance.is_invited:
-                email_activation_obj.send_confirmation(first_name=" ", last_name="")
+# @receiver(post_save,sender=User)
+# def send_confirmation_mail_to_user_after_save(sender,**kwargs):
+#     instance = kwargs['instance']
+#     print("Started" ,)
+#     print({'schema anme':connection.schema_name})
+#     if not connection.schema_name == 'public':
+#         if kwargs['created']  and not instance.is_active and not instance.is_superuser:
+#             email_activation_obj:EmailInvitation = EmailInvitation.objects.create(
+#                 user=instance,
+#                 email=instance.email
+#             )
+#             instance.is_registration_mail_sent = True
+#             instance.save()
+#             if not instance.is_invited:
+#                 email_activation_obj.send_confirmation(first_name=" ", last_name="")
 
 
 
