@@ -11,7 +11,7 @@ def activateEmail(user,to_email):
 
     domain_mail = os.environ['domain_mail']
     domain = os.environ['domain']
-    if connection.schema_name == 'ninm':
+    if connection.schema_name == 'nimn':
         domain_mail='rel8@members.nimn.com.ng'
         domain = 'https://members.nimn.com.ng/'
     data = {
