@@ -24,7 +24,7 @@ class MyUserManager(BaseUserManager):
         )
         user.set_password(password)
         # if connection.schema_name=='public':
-        user.is_active =True
+        # user.is_active =True
         user.user_type=user_type
 
         user.save(using=self._db)
