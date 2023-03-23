@@ -22,7 +22,7 @@ class CreateManPropectiveMemberSerializer(serializers.ModelSerializer):
         user.save()
 
         man_propective = man_prospective_model.ManProspectiveMemberProfile.objects.create(
-            user=user,
+            user=user
             **validated_data
         )
         mymailing_task.send_activation_mail.delay(user.id,user.email)
@@ -32,3 +32,25 @@ class CreateManPropectiveMemberSerializer(serializers.ModelSerializer):
         model  =man_prospective_model.ManProspectiveMemberProfile
         fields = '__all__'
         read_only_fields = ['user','paystack','has_paid']
+
+
+class PropectiveMemberManageFormOneSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):return None
+
+    class Meta:
+        model = man_prospective_model.ManProspectiveMemberFormOne
+        fields = '__all__'
+        read_only_fields =['prospective_member']
+
+    
+class PropectiveMemberManageFormTwoSerializer(serializers.ModelSerializer):
+
+    def create(self, validated_data):return None
+    class Meta:
+        model = man_prospective_model.ManProspectiveMemberFormTwo
+        fields = '__all__'
+        read_only_fields =['prospective_member']
+
+    
+

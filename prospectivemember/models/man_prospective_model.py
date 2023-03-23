@@ -51,38 +51,42 @@ class ManProspectiveMemberFormOne(models.Model):
 
     factoru_details = models.TextField()
     legal_status_of_company = models.CharField(max_length=100)
-    number_of_female_expatriates = models.IntegerField()
-    number_of_male_expatriates = models.IntegerField()
-    local_share_capital = models.TextField()
-    foreign_share_capital = models.TextField()
+    number_of_female_expatriates = models.IntegerField(default=0)
+    number_of_male_expatriates = models.IntegerField(default=0)
+    local_share_capital = models.TextField(default=".")
+    foreign_share_capital = models.TextField(default=".")
 
-    ownership_structure_equity_local = models.TextField()
-    ownership_structure_equity_foregin = models.TextField()
-    total_value_of_land_asset = models.TextField()
-    total_value_of_building_asset = models.TextField()
-    total_value_of_other_asset = models.TextField()
-    installed_capacity = models.TextField()
-    current_sales_turnover = models.TextField()
-    projected_sales_turnover = models.TextField()
-    are_your_product_exported = models.TextField()
-    company_contact_infomation = models.TextField()
-    designation = models.TextField()
-    name_of_md_or_ceo_of_company = models.TextField()
-    selectdate_of_registration = models.DateField()
-    upload_signature = models.ImageField(upload_to='upload_signature/%m/')
+    ownership_structure_equity_local = models.TextField(default=".")
+    ownership_structure_equity_foregin = models.TextField(default=".")
+    total_value_of_land_asset = models.TextField(default=".")
+    total_value_of_building_asset = models.TextField(default=".")
+    total_value_of_other_asset = models.TextField(default=".")
+    installed_capacity = models.TextField(default=".")
+    current_sales_turnover = models.TextField(default=".")
+    projected_sales_turnover = models.TextField(default=".")
+    are_your_product_exported = models.TextField(default=".")
+    company_contact_infomation = models.TextField(default=".")
+    designation = models.TextField(default=".")
+    name_of_md_or_ceo_of_company = models.TextField(default=".")
+    selectdate_of_registration = models.DateField(null=True,default=None)
+    upload_signature = models.ImageField(upload_to='upload_signature/%m/',null=True,default=None)
+    # {'product_manufactured':'whothey breat','certificates':'certifacet of thoe'}
+    all_roduct_manufactured = models.JSONField(default=list)
 
+    # {'major_raw_materials':'j frhufr','major_raw_materials':'hello people'}
+    all_raw_materials_used = models.JSONField(default=list)
     def __str__(self):
         return f'form one {self.prospective_member.name_of_company}'
 
-class AllProductManufactured(models.Model):
-    man_prospective_member_form_one = models.ForeignKey(ManProspectiveMemberFormOne,on_delete=models.CASCADE)
-    product_manufactured = models.TextField()
-    certificates = models.TextField()
+# class AllProductManufactured(models.Model):
+#     man_prospective_member_form_one = models.ForeignKey(ManProspectiveMemberFormOne,on_delete=models.CASCADE)
+#     product_manufactured = models.TextField()
+#     certificates = models.TextField()
 
-class AllRawMaterialsUsed(models.Model):
-    man_prospective_member_form_one = models.ForeignKey(ManProspectiveMemberFormOne,on_delete=models.CASCADE)
-    major_raw_materials = models.TextField()
-    percent_of_local_raw_materials = models.IntegerField()
+# class AllRawMaterialsUsed(models.Model):
+#     man_prospective_member_form_one = models.ForeignKey(ManProspectiveMemberFormOne,on_delete=models.CASCADE)
+#     major_raw_materials = models.TextField()
+#     major_raw_materials = models.IntegerField()
 
 
 
