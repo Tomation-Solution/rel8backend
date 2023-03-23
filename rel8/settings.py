@@ -71,6 +71,7 @@ SHARED_APPS = (
      'channels',
      'chat',
      'meeting',
+     'prospectivemember'
 
      # you must list the app where your tenant model resides in
     #    'mailing',
@@ -110,8 +111,8 @@ TENANT_APPS = (
      'meeting',
      'interswitchapp',
      'LatestUpdate',
-     'services'
-
+     'services',
+'prospectivemember'
     # my apps
 
 )

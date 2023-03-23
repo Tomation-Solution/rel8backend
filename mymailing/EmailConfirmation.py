@@ -17,7 +17,7 @@ def activateEmail(user,to_email):
     domain = connection.schema_name+'.'+os.environ['domain']
     if connection.schema_name == 'nimn':
         domain_mail='rel8@members.nimn.com.ng'
-        domain = 'https://members.nimn.com.ng/'
+        domain = 'https://members.nimn.com.ng'
     data = {
         user:user,
         'domain':domain,
@@ -41,7 +41,7 @@ def sendInvitationMail(user,event:event_models.Event,event_proxy_attendies:event
     domain = connection.schema_name+'.'+os.environ['domain']
     if connection.schema_name == 'nimn':
         domain_mail='rel8@members.nimn.com.ng'
-        domain = 'https://members.nimn.com.ng/'
+        domain = 'https://members.nimn.com.ng'
     data ={
         'person_that_invite_you_email':person_that_invite_you_email,
         'person_that_invite_you_full_name':person_that_invite_you_full_name.full_name,
@@ -66,7 +66,7 @@ def sendMeetingInvitationMail(user,meeting:meeting_models.Meeting,meeting_proxy_
     domain = connection.schema_name+'.'+os.environ['domain']
     if connection.schema_name == 'nimn':
         domain_mail='rel8@members.nimn.com.ng'
-        domain = 'https://members.nimn.com.ng/'
+        domain = 'https://members.nimn.com.ng'
     data ={
         'person_that_invite_you_email':person_that_invite_you_email,
         'person_that_invite_you_full_name':person_that_invite_you_full_name.full_name,

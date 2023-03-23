@@ -81,12 +81,14 @@ class User(AbstractBaseUser,PermissionsMixin,):
         admin = "admin"
         super_admin="super_admin"
         members = "members"
+        prospective_members = "prospective_members"
     email = models.EmailField(unique=True)
     is_invited= models.BooleanField(default=False)
     is_active= models.BooleanField(default=False)
     photo = models.ImageField(default=None,null=True,upload_to='user_image/%d/')
     is_member= models.BooleanField(default=False)
     is_staff =  models.BooleanField(default=False)
+    is_prospective_Member=  models.BooleanField(default=False)
     user_type = models.CharField(choices=UserType.choices,max_length=25)
     is_superuser = models.BooleanField(default=False)
     # any user that is in the app must belong to a distric 

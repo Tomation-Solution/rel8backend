@@ -1,0 +1,1 @@
+from prospectivemember.models.man_prospective_model import ManProspectiveMemberProfile
