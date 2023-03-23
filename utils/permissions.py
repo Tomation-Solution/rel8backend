@@ -43,6 +43,11 @@ class IsMember(BasePermission):
     def has_permission(self, request, view):
         "basically the user has to be members"
         return request.user.user_type in ['members']
+class IsMemberOrProspectiveMember(BasePermission):
+
+    def has_permission(self, request, view):
+        "basically the user has to be members"
+        return request.user.user_type in ['members','prospective_members']
 
 class IsSuperAdmin(BasePermission):
 

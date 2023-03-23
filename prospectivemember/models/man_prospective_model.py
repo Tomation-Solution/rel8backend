@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 
+class RegistrationAmountInfo(models.Model):
+    "it will be only on instance that will ever exist"
+    amount =  models.DecimalField(decimal_places=2,max_digits=10)
+
 class ManProspectiveMemberProfile(models.Model):
     user = models.OneToOneField(get_user_model(),on_delete=models.CASCADE)
     name_of_company = models.CharField(max_length=600)
@@ -12,6 +16,8 @@ class ManProspectiveMemberProfile(models.Model):
     corporate_office_addresse = models.TextField()
     has_paid = models.BooleanField(default=False)
     paystack = models.CharField(max_length=300)
+    amount =  models.DecimalField(decimal_places=2,max_digits=10,default=0.00)
+
     class ManProspectiveMemberApplicationStatusChoice(models.TextChoices):
         approval_in_progress = 'approval_in_progress'
         approval_in_principle_granted = 'approval_in_principle_granted'

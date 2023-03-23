@@ -19,6 +19,7 @@ from Rel8Tenant import models as rel8tenant_related_models
 from account.models.user import Memeber
 from django.contrib.auth import get_user_model
 from extras  import models as extras_models
+from prospectivemember.models.man_prospective_model import ManProspectiveMemberProfile,RegistrationAmountInfo
 
 
 def very_payment(request,reference=None):
@@ -52,7 +53,7 @@ def very_payment(request,reference=None):
 class InitPaymentTran(APIView):
     "this is were the members pay for stuff read the code weel to get a hag of it"
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes=[permissions.IsAuthenticated,custom_permissions.IsMember]
+    permission_classes=[permissions.IsAuthenticated,custom_permissions.IsMemberOrProspectiveMember]
 
     def post(self, request, forWhat="due",pk=None):
         
@@ -60,9 +61,14 @@ class InitPaymentTran(APIView):
         """
         forWhat can be  = due,event,deactivating_due
         """
-        if(not user_model.Memeber.objects.all().filter(user=request.user).exists()):
-            raise CustomError({"error":'member doest not exist'})
+        if request.user.user_type== 'members':
+            if(not user_model.Memeber.objects.all().filter(user=request.user).exists()):
+                raise CustomError({"error":'member doest not exist'})
+        if request.user.user_type== 'prospective_members':
+            if(not ManProspectiveMemberProfile.objects.filter(user=request.user).exists()):
+                raise CustomError({"error":'prospective member doest not exist'})
 
+        
 
         schema_name = request.tenant.schema_name
         client_tenant = rel8tenant_related_models.Client.objects.get(schema_name=schema_name)
@@ -73,6 +79,17 @@ class InitPaymentTran(APIView):
         PAYSTACK_SECRET = client_tenant.paystack_secret
         instance =None
             # Paystack intialization Url
+        if forWhat == 'prospective_member_registration':
+            # it will be only on instance that will ever exist
+            reg = RegistrationAmountInfo.objects.all().first()
+            if reg is None:
+                raise CustomError({'error':'please reach out to your admin to set the amount to be paid'})
+            instance = ManProspectiveMemberProfile.objects.get(user=request.user)
+            amount_to_be_paid = reg.amount
+            pk= instance.id
+            if instance.has_paid:
+                raise CustomError({'error':'Please hold for admin to process your info you have paid already'})
+
         if forWhat=="due":
             # let get the id of due_user
             # let check if this user actually have due_user
@@ -80,12 +97,16 @@ class InitPaymentTran(APIView):
             if not due_users.filter(user=request.user,id=pk,).exists():raise CustomError({"error":"Due Doesnt Exist"})
             if  due_users.filter(user=request.user,id=pk,is_paid=True).exists():raise CustomError({"error":"you have paid for this due already"})
             instance = models.Due_User.objects.get(user=request.user,id=pk)
+            amount_to_be_paid = instance.amount
+
         if forWhat =='deactivating_due':
             deactivating_due = models.DeactivatingDue_User.objects.all()
             if not deactivating_due.filter(user=request.user,id=pk,).exists():raise CustomError({"error":"Due Deactivating Due Exist"})
             if  deactivating_due.filter(user=request.user,id=pk,is_paid=True).exists():raise CustomError({"error":"you have paid for this due already"})
             
             instance = models.DeactivatingDue_User.objects.get(user=request.user,id=pk)
+            amount_to_be_paid = instance.amount
+
         if forWhat =='event_payment':
             event_users = event_models.EventDue_User.objects.all()
             events = event_models.Event.objects.all()
@@ -95,6 +116,7 @@ class InitPaymentTran(APIView):
             
             instance,_ = event_models.EventDue_User.objects.get_or_create(
                 user=request.user,event=event,amount=event.amount,)
+            amount_to_be_paid = instance.amount
             pk = instance.id#we did this cause we accessing the eventdue_user
         if forWhat =='fund_a_project':
             'since this is a donation there is no fix price we get it from the query param'
@@ -114,9 +136,15 @@ class InitPaymentTran(APIView):
             )
             fundAProject.amount = amount
             instance.save()
+            amount_to_be_paid=instance.amount
+        # if 
         if(instance==None):raise CustomError({"error":"Something went wrong"})
- 
-        member = user_model.Memeber.objects.get(user=request.user)
+        if request.user.user_type== 'members':
+            member = user_model.Memeber.objects.get(user=request.user)
+        if request.user.user_type== 'prospective_members':
+            member =ManProspectiveMemberProfile.objects.get(user=request.user)
+        
+        
         url = 'https://api.paystack.co/transaction/initialize/'
         headers = {
             'Authorization': f'Bearer {PAYSTACK_SECRET}',
@@ -124,13 +152,15 @@ class InitPaymentTran(APIView):
             'Accept': 'application/json',}
         body = {
             "email": request.user.email,
-            "amount": convert_naira_to_kobo(instance.amount),
+            "amount": convert_naira_to_kobo(amount_to_be_paid),
             "metadata":{
                 "instanceID":pk,
                 'member_id':member.id,
                 "user_id":request.user.id,
                 "forWhat":forWhat,
-                'schema_name':request.tenant.schema_name
+                'schema_name':request.tenant.schema_name,
+                'user_type':request.user.user_type,
+                'amount_to_be_paid':str(amount_to_be_paid)
             },
             # "callback_url":settings.PAYMENT_FOR_MEMBERSHIP_CALLBACK,
             }
@@ -219,5 +249,14 @@ def useWebhook(request,pk=None):
             project.amount_made =project.amount_made+  support_project_incash.amount
             project.save()
 
+
+        if meta_data['forWhat'] == 'prospective_member_registration':
+            member_id =meta_data['member_id']
+            instanceID = meta_data['instanceID']
+            amount_to_be_paid= meta_data['amount_to_be_paid']
+            prospective_member = ManProspectiveMemberProfile.objects.get(id=instanceID)
+            prospective_member.has_paid=True
+            prospective_member.amount=float(amount_to_be_paid)
+            prospective_member.save()
 
         return HttpResponse(status.HTTP_200_OK)
