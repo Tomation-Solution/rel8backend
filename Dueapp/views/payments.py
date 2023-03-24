@@ -20,7 +20,7 @@ from account.models.user import Memeber
 from django.contrib.auth import get_user_model
 from extras  import models as extras_models
 from prospectivemember.models.man_prospective_model import ManProspectiveMemberProfile,RegistrationAmountInfo
-
+from mymailing import tasks as mymailing_task
 
 def very_payment(request,reference=None):
     # this would be in the call back to check if the payment is a success
@@ -53,7 +53,9 @@ def very_payment(request,reference=None):
 class InitPaymentTran(APIView):
     "this is were the members pay for stuff read the code weel to get a hag of it"
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes=[permissions.IsAuthenticated,custom_permissions.IsMemberOrProspectiveMember]
+    permission_classes=[
+        permissions.IsAuthenticated,
+        custom_permissions.IsMemberOrProspectiveMember]
 
     def post(self, request, forWhat="due",pk=None):
         
@@ -258,5 +260,7 @@ def useWebhook(request,pk=None):
             prospective_member.has_paid=True
             prospective_member.amount=float(amount_to_be_paid)
             prospective_member.save()
+            mymailing_task.send_activation_mail.delay(prospective_member.user.id,prospective_member.user.email)
+
 
         return HttpResponse(status.HTTP_200_OK)

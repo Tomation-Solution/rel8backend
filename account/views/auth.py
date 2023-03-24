@@ -98,6 +98,8 @@ class Login(ObtainAuthToken):
         exco=None
         commitee = []
         if user.user_type == 'prospective_members':
+            if user.manprospectivememberprofile.has_paid== False:
+                raise CustomError({'error':'please pay for the registration form'})
             return Response({
                 "user_type":user.user_type,
                 'token':token.key,

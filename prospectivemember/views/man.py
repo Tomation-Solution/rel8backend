@@ -15,9 +15,9 @@ class CreateManPropectiveMemberViewset(viewsets.ViewSet):
     def create(self,request,*args,**kwargs):
         serialized= self.serializer_class(data=request.data,)
         serialized.is_valid(raise_exception=True)
-        serialized.save()
+        response_info = serialized.save()
 
-        return Success_response('Creation Success',data=[],status_code=status.HTTP_201_CREATED)
+        return Success_response('Creation Success',data=response_info,status_code=status.HTTP_201_CREATED)
 
 class StatusView:
     @action(detail=False,methods=['get'])
