@@ -53,6 +53,8 @@ class ManProspectiveMemberFormOne(models.Model):
     legal_status_of_company = models.CharField(max_length=100)
     number_of_female_expatriates = models.IntegerField(default=0)
     number_of_male_expatriates = models.IntegerField(default=0)
+    number_of_male_permanent_staff= models.IntegerField(default=0)
+    number_of_female_permanent_staff= models.IntegerField(default=0)
     local_share_capital = models.TextField(default=".")
     foreign_share_capital = models.TextField(default=".")
 
