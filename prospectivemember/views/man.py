@@ -9,7 +9,6 @@ from rest_framework.decorators import action
 from utils.permissions import IsMemberOrProspectiveMember,IsPropectiveMemberHasPaid
 
 class CreateManPropectiveMemberViewset(viewsets.ViewSet):
-    authentication_classes = [AllowAny]
     serializer_class = serializer.CreateManPropectiveMemberSerializer
 
     def create(self,request,*args,**kwargs):
