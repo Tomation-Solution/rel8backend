@@ -4,12 +4,12 @@ from rest_framework import viewsets
 from utils.custom_response import Success_response
 from rest_framework import status
 from utils.custom_exceptions import  CustomError 
-from rest_framework.permissions import  IsAuthenticated
+from rest_framework.permissions import  IsAuthenticated,AllowAny
 from rest_framework.decorators import action
 from utils.permissions import IsMemberOrProspectiveMember,IsPropectiveMemberHasPaid
 
 class CreateManPropectiveMemberViewset(viewsets.ViewSet):
-
+    authentication_classes = [AllowAny]
     serializer_class = serializer.CreateManPropectiveMemberSerializer
 
     def create(self,request,*args,**kwargs):
