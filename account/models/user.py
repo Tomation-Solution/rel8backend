@@ -45,6 +45,7 @@ class MyUserManager(BaseUserManager):
         user.is_staff =True
         user.user_type="super_admin"
         user.temp_password =password
+        user.is_active=True
         user.save()
         # we would use the user to create a super_admin model
         SUPERADMIN = Super_admin.objects.create(
