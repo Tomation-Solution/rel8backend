@@ -98,14 +98,23 @@ class Login(ObtainAuthToken):
         exco=None
         commitee = []
         if user.user_type == 'prospective_members':
-            if user.manprospectivememberprofile.has_paid== False:
-                raise CustomError({'error':'please pay for the registration form'})
-            return Response({
-                "user_type":user.user_type,
-                'token':token.key,
-                'has_paid':user.manprospectivememberprofile.has_paid,
-                'prospective_member_id':user.manprospectivememberprofile.id,
-            })
+            if connection.schema_name == 'man':
+                'man wants people to pay before the can login'
+                if user.manprospectivememberprofile.has_paid== False:
+                    raise CustomError({'error':'please pay for the registration form'})
+                return Response({
+                    "user_type":user.user_type,
+                    'token':token.key,
+                    'has_paid':user.manprospectivememberprofile.has_paid,
+                    'prospective_member_id':user.manprospectivememberprofile.id,
+                })
+            if connection.schema_name !='man':
+                return Response({
+                    "user_type":user.user_type,
+                    'token':token.key,
+                    'has_paid':user.prospectivememberprofile.has_paid,
+                    'prospective_member_id':user.prospectivememberprofile.id,
+                })
         if user.chapter:
             chapter={
                 'name':user.chapter.name,
