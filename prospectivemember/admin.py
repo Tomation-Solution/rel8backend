@@ -10,6 +10,6 @@ admin.site.register(RegistrationAmountInfo)
 
 
 admin.site.register(general.ProspectiveMemberProfile)
-# admin.site.register(RegistrationAmountInfo)
-# admin.site.register(RegistrationAmountInfo)
+admin.site.register(general.ProspectiveMemberFormOne)
+admin.site.register(general.AdminSetPropectiveMembershipRule)
 # admin.site.register(RegistrationAmountInfo)

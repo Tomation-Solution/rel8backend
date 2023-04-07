@@ -49,6 +49,12 @@ class IsMemberOrProspectiveMember(BasePermission):
         "basically the user has to be members"
         return request.user.user_type in ['members','prospective_members']
 
+class IsProspectiveMember(BasePermission):
+
+    def has_permission(self, request, view):
+        "basically the user has to be members"
+        return request.user.user_type in ['prospective_members']
+
 class IsPropectiveMemberHasPaid(BasePermission):
     def has_permission(self, request, view):
         return request.user.manprospectivememberprofile.has_paid

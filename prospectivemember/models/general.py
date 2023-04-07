@@ -1,15 +1,24 @@
 #NOTE general.py contains models that can be used by any tenant
 from django.db import models
 from django.contrib.auth import get_user_model
-
+import collections
 
 
 class AdminSetPropectiveMembershipRule(models.Model):
     "it will be only on instance that will ever exist"
     amount =  models.DecimalField(decimal_places=2,max_digits=10)
     # the field below is what the members will upload
+    """
+    {
+    "text_fields":string[],
+    "file_fields":string[],
+    }
+    """
     propective_members_text_fields =models.JSONField(default=dict)
     propective_members_file_fields =models.JSONField(default=dict)
+
+    def validate_keys(self,keys):
+        return collections.Counter(self.propective_members_text_fields.get('text_fields'))== collections.Counter(keys)
 
 class ProspectiveMemberProfile(models.Model):
     user = models.OneToOneField(get_user_model(),on_delete=models.CASCADE)

@@ -32,3 +32,36 @@ class CreatePropectiveMemberSerializer(serializers.ModelSerializer):
         return dict()
 
 
+
+class  PropectiveMemberFormOneAllInfoSerializer(serializers.Serializer):
+    name =serializers.CharField()
+    value = serializers.CharField()
+class PropectiveMemberFormOneSerializer(serializers.Serializer):
+    data= PropectiveMemberFormOneAllInfoSerializer(many=True)
+
+
+    def validate(self, attrs):
+        admin_rule = general_models.AdminSetPropectiveMembershipRule.objects.all().first()
+        if admin_rule is None:
+            raise CustomError({'error':'please reach out to your admin to set text_fields'})
+        data =attrs.get('data')
+        keys = map(lambda eachData: eachData.get('name'),data)
+        if not admin_rule.validate_keys(keys):
+            raise CustomError({'error':'in complete data'})
+        return super().validate(attrs)
+ 
+    def create(self, validated_data):
+        data =validated_data.get('data')
+        prospective_member= self.context.get('user').prospectivememberprofile
+        form,_ = general_models.ProspectiveMemberFormOne.objects.get_or_create(
+            prospective_member=prospective_member,)
+        form.info=data
+        form.save()
+        
+        return form
+    
+class PropectiveMemberFormOneCleaner(serializers.ModelSerializer):
+
+    class Meta:
+        model = general_models.ProspectiveMemberFormOne
+        fields = '__all__'
