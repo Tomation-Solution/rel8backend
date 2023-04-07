@@ -69,3 +69,15 @@ class PropectiveMemberHandlesFormTwoViewSet(viewsets.ViewSet):
     def create(self,request,*args,**kwargs):
         serialized= self.serializer_class(data=request.data,context={'user':request.user})
         return Success_response('Submitted, we would get back to you soon',data=[],status_code=status.HTTP_201_CREATED)
+
+    @action(detail=False,methods=['post'])
+    def update_uploadedfiles(self,request,*args,**kwargs):
+        pk = request.data.get('id',None)
+        form2 = get_object_or_404(general_models.ProspectiveMemberFormTwoFile,id=pk)
+        if form2.form_two.prospective_member.user.id != request.user.id:
+            raise CustomError({'error':'bad requestt'})
+        serialzer= general_serializer.ProspectiveMemberFormTwoFileSerailzer(instance=form2,data=request.data)
+        serialzer.is_valid(raise_exception=True)
+        data= serialzer.save()
+
+        return Success_response('success',data=data)
