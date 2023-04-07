@@ -8,6 +8,10 @@ from utils.custom_exceptions import CustomError
 from utils.permissions import IsProspectiveMember,IsPropectiveMemberHasPaid
 from rest_framework.permissions import  IsAuthenticated,AllowAny
 from rest_framework.decorators import action
+from utils import custom_parsers
+from rest_framework.parsers import  FormParser
+
+
 class CreatePropectiveMemberViewset(viewsets.ViewSet):
     serializer_class = general_serializer.CreatePropectiveMemberSerializer
 
@@ -53,3 +57,15 @@ class PropectiveMemberHandlesFormOneViewSet(viewsets.ViewSet):
             'file_fields':admin_rule.propective_members_file_fields.get('file_fields'),
         })
     # def list(self,requeds)
+
+
+class PropectiveMemberHandlesFormTwoViewSet(viewsets.ViewSet):
+    serializer_class = general_serializer.PropectiveMemberFormTwoSerializer
+    permission_classes =  [IsAuthenticated,IsProspectiveMember,
+                        #    IsPropectiveMemberHasPaid
+                           ]
+    parser_classes = (custom_parsers.NestedMultipartParser,FormParser,)
+
+    def create(self,request,*args,**kwargs):
+        serialized= self.serializer_class(data=request.data,context={'user':request.user})
+        return Success_response('Submitted, we would get back to you soon',data=[],status_code=status.HTTP_201_CREATED)

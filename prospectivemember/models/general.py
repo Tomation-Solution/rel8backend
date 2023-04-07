@@ -17,8 +17,11 @@ class AdminSetPropectiveMembershipRule(models.Model):
     propective_members_text_fields =models.JSONField(default=dict)
     propective_members_file_fields =models.JSONField(default=dict)
 
-    def validate_keys(self,keys):
+    def validate_text_fields_keys(self,keys):
         return collections.Counter(self.propective_members_text_fields.get('text_fields'))== collections.Counter(keys)
+
+    def validate_file_fields_keys(self,keys):
+        return collections.Counter(self.propective_members_file_fields.get('file_fields'))== collections.Counter(keys)
 
 class ProspectiveMemberProfile(models.Model):
     user = models.OneToOneField(get_user_model(),on_delete=models.CASCADE)
