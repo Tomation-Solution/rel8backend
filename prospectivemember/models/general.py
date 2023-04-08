@@ -31,6 +31,7 @@ class ProspectiveMemberProfile(models.Model):
     addresse = models.TextField()
     has_paid = models.BooleanField(default=False)
     paystack = models.CharField(max_length=300)
+    paystack_key = models.CharField(max_length=300,default='.')
     amount_paid =  models.DecimalField(decimal_places=2,max_digits=10,default=0.00)
 
     class ProspectiveMemberApplicationStatusChoice(models.TextChoices):

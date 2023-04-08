@@ -21,6 +21,8 @@ from django.contrib.auth import get_user_model
 from extras  import models as extras_models
 from prospectivemember.models.man_prospective_model import ManProspectiveMemberProfile,RegistrationAmountInfo
 from mymailing import tasks as mymailing_task
+from prospectivemember.models import general as generalProspectiveModels
+from django.shortcuts import get_object_or_404
 
 def very_payment(request,reference=None):
     # this would be in the call back to check if the payment is a success
@@ -66,9 +68,6 @@ class InitPaymentTran(APIView):
         if request.user.user_type== 'members':
             if(not user_model.Memeber.objects.all().filter(user=request.user).exists()):
                 raise CustomError({"error":'member doest not exist'})
-        if request.user.user_type== 'prospective_members':
-            if(not ManProspectiveMemberProfile.objects.filter(user=request.user).exists()):
-                raise CustomError({"error":'prospective member doest not exist'})
 
         
 
@@ -83,14 +82,24 @@ class InitPaymentTran(APIView):
             # Paystack intialization Url
         if forWhat == 'prospective_member_registration':
             # it will be only on instance that will ever exist
-            reg = RegistrationAmountInfo.objects.all().first()
-            if reg is None:
-                raise CustomError({'error':'please reach out to your admin to set the amount to be paid'})
-            instance = ManProspectiveMemberProfile.objects.get(user=request.user)
-            amount_to_be_paid = reg.amount
-            pk= instance.id
-            if instance.has_paid:
-                raise CustomError({'error':'Please hold for admin to process your info you have paid already'})
+            if connection.schema_name == 'man':
+                reg = RegistrationAmountInfo.objects.all().first()
+                if reg is None:
+                    raise CustomError({'error':'please reach out to your admin to set the amount to be paid'})
+                instance =get_object_or_404(ManProspectiveMemberProfile,user=request.user)
+                amount_to_be_paid = reg.amount
+                pk= instance.id
+                if instance.has_paid:
+                    raise CustomError({'error':'Please hold for admin to process your info you have paid already'})
+            else:
+                rule = generalProspectiveModels.AdminSetPropectiveMembershipRule.objects.all().first()
+                if rule is None:
+                    raise CustomError({'error':'please reach out to your admin to set the amount to be paid'})
+                instance = get_object_or_404(generalProspectiveModels.ProspectiveMemberProfile,user=request.user)
+                amount_to_be_paid = rule.amount
+                pk= instance.id
+                if instance.has_paid:
+                    raise CustomError({'error':'Please hold for admin to process your info you have paid already'})
 
         if forWhat=="due":
             # let get the id of due_user
@@ -144,8 +153,10 @@ class InitPaymentTran(APIView):
         if request.user.user_type== 'members':
             member = user_model.Memeber.objects.get(user=request.user)
         if request.user.user_type== 'prospective_members':
-            member =ManProspectiveMemberProfile.objects.get(user=request.user)
-        
+            if connection.schema_name == 'man':
+                member =ManProspectiveMemberProfile.objects.get(user=request.user)
+            else:
+                member = generalProspectiveModels.ProspectiveMemberProfile.objects.get(user=request.user)
         
         url = 'https://api.paystack.co/transaction/initialize/'
         headers = {
@@ -256,11 +267,16 @@ def useWebhook(request,pk=None):
             member_id =meta_data['member_id']
             instanceID = meta_data['instanceID']
             amount_to_be_paid= meta_data['amount_to_be_paid']
-            prospective_member = ManProspectiveMemberProfile.objects.get(id=instanceID)
-            prospective_member.has_paid=True
-            prospective_member.amount=float(amount_to_be_paid)
-            prospective_member.save()
-            mymailing_task.send_activation_mail.delay(prospective_member.user.id,prospective_member.user.email)
-
+            if connection.schema_name == 'man':
+                prospective_member = ManProspectiveMemberProfile.objects.get(id=instanceID)
+                prospective_member.has_paid=True
+                prospective_member.amount=float(amount_to_be_paid)
+                prospective_member.save()
+                mymailing_task.send_activation_mail.delay(prospective_member.user.id,prospective_member.user.email)
+            else:
+                prospective_member= generalProspectiveModels.ProspectiveMemberProfile.objects.get(id=instanceID)
+                prospective_member.has_paid=True
+                prospective_member.amount_paid=amount_to_be_paid
+                prospective_member.save()
 
         return HttpResponse(status.HTTP_200_OK)

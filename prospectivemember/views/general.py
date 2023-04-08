@@ -5,7 +5,7 @@ from prospectivemember import general_serializer
 from ..models import general as general_models
 from django.shortcuts import get_object_or_404
 from utils.custom_exceptions import CustomError
-from utils.permissions import IsProspectiveMember,IsPropectiveMemberHasPaid
+from utils.permissions import IsProspectiveMember,IsPropectiveMembersHasPaid_general
 from rest_framework.permissions import  IsAuthenticated,AllowAny
 from rest_framework.decorators import action
 from utils import custom_parsers
@@ -27,7 +27,7 @@ class CreatePropectiveMemberViewset(viewsets.ViewSet):
 class PropectiveMemberHandlesFormOneViewSet(viewsets.ViewSet):
     serializer_class = general_serializer.PropectiveMemberFormOneSerializer
     permission_classes =  [IsAuthenticated,IsProspectiveMember,
-                        #    IsPropectiveMemberHasPaid
+                           IsPropectiveMembersHasPaid_general
                            ]
     def create(self,request,*args,**kwargs):
         serialized= self.serializer_class(data=request.data,context={'user':request.user})
@@ -62,7 +62,7 @@ class PropectiveMemberHandlesFormOneViewSet(viewsets.ViewSet):
 class PropectiveMemberHandlesFormTwoViewSet(viewsets.ViewSet):
     serializer_class = general_serializer.PropectiveMemberFormTwoSerializer
     permission_classes =  [IsAuthenticated,IsProspectiveMember,
-                        #    IsPropectiveMemberHasPaid
+                        IsPropectiveMembersHasPaid_general
                            ]
     parser_classes = (custom_parsers.NestedMultipartParser,FormParser,)
 
@@ -91,7 +91,7 @@ class PropectiveMemberHandlesFormTwoViewSet(viewsets.ViewSet):
 
 class UpdateFomrTwoViewSet(viewsets.ViewSet):
     permission_classes =  [IsAuthenticated,IsProspectiveMember,
-                        #    IsPropectiveMemberHasPaid
+                          IsPropectiveMembersHasPaid_general
                            ]
     # parser_classes = (custom_parsers.NestedMultipartParser,FormParser,)
     serializer_class = general_serializer.PropectiveMemberFormTwoSerializerUpdate

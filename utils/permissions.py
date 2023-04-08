@@ -58,6 +58,12 @@ class IsProspectiveMember(BasePermission):
 class IsPropectiveMemberHasPaid(BasePermission):
     def has_permission(self, request, view):
         return request.user.manprospectivememberprofile.has_paid
+
+class IsPropectiveMembersHasPaid_general(BasePermission):
+    'use this for man'
+    def has_permission(self, request, view):
+        return request.user.prospectivememberprofile.has_paid
+
 class IsSuperAdmin(BasePermission):
 
     def has_permission(self, request, view):
