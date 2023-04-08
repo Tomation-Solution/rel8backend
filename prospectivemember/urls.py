@@ -11,7 +11,7 @@ router.register('propective_member_manage_form_two',man_views.PropectiveMemberMa
 router.register('create_propective_member',general_view.CreatePropectiveMemberViewset,basename='create_propective_member')
 router.register('general_propective_member_manage_form_one',general_view.PropectiveMemberHandlesFormOneViewSet,basename='general_propective_member_manage_form_one')
 router.register('general_propective_member_manage_form_two',general_view.PropectiveMemberHandlesFormTwoViewSet,basename='general_propective_member_manage_form_two')
-
+router.register('update_uploadedfiles_formtwo',general_view.UpdateFomrTwoViewSet,basename='update_uploadedfiles_formtwo')
 
 urlpatterns = [
    

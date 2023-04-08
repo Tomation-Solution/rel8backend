@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import general as general_models
 from account.models import User
 from utils.custom_exceptions import CustomError
+from django.core.files import File
+
 class CreatePropectiveMemberSerializer(serializers.ModelSerializer):
     password = serializers.CharField()
     
@@ -65,7 +67,68 @@ class PropectiveMemberFormOneCleaner(serializers.ModelSerializer):
     class Meta:
         model = general_models.ProspectiveMemberFormOne
         fields = '__all__'
+class PropectiveMemberFormTwoCleaner(serializers.ModelSerializer):
+    files = serializers.SerializerMethodField()
 
+    def get_files(self,instance):
+        return  general_models.ProspectiveMemberFormTwoFile.objects.filter(form_two=instance).values('id','name','file',)
+    class Meta:
+        model = general_models.ProspectiveMemberFormTwo
+        fields = '__all__'
+
+class ProspectiveMemberFormTwoFileCleaner(serializers.ModelSerializer):
+
+    class Meta:
+        model = general_models.ProspectiveMemberFormTwoFile
+        fields = '__all__'
+
+
+class PropectiveMemberFormTwoSerializerUpdate:
+    'this is a custom serializer '
+    """
+        NOTE steps of data flow
+
+        first of how the data is going to look like this -> idOfImg:actualmage
+        second i call a validate function to check all the ids if they are actually exist and if the logged in user owns them
+        after the validation get passed
+        third step we use the id to update the images(final stage)
+    """
+
+    def __init__(self,data,context=dict()):
+        self.data= data
+        self.context = context
+        self.validate()
+        self.update()
+
+
+    def update(self):
+        keys = self.data.keys()
+        # all_files = general_models.ProspectiveMemberFormTwoFile.objects.filter(id__in=keys)
+        for key in keys:
+             instance = general_models.ProspectiveMemberFormTwoFile.objects.filter(
+                 id=key).first()
+             if instance:
+                serializer =ProspectiveMemberFormTwoFileCleaner(instance=instance,data={'file':self.data.get(key)},partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            #  .update(
+            #      file=self.data.get(key).file)
+        return self.data
+
+        pass
+    def validate(self,):
+        admin_rule = general_models.AdminSetPropectiveMembershipRule.objects.all().first()
+        if admin_rule is None:
+            raise CustomError({'error':'please reach out to your admin to set text_fields'})
+        keys = self.data.keys()
+
+        all_files = general_models.ProspectiveMemberFormTwoFile.objects.filter(id__in=keys)
+        if not general_models.ProspectiveMemberFormTwoFile.objects.filter(id__in=keys).exists():
+            raise CustomError({'error':'please check what you updating'})
+        
+        all_files = all_files.first()
+        if all_files.form_two.prospective_member.user.id != self.context.get('user').id:
+            raise CustomError({'error':'unauthorised'})
 
 class PropectiveMemberFormTwoSerializer:
     'custom serialzer'

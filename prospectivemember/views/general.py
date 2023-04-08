@@ -10,7 +10,7 @@ from rest_framework.permissions import  IsAuthenticated,AllowAny
 from rest_framework.decorators import action
 from utils import custom_parsers
 from rest_framework.parsers import  FormParser
-
+from rest_framework.decorators import parser_classes as decoratorBasedParserClasses
 
 class CreatePropectiveMemberViewset(viewsets.ViewSet):
     serializer_class = general_serializer.CreatePropectiveMemberSerializer
@@ -81,3 +81,24 @@ class PropectiveMemberHandlesFormTwoViewSet(viewsets.ViewSet):
         data= serialzer.save()
 
         return Success_response('success',data=data)
+    
+    def list(self,request,*args,**kwargs):
+        # PropectiveMemberFormTwoCleaner
+        form_two=general_models.ProspectiveMemberFormTwo.objects.get(prospective_member=request.user.prospectivememberprofile)
+        serilzer = general_serializer.PropectiveMemberFormTwoCleaner(instance=form_two,many=False)
+
+        return Success_response('Success',data=serilzer.data)
+
+class UpdateFomrTwoViewSet(viewsets.ViewSet):
+    permission_classes =  [IsAuthenticated,IsProspectiveMember,
+                        #    IsPropectiveMemberHasPaid
+                           ]
+    # parser_classes = (custom_parsers.NestedMultipartParser,FormParser,)
+    serializer_class = general_serializer.PropectiveMemberFormTwoSerializerUpdate
+
+    def create(self,request,*args,**kwargs):
+        # print({'data':request.data})
+        serializer_class =general_serializer.PropectiveMemberFormTwoSerializerUpdate(data=request.data,context={'user':request.user})
+
+        return Success_response('updated successfully',data=[])
+    
