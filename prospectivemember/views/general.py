@@ -22,9 +22,17 @@ class CreatePropectiveMemberViewset(viewsets.ViewSet):
 
         return Success_response('Creation Success',data=[],status_code=status.HTTP_201_CREATED)
 
+class ProfileStatus:
 
+    @action(detail=False,methods=['get'])
+    def get_status(self,request,*args,**kwargs):
 
-class PropectiveMemberHandlesFormOneViewSet(viewsets.ViewSet):
+        profile = request.user.prospectivememberprofile
+        return Success_response('success',data={
+            'status':profile.application_status
+        })
+
+class PropectiveMemberHandlesFormOneViewSet(viewsets.ViewSet,ProfileStatus):
     serializer_class = general_serializer.PropectiveMemberFormOneSerializer
     permission_classes =  [IsAuthenticated,IsProspectiveMember,
                            IsPropectiveMembersHasPaid_general
@@ -59,7 +67,7 @@ class PropectiveMemberHandlesFormOneViewSet(viewsets.ViewSet):
     # def list(self,requeds)
 
 
-class PropectiveMemberHandlesFormTwoViewSet(viewsets.ViewSet):
+class PropectiveMemberHandlesFormTwoViewSet(viewsets.ViewSet,ProfileStatus):
     serializer_class = general_serializer.PropectiveMemberFormTwoSerializer
     permission_classes =  [IsAuthenticated,IsProspectiveMember,
                         IsPropectiveMembersHasPaid_general
@@ -89,7 +97,7 @@ class PropectiveMemberHandlesFormTwoViewSet(viewsets.ViewSet):
 
         return Success_response('Success',data=serilzer.data)
 
-class UpdateFomrTwoViewSet(viewsets.ViewSet):
+class UpdateFomrTwoViewSet(viewsets.ViewSet,ProfileStatus):
     permission_classes =  [IsAuthenticated,IsProspectiveMember,
                           IsPropectiveMembersHasPaid_general
                            ]
