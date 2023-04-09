@@ -1,1 +1,2 @@
 from prospectivemember.models.man_prospective_model import ManProspectiveMemberProfile
+from prospectivemember.models.general import ProspectiveMemberProfile
