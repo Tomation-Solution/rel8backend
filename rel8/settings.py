@@ -316,7 +316,9 @@ CORS_ALLOWED_ORIGINS = [
 'https://www.rel8membership.com',
 'https://rel8membership.com',
 'http://rel8membership.com',
-'https://man-new-test-site.netlify.app'
+'https://man-new-test-site.netlify.app',
+'https://www.members.nimn.com.ng',
+'http://www.members.nimn.com.ng',
 ]
 if os.environ.get('databaseName',None):
     CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
