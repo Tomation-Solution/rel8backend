@@ -166,11 +166,12 @@ class PropectiveMemberFormTwoSerializer:
             prospective_member=prospective_member,)
         keys =validated_data.keys()
         for key in keys:
-            general_models.ProspectiveMemberFormTwoFile.objects.create(
+            fileFormInstance,_ = general_models.ProspectiveMemberFormTwoFile.objects.get_or_create(
                 name=key,
-                file=validated_data[key],
                 form_two=form
             )
+            fileFormInstance.file=validated_data[key]
+            fileFormInstance.save()
         return dict()
  
 

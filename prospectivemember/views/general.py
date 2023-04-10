@@ -92,7 +92,7 @@ class PropectiveMemberHandlesFormTwoViewSet(viewsets.ViewSet,ProfileStatus):
     
     def list(self,request,*args,**kwargs):
         # PropectiveMemberFormTwoCleaner
-        form_two=general_models.ProspectiveMemberFormTwo.objects.get(prospective_member=request.user.prospectivememberprofile)
+        form_two,_=general_models.ProspectiveMemberFormTwo.objects.get_or_create(prospective_member=request.user.prospectivememberprofile)
         serilzer = general_serializer.PropectiveMemberFormTwoCleaner(instance=form_two,many=False)
 
         return Success_response('Success',data=serilzer.data)
