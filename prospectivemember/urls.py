@@ -12,7 +12,7 @@ router.register('create_propective_member',general_view.CreatePropectiveMemberVi
 router.register('general_propective_member_manage_form_one',general_view.PropectiveMemberHandlesFormOneViewSet,basename='general_propective_member_manage_form_one')
 router.register('general_propective_member_manage_form_two',general_view.PropectiveMemberHandlesFormTwoViewSet,basename='general_propective_member_manage_form_two')
 router.register('update_uploadedfiles_formtwo',general_view.UpdateFomrTwoViewSet,basename='update_uploadedfiles_formtwo')
-
+router.register('adminManage_prospective_rule',general_view.AdminManageProspectiveRuleViewSet,basename='adminManage_prospective_rule')
 urlpatterns = [
    
 ] +router.urls

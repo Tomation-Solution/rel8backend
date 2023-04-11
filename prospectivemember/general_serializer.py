@@ -183,3 +183,12 @@ class ProspectiveMemberFormTwoFileSerailzer(serializers.ModelSerializer):
         model = general_models.ProspectiveMemberFormTwoFile
         fields= '__all__'
         read_only_fields=['form_two','name','id']
+
+
+class AdminManageProspectiveRuleSerializer(serializers.ModelSerializer):
+
+
+
+    class Meta:
+        model=general_models.AdminSetPropectiveMembershipRule
+        fields = '__all__'

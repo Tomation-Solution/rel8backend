@@ -5,13 +5,12 @@ from prospectivemember import general_serializer
 from ..models import general as general_models
 from django.shortcuts import get_object_or_404
 from utils.custom_exceptions import CustomError
-from utils.permissions import IsProspectiveMember,IsPropectiveMembersHasPaid_general
+from utils.permissions import  IsAdminOrSuperAdmin, IsProspectiveMember,IsPropectiveMembersHasPaid_general
 from rest_framework.permissions import  IsAuthenticated,AllowAny
 from rest_framework.decorators import action
 from utils import custom_parsers
 from rest_framework.parsers import  FormParser
 from rest_framework.decorators import parser_classes as decoratorBasedParserClasses
-
 class CreatePropectiveMemberViewset(viewsets.ViewSet):
     serializer_class = general_serializer.CreatePropectiveMemberSerializer
 
@@ -109,4 +108,29 @@ class UpdateFomrTwoViewSet(viewsets.ViewSet,ProfileStatus):
         serializer_class =general_serializer.PropectiveMemberFormTwoSerializerUpdate(data=request.data,context={'user':request.user})
 
         return Success_response('updated successfully',data=[])
+
+
+class AdminManageProspectiveRuleViewSet(viewsets.ViewSet):
+    serializer_class =general_serializer.AdminManageProspectiveRuleSerializer
+    permission_classes = [IsAuthenticated,IsAdminOrSuperAdmin]
+    queryset = general_models.AdminSetPropectiveMembershipRule.objects.all()
+
+    
+
+    def list(self, request, *args, **kwargs):
+        rule,_ = general_models.AdminSetPropectiveMembershipRule.objects.get_or_create(
+            id=133,
+        )
+        serialzer =self.serializer_class(many=False,instance=rule,)
+
+        return Success_response(msg='Success',data=serialzer.data)
+
+    def create(self, request, *args, **kwargs):
+        rule,_ = general_models.AdminSetPropectiveMembershipRule.objects.get_or_create(
+            id=133,
+        )
+        serialzer =self.serializer_class(data=request.data,instance=rule,partial=True)
+        serialzer.is_valid(raise_exception=True)
+        d =serialzer.save()
+        return  Success_response(msg='Updated',)
     
