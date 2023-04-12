@@ -43,13 +43,13 @@ class PropectiveMemberFormOneSerializer(serializers.Serializer):
 
 
     def validate(self, attrs):
-        admin_rule = general_models.AdminSetPropectiveMembershipRule.objects.all().first()
-        if admin_rule is None:
-            raise CustomError({'error':'please reach out to your admin to set text_fields'})
-        data =attrs.get('data')
-        keys = map(lambda eachData: eachData.get('name'),data)
-        if not admin_rule.validate_text_fields_keys(keys):
-            raise CustomError({'error':'in complete data'})
+        # admin_rule = general_models.AdminSetPropectiveMembershipRule.objects.all().first()
+        # if admin_rule is None:
+        #     raise CustomError({'error':'please reach out to your admin to set text_fields'})
+        # data =attrs.get('data')
+        # keys = map(lambda eachData: eachData.get('name'),data)
+        # if not admin_rule.validate_text_fields_keys(keys):
+        #     raise CustomError({'error':'in complete data'})
         return super().validate(attrs)
  
     def create(self, validated_data):
