@@ -203,13 +203,13 @@ class ProspectiveMemberCleaner(serializers.ModelSerializer):
     form_one = serializers.SerializerMethodField()
     form_two = serializers.SerializerMethodField()
     def get_form_one(self,instance: general_models.ProspectiveMemberProfile):
-        form_one = general_models.ProspectiveMemberFormOne.objects.get(prospective_member=instance)
+        form_one,_ = general_models.ProspectiveMemberFormOne.objects.get_or_create(prospective_member=instance)
         return {
             'id':form_one.id,
             'info':form_one.info,
         }
     def get_form_two(self,instance):
-        form_two = general_models.ProspectiveMemberFormTwo.objects.get(prospective_member=instance)
+        form_two,_ = general_models.ProspectiveMemberFormTwo.objects.get_or_create(prospective_member=instance)
         data =general_models.ProspectiveMemberFormTwoFile.objects.filter(form_two=form_two)
         clen_data =ProspectiveMemberFormTwoFileCleaner(instance=data,many=True)
         return clen_data.data
