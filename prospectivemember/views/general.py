@@ -134,3 +134,12 @@ class AdminManageProspectiveRuleViewSet(viewsets.ViewSet):
         d =serialzer.save()
         return  Success_response(msg='Updated',)
     
+
+    @action(detail=False,methods=['get'])
+    def get_submissions(self,request,*args,**kwargs):
+
+        all_propective_member_profiles = general_models.ProspectiveMemberProfile.objects.all()
+        clean_data = general_serializer.ProspectiveMemberCleaner(instance=all_propective_member_profiles,many=True)
+        
+
+        return Success_response('success',data=clean_data.data,)
