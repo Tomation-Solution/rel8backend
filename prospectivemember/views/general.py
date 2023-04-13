@@ -150,3 +150,18 @@ class AdminManageProspectiveRuleViewSet(viewsets.ViewSet):
         
 
         return Success_response('success',data=clean_data.data,)
+    
+    @action(detail=False,methods=['post'])
+    def update_prospective_member_status(self,request,*args,**kwargs):
+        pk = request.data.get('id',-1)
+        status = request.data.get('status','kk')
+        if not status in ['approval_in_progress','approval_in_principle_granted','final_approval']:
+            raise CustomError({'error':'choices are aproval in progress , approval in price grated  and final approval'})
+        profile = get_object_or_404(general_models.ProspectiveMemberProfile,id=pk)
+        profile.application_status = status
+        profile.save()
+
+        return Success_response('Updated status',data=[])
+    
+
+        
