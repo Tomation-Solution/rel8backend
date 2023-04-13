@@ -11,6 +11,8 @@ from rest_framework.decorators import action
 from utils import custom_parsers
 from rest_framework.parsers import  FormParser
 from rest_framework.decorators import parser_classes as decoratorBasedParserClasses
+from rest_framework.decorators import permission_classes
+
 class CreatePropectiveMemberViewset(viewsets.ViewSet):
     serializer_class = general_serializer.CreatePropectiveMemberSerializer
 
@@ -50,8 +52,8 @@ class PropectiveMemberHandlesFormOneViewSet(viewsets.ViewSet,ProfileStatus):
         
             return Success_response('success',data=clean_data.data)
         except: return Success_response('No data found',data=None)
-        
-    @action(detail=False,methods=['get'])
+
+    @action(detail=False,methods=['get'],permission_classes=[IsAuthenticated,IsProspectiveMember])
     def get_admin_rules(self,request,*args,**kwargs):
 
         admin_rule =  general_models.AdminSetPropectiveMembershipRule.objects.all().first()
