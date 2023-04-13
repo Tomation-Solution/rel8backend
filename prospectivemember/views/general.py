@@ -89,6 +89,13 @@ class PropectiveMemberHandlesFormTwoViewSet(viewsets.ViewSet,ProfileStatus):
 
         return Success_response('success',data=data)
     
+    @action(detail=False, methods=['post'])
+    def delete_file(self,request,*args,**kwargs):
+        pk = request.data.get('id',None)
+        form2 = get_object_or_404(general_models.ProspectiveMemberFormTwoFile,id=pk)
+        form2.delete()
+        return Success_response('deleted success',data=[])
+    
     def list(self,request,*args,**kwargs):
         # PropectiveMemberFormTwoCleaner
         form_two,_=general_models.ProspectiveMemberFormTwo.objects.get_or_create(prospective_member=request.user.prospectivememberprofile)

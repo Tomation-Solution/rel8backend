@@ -67,20 +67,23 @@ class PropectiveMemberFormOneCleaner(serializers.ModelSerializer):
     class Meta:
         model = general_models.ProspectiveMemberFormOne
         fields = '__all__'
-class PropectiveMemberFormTwoCleaner(serializers.ModelSerializer):
-    files = serializers.SerializerMethodField()
-
-    def get_files(self,instance):
-        return  general_models.ProspectiveMemberFormTwoFile.objects.filter(form_two=instance).values('id','name','file',)
-    class Meta:
-        model = general_models.ProspectiveMemberFormTwo
-        fields = '__all__'
-
 class ProspectiveMemberFormTwoFileCleaner(serializers.ModelSerializer):
 
     class Meta:
         model = general_models.ProspectiveMemberFormTwoFile
         fields = '__all__'
+
+class PropectiveMemberFormTwoCleaner(serializers.ModelSerializer):
+    files = serializers.SerializerMethodField()
+
+    def get_files(self,instance):
+        data =general_models.ProspectiveMemberFormTwoFile.objects.filter(form_two=instance)
+        clean_data =ProspectiveMemberFormTwoFileCleaner(instance=data,many=True)
+        return  clean_data.data
+    class Meta:
+        model = general_models.ProspectiveMemberFormTwo
+        fields = '__all__'
+
 
 
 class PropectiveMemberFormTwoSerializerUpdate:
@@ -153,10 +156,10 @@ class PropectiveMemberFormTwoSerializer:
         admin_rule = general_models.AdminSetPropectiveMembershipRule.objects.all().first()
         if admin_rule is None:
             raise CustomError({'error':'please reach out to your admin to set text_fields'})
-        data =attrs.get('data')
-        keys = attrs.keys()
-        if not admin_rule.validate_file_fields_keys(keys):
-            raise CustomError({'error':'in complete data'})
+        # data =attrs.get('data')
+        # keys = attrs.keys()
+        # if not admin_rule.validate_file_fields_keys(keys):
+        #     raise CustomError({'error':'in complete data'})
 
 
     def create(self, validated_data):
@@ -165,6 +168,7 @@ class PropectiveMemberFormTwoSerializer:
         form,_= general_models.ProspectiveMemberFormTwo.objects.get_or_create(
             prospective_member=prospective_member,)
         keys =validated_data.keys()
+        print({'validated':validated_data})
         for key in keys:
             fileFormInstance,_ = general_models.ProspectiveMemberFormTwoFile.objects.get_or_create(
                 name=key,
