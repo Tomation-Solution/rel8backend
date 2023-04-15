@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from . import filter as custom_filter
 from utils import custom_parsers
 from rest_framework.parsers import  FormParser
+from utils.custom_exceptions import CustomError
 
 
 class GalleryView(viewsets.ModelViewSet):
@@ -91,6 +92,27 @@ class AdminManageGalleryV2View(GalleryV2View):
         clean_data = self.serializer_class(data)
         return Success_response(msg='Created',data=clean_data.data,status_code=status.HTTP_201_CREATED)
 
+    def update(self, request, *args, **kwargs):
+        name = request.data.get('name',None)
+        id = kwargs.get('pk','-1')
+        if name is None:
+            raise CustomError({'error':'Please provide a name'})
+        gallery = get_object_or_404(models.GalleryV2,id=id)
+        gallery.name=name
+        gallery.save()
+        return Success_response(msg='Name Updated Successfully',data=[])
+
+    @action(detail=False,methods=['post'],)
+    def update_gallery_image(self,request,*args,**kwargs):
+        image = request.data.get('image',None)
+        id =  request.data.get('id','-1')
+        if image is None:
+            raise CustomError({'error':'Please provide an image'})
+        galleyImage = get_object_or_404(models.ImagesForGalleryV2,id=id)
+        galleyImage.image= image
+        galleyImage.save()
+        return Success_response('Updated Successfully',data=[])
+    
 class TicketingView(viewsets.ModelViewSet):
     queryset = models.Ticketing.objects.all()
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
