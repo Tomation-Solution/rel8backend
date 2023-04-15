@@ -14,6 +14,7 @@ class GallerySerializer(serializers.ModelSerializer):
 
 class ImageStuff(serializers.Serializer):
     image  = serializers.ImageField()
+    id = serializers.IntegerField()
 class GalleryV2Serializer(serializers.ModelSerializer):
     images =serializers.SerializerMethodField()
 
