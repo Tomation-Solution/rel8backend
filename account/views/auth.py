@@ -275,8 +275,9 @@ class ManageMemberValidation(viewsets.ViewSet):
                     )
             mymailing_task.send_activation_mail.delay(user.id,user.email)
             # regiter_user_to_chat.delay(member.id)
-            if connection.schema_name == 'nimn':
-                charge_new_member_dues__fornimn.delay(user.id)
+            # if connection.schema_name == 'nimn':
+            "this is not for nimn specific any more view the function for more info"
+            charge_new_member_dues__fornimn.delay(user.id)
 
             if connection.schema_name == 'man':
                 for key in request.data.keys():

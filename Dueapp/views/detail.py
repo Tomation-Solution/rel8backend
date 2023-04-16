@@ -52,6 +52,31 @@ class AdminManageDue(viewsets.ViewSet):
         }
         ],status_code=status.HTTP_201_CREATED)
 
+    @action(detail=False,methods=['post'])
+    def create_general_due(self,request,*args,**kwargs):
+        serializer_class = serializers.AdminCreateGeneralDueSerializer
+        serialized = serializer_class(data=request.data,context={"request":request})
+        serialized.is_valid(raise_exception=True)
+        serialized.save()
+        return custom_response.Success_response(msg='Dues created successfully')
+
+    @action(detail=False,methods=['post'])
+    def create_exco_due(self,request,*args,**kwargs):
+        serializer_class = serializers.AdminCreateExcoDuesSerializer
+        serialized = serializer_class(data=request.data,context={"request":request})
+        serialized.is_valid(raise_exception=True)
+        serialized.save()
+        return custom_response.Success_response(msg='Dues created successfully')
+
+    @action(detail=False,methods=['post'])
+    def create_membership_grade_due(self,request,*args,**kwargs):
+        serializer_class = serializers.AdminCreateMembershipGradeDuesSerializer
+        serialized = serializer_class(data=request.data,context={"request":request})
+        serialized.is_valid(raise_exception=True)
+        serialized.save()
+        return custom_response.Success_response(msg='Dues created successfully')
+
+# AdminCreateMembershipGradeDuesSerializer
     def destroy(self, request, pk=None):
         if(models.Due.objects.filter(id=pk).exists()):
             due = models.Due.objects.get(id=pk)

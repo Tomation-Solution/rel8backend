@@ -189,7 +189,7 @@ def update_commitee_chat(commitee_id:int):
 
 @shared_task
 def charge_new_member_dues__fornimn(user_id:int):
-     'This Charge Members on Manul Dues'
+     'This Charge Members on Manul Dues .. this does not work for ont nimn but for org that have membership_grade'
      all_mannual =  due_models.Due.objects.filter(is_on_create=True)
      user = User.objects.get(id=user_id)
      names = UserMemberInfo.objects.filter(Q(name='MEMBERSHIP_GRADE')|Q(name='MEMBERSHIP_GRADE'.lower()),
@@ -200,20 +200,22 @@ def charge_new_member_dues__fornimn(user_id:int):
         grade,_ =MemberShipGrade.objects.get_or_create(name=names.value)
         grade.member.add(user.memeber)
         grade.save()
-        update_membership_grade_chat.delay(grade.id)
-     for due in all_mannual:
-          if due.dues_for_membership_grade is  not None:
-            if due.dues_for_membership_grade.name ==names.value:
-                 due_models.Due_User.objects.create(
-                    user=user,
-                    due=due,
-                    amount=due.amount)
-          else:
-                due_models.Due_User.objects.create(
-                    user=user,
-                    due=due,
-                    amount=due.amount
-                )
+        # update_membership_grade_chat.delay(grade.id)
+        for due in all_mannual:
+            if due.dues_for_membership_grade is  not None:
+                if due.dues_for_membership_grade.name ==names.value:
+                    due_models.Due_User.objects.create(
+                        user=user,
+                        due=due,
+                        amount=due.amount)
+            else:
+                 pass
+                #  'This means that charge the person on the pervious dues before he joined'
+                #  due_models.Due_User.objects.create(
+                #         user=user,
+                #         due=due,
+                #         amount=due.amount
+                #     )
 
 
 
