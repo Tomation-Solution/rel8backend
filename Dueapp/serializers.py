@@ -1,11 +1,15 @@
 from cProfile import run
 from rest_framework import serializers
-
+from django.db import models, connection
+from utils.usefulFunc import get_localized_time
+from django_celery_beat.models import  (
+    PeriodicTask,CrontabSchedule,
+    IntervalSchedule,ClockedSchedule )
 from utils.custom_exceptions import CustomError
 from . import models
 from account.models import auth as auth_related_models
 from account.models import user as user_related_models
-
+import json
 
 class MemberDueUSerSerializer(serializers.ModelSerializer):
     user__email = serializers.SerializerMethodField()
@@ -138,10 +142,163 @@ class AdminManageDuesSerializer(serializers.Serializer):
         # print(validated_data)
         return due.id
         
+class AdminCreateExcoDuesSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    amount = serializers.FloatField()
+    startDate = serializers.DateField(
+          format="%d-%m-%Y",
+        input_formats=["%d-%m-%Y", "iso-8601"],
+        required=True,
+    )
+    startTime = serializers.TimeField()
+    endDate = serializers.DateField(
+    format="%d-%m-%Y",
+    input_formats=["%d-%m-%Y", "iso-8601"],
+    required=True,
+    )
+    endTime = serializers.TimeField()
+    exco_id = serializers.IntegerField()
 
+    def create(self, validated_data):
+        name = validated_data.pop('name')
+        exco_id =validated_data.pop('exco_id','-1')
+        exco = None
+        if   user_related_models.ExcoRole.objects.filter(id=exco_id).exists():
+            exco = user_related_models.ExcoRole.objects.get(id=exco_id)
+        due= models.Due.objects.create(
+            **validated_data,is_on_create=False,
+            Name=name,
+            exco = exco
+            )
+        due.save()
+        self.create_perodic_task(due)
+        return due   
+    def create_perodic_task(self,due):
+        tenant = connection.tenant
 
+        localized_time = get_localized_time(
+            due.startDate, due.startTime, tenant.timezone
+        )
+        clocked, _ = ClockedSchedule.objects.get_or_create(
+        clocked_time=localized_time
+        )
+        PeriodicTask.objects.create(
+        clocked=clocked,
+            name=f"{due.Name} {str(due.id)} Exco due",  # task name
+            task="Dueapp.tasks.create_exco_due",  # task.
+            args=json.dumps(
+            [
+            due.id,
+            due.exco.id
+            ]
+            ),  # arguments
+            description="this starts the billing for excos dues",
+            one_off=True,
+            headers=json.dumps(
+            {
+            "_schema_name": tenant.schema_name,
+            "_use_tenant_timezone": True,
+            }
+            )
+        )
 
+class AdminCreateMembershipGradeDuesSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    amount = serializers.FloatField()
+    startDate = serializers.DateField(
+          format="%d-%m-%Y",
+        input_formats=["%d-%m-%Y", "iso-8601"],
+        required=True,
+    )
+    startTime = serializers.TimeField()
+    endDate = serializers.DateField(
+    format="%d-%m-%Y",
+    input_formats=["%d-%m-%Y", "iso-8601"],
+    required=True,
+    )
+    endTime = serializers.TimeField()
+    membership_due_id = serializers.IntegerField()
 
+    def create(self, validated_data):
+        name = validated_data.pop('name')
+        membership_due_id =validated_data.pop('membership_due_id','-1')
+        dues_for_membership_grade =None
+        if user_related_models.MemberShipGrade.objects.filter(id=membership_due_id).exists():
+            dues_for_membership_grade = user_related_models.MemberShipGrade.objects.get(id=membership_due_id)
+        due = models.Due.objects.create(
+            **validated_data,
+            Name=name,
+            dues_for_membership_grade=dues_for_membership_grade,
+        )
+        due.save()
+        self.create_perodic_task(due)
+        return due
+
+    def create_perodic_task(self,due):
+        tenant = connection.tenant
+        localized_time = get_localized_time(
+            due.startDate, due.startTime, tenant.timezone
+        )
+        clocked, _ = ClockedSchedule.objects.get_or_create(
+        clocked_time=localized_time
+        )
+        PeriodicTask.objects.create(
+        clocked=clocked,
+        name=f"{due.Name} {str(due.id)} create_membership_due grad4",  # task name
+        task="Dueapp.tasks.create_membership_due",  # task.
+        args=json.dumps(
+        [
+        due.id,
+        due.dues_for_membership_grade.id
+        ]
+        ),  # arguments
+        description="this starts the billing dues_for_membership_grade dues",
+        one_off=True,
+        headers=json.dumps(
+        {
+        "_schema_name": tenant.schema_name,
+        "_use_tenant_timezone": True,
+        }
+        )
+        )
+
+class AdminCreateGeneralDueSerializer(serializers.Serializer):
+    "THIS DUE IS CREATED FOR ALL USERS"
+    name = serializers.CharField()
+    amount = serializers.FloatField()
+    startDate = serializers.DateField(
+          format="%d-%m-%Y",
+        input_formats=["%d-%m-%Y", "iso-8601"],
+        required=True,
+    )
+    startTime = serializers.TimeField()
+    endDate = serializers.DateField(
+    format="%d-%m-%Y",
+    input_formats=["%d-%m-%Y", "iso-8601"],
+    required=True,
+    )
+    endTime = serializers.TimeField()
+    chapterID= serializers.IntegerField(required=False)
+
+    def create(self, validated_data):
+        name = validated_data.pop('name')
+        # amount = validated_data.get('amount')
+        # startDate = validated_data.get('startDate')
+        # startTime = validated_data.get('startTime')
+        # endDate = validated_data.get('endDate')
+        # endTime = validated_data.get('endTime')
+        chapterID=validated_data.pop('chapterID','-1')
+        chapters=None
+        if auth_related_models.Chapters.objects.filter(id= chapterID).exists():
+            chapters = auth_related_models.Chapters.objects.get(id= chapterID)
+
+        due= models.Due.objects.create(
+            **validated_data,is_on_create=False,
+            Name=name,
+            chapters=chapters
+            )
+        due.save()
+        return due
 class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
     name = serializers.CharField()
     is_for_excos = serializers.BooleanField()

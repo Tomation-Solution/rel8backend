@@ -5,55 +5,73 @@ from django.contrib.auth import get_user_model
 from Dueapp import models
 from celery import shared_task
 from account.models import user as user_related_models
+from django.db.models import Q
 
 logger = get_task_logger(__name__)
 
+@app.task()
+def create_exco_due(due_id,exco_id):
+        # users =get_user_model().objects.all().filter(
+        # user_type='members',exci__id=exco_id)
+        due =models.Due.objects.get(id=due_id)
+        excoRole = user_related_models.ExcoRole.objects.get(id=exco_id)
+        for member in excoRole.member.all():
+            # let set the members that are being Charge it is_financial=False
+            models.Due_User.objects.create(
+                user =member.user,
+                due = due,
+                amount=due.amount,
+                is_overdue=False
+            )
+            member.amount_owing = member.amount_owing - due.amount
+            member.save()
+
+def create_membership_due(due_id,membershipgrade_id):
+    grade=user_related_models.MemberShipGrade.objects.get(id=membershipgrade_id)
+    due =  models.Due.objects.get(id=due_id)
+
+    for member in grade.member.all():
+            models.Due_User.objects.create(
+                user =member.user,
+                due = due,
+                amount=due.amount,
+                is_overdue=False
+            )
+            member.amount_owing = member.amount_owing - due.amount
+            member.save()
+
+        
 
 @app.task()
 def create_due_job(due_id,chapterID=None):
     """
-        we not nessary creating a new due we just using the info of the due to charge a user
+    this function create general dues
     """
     logger.info(f'{due_id},{type(due_id) } from matthew  chapterID:{chapterID} ' )
-    try:
-        if chapterID:
-            # get all users with the chapterID 
-            users =get_user_model().objects.all().filter(
-                user_type='members',chapter__id=chapterID)
+    if chapterID:
+        # get all users with the chapterID 
+        users =get_user_model().objects.all().filter(
+            user_type='members',chapter__id=chapterID)
 
-        else:
-            # else just get all users
-            users =get_user_model().objects.all().filter(
-            user_type='members',)
+    else:
+        # else just get all users
+        users =get_user_model().objects.all().filter(
+        user_type='members',)
 
-        due =models.Due.objects.get(id=due_id)
-        for eachMember in users:
-            # let set the members that are being Charge it is_financial=False
-            'is_for_excos if it false that means we getting all users else if its for only excos'
-            member = user_related_models.Memeber.objects.get(user=eachMember,)
-            perform_operatioon = False
-            if due.dues_for_membership_grade.member.filter(id=member.id):
-                perform_operatioon=True
-            else:
-                "this person is not in the alumni year dont charge him"
-                perform_operatioon=False
+    due =models.Due.objects.get(id=due_id)
+    for eachMember in users:
+        # let set the members that are being Charge it is_financial=False
+        'is_for_excos if it false that means we getting all users else if its for only excos'
+        member = user_related_models.Memeber.objects.get(user=eachMember,)
+        models.Due_User.objects.create(
+            user =member.user,
+            due = due,
+            amount=due.amount,
+            is_overdue=False
+        )
+        member.amount_owing = member.amount_owing - due.amount
+        member.save()
 
-            logger.info(f'perform_operatioon: {perform_operatioon} on member that has id of {member.id}')
-            if perform_operatioon:
-                # if member.is_exco==due.is_for_excos:
-                member.is_financial=False
-                member.amount_owing=member.amount_owing- due.amount
-                member.save()
-                dueUser = models.Due_User.objects.create(
-                    user = eachMember,
-                    due=due,
-                    amount = due.amount
-                )
-                dueUser.save()
-            
-    except models.Due.DoesNotExist:
-        logger.info('hello the Due DOes not exist')
- 
 # @shared_task
 def create_deactivating_user_model(id,chapterID=None):
     "this would create DeactivatingDue for each user so they can pay"
@@ -88,6 +106,20 @@ def create_deactivating_user_model(id,chapterID=None):
     except models.Due.DoesNotExist:
         logger.info('hello the Due DOes not exist')
     
+@app.task()
+def deactivate_owing_members(id,chapterID=None):
+    'get all due_users that are meant to pay the Due'
+    due = models.Due.objects.get(id=id)
+    all_due_user = models.Due_User.objects.all().filter(due=due)
+    for each_user  in all_due_user:
+        if each_user.is_paid ==False:
+            each_user.is_overdue=True
+            each_user.save()
+            member = user_related_models.Memeber.objects.get(
+                user=each_user.user)
+            member.is_financial=False
+            member.save()
+
 
 
 

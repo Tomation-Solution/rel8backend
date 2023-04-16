@@ -13,5 +13,6 @@ router.register('memberlist-info',user_view.MemberListInfo,basename="memberlist-
 router.register('member-bio',user_view.MemberBioViewSet,basename='member-bio')
 urlpatterns = [
     path('profile/',user_view.profile,name='profile'),
-    path('council_members/<int:pk>/',user_view.council_members,name='council_members')
+    path('council_members/<int:pk>/',user_view.council_members,name='council_members'),
+    path('get_membershipgrade/',user_view.get_membershipgrade,name='get_membershipgrade')
 ] +router.urls
