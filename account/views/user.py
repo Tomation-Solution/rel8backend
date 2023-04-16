@@ -286,6 +286,14 @@ def council_members(request,*args,**kwargs):
     serialized = user.MemberSerializer(council_members,many=True)
     return custom_response.Success_response(msg='successful',data=serialized.data,status_code=status.HTTP_200_OK)
 
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated,])
+def get_membershipgrade(request,*args,**kwargs):
+    grades = user_models.MemberShipGrade.objects.all().values('id','name')
+    return custom_response.Success_response(msg='successful',data=grades,status_code=status.HTTP_200_OK)
+
+# MemberShipGrade
 # @api_view(['POST',])
 # @permission_classes([permissions.IsAuthenticated,custom_permissions.IsMember])
     # raise CustomError({"error":"Validation UnSuccessfull"})
