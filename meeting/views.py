@@ -12,7 +12,7 @@ from rest_framework.parsers import  FormParser
 
 
 class MeetingMemberViewSet(viewsets.ViewSet):
-    permission_classes = [ permissions.IsAuthenticated,custom_permission.IsMember]
+    permission_classes = [ permissions.IsAuthenticated,custom_permission.IsMember,custom_permission.Isfinancial]
     queryset =models.Meeting.objects.all()
 
 

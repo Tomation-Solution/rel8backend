@@ -114,7 +114,7 @@ class MembersGetNews(views.APIView):
 
 class MemberCommentOnNews(viewsets.ModelViewSet):
     queryset = models.NewsComment.objects.all()
-    permission_classes =[permissions.IsAuthenticated,custom_permission.IsMember]
+    permission_classes =[permissions.IsAuthenticated,custom_permission.IsMember,custom_permission.Isfinancial]
     serializer_class = serializers.MemberCommentOnNewsSerializer
 
     

@@ -51,7 +51,7 @@ class AdminManagePublication(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 class MembersGetNews(views.APIView):
     # serializer_class  = 
-    permission_classes =[permissions.IsAuthenticated,custom_permission.IsMember]
+    permission_classes =[permissions.IsAuthenticated,custom_permission.IsMember,custom_permission.Isfinancial]
     
     def _return_newsInDIct(self,publication):return {"name":publication.name,}
 

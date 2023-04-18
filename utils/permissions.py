@@ -23,8 +23,14 @@ class BasePermissionMixin(BasePermission):
         
         pass
 
-
-
+class Isfinancial(BasePermission):
+    def has_permission(self, request, view):
+        if  request.user.user_type != 'members':
+            return True
+        
+        if request.user.memeber.is_financial==False:
+            raise  CustomError({'is_inancial':'please pay your outstanding dues'})
+        return True
 class IsAdminOrSuperAdmin(BasePermission):
 
     def has_permission(self, request, view):
