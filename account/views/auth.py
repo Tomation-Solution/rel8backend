@@ -22,10 +22,53 @@ from rest_framework.decorators import action,permission_classes
 from rest_framework.generics import GenericAPIView
 from mailing.models import EmailInvitation
 from account import task as acct_task
+from rest_framework.decorators import api_view
+import json
 # create Super user of the Alumni which is the owner
+from pusher_push_notifications import PushNotifications
+beams_client = PushNotifications(
+    instance_id='fee7cd9d-4669-4171-988a-14d13d8d8453',
+    secret_key='C072F780D3B4AB35AC6AB1C39454019254D26AD134698485D65728A7B87E9D0B',
+)
 
 
 
+@api_view(['GET'])
+def send_data(request,*args,**kwargs):
+    response= beams_client.publish_to_users(
+    user_ids=['1'],
+    publish_body={
+    'apns': {
+        'aps': {
+        'alert': {
+            'title': 'aps',
+            'body': 'Hello, world! aps',
+        },
+        },
+    },
+    'fcm': {
+        'notification': {
+        'title': 'fcm',
+        'body': 'Hello, world ! scm',
+        },
+    },
+    'web': {
+        'notification': {
+        'title': 'web',
+        'body': 'Hello, world! web',
+        },
+    },
+    },
+    )
+
+    return Response(data=response['publishId'])
+
+@api_view(['GET'])
+def beams_auth(request,*args,**kwargs):
+    # Do your normal auth checks here 🔒
+    user_id = request.query_params.get('user_id')
+    beams_token = beams_client.generate_token(user_id)
+    return Response(data=beams_token)
 
 
 class EmailValidateView(GenericAPIView):
@@ -289,7 +332,7 @@ class ManageMemberValidation(viewsets.ViewSet):
                     if key == 'SUB-SECTOR':
                         exco_name = request.data[key]
                         acct_task.group_MAN_subSector_and_sector.delay(
-                            exco_name,member.id,type='sector'
+                            exco_name,member.id,type='sub-sector'
                         )
                   
             return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)

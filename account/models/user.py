@@ -203,6 +203,7 @@ class ExcoRole(models.Model):
     "if the chapter is none this mean this is a global exco else if it tied to one chapter this means this exco is for only that chapter"
     chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True,default=None,blank=True)
 
+    def __str__(self):return self.name
 class MemberShipGrade(models.Model):
     member = models.ManyToManyField(Memeber,default=None,blank=True,) 
     name = models.CharField(max_length=500)

@@ -14,6 +14,9 @@ urlpatterns = [
 
     path('login/',auth_view.Login.as_view(),),
     path('upload_database/',auth_view.UploadSecondLevelDataBaseView.as_view(),name='upload_database'),
-    path( "validate-email/",auth_view.EmailValidateView.as_view(),name="email-validate")
+    path( "validate-email/",auth_view.EmailValidateView.as_view(),name="email-validate"),
+    path('pusher/beams-auth/',auth_view.beams_auth),
+    path('send/',auth_view.send_data)
+
 ]+ router.urls
 
