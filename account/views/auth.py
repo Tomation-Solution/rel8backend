@@ -332,7 +332,7 @@ class ManageMemberValidation(viewsets.ViewSet):
                     if key == 'SUB-SECTOR':
                         exco_name = request.data[key]
                         acct_task.group_MAN_subSector_and_sector.delay(
-                            exco_name,member.id,type='sector'
+                            exco_name,member.id,type='sub-sector'
                         )
                   
             return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
