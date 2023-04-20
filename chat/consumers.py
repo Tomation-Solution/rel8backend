@@ -8,12 +8,12 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from asgiref.sync import sync_to_async
 from account.models import user as user_related_models
-from pusher_push_notifications import PushNotifications
+# from pusher_push_notifications import PushNotifications
 
-beams_client = PushNotifications(
-    instance_id='fee7cd9d-4669-4171-988a-14d13d8d8453',
-    secret_key='C072F780D3B4AB35AC6AB1C39454019254D26AD134698485D65728A7B87E9D0B',
-)
+# beams_client = PushNotifications(
+#     instance_id='fee7cd9d-4669-4171-988a-14d13d8d8453',
+#     secret_key='C072F780D3B4AB35AC6AB1C39454019254D26AD134698485D65728A7B87E9D0B',
+# )
 
 class ChatRoomConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -32,41 +32,41 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-    async def send_pusher(self,senderID,message='hellow'):
-        'note this is a one on one chat so we get the ids all i need to do is to send the notifciation to the reciver'
-        firstuserid,seconduserid = self.room_name.splite('and') 
-        firstuserid = int(firstuserid)
-        seconduserid = int(seconduserid)
-
-        reciver_id = -1
-
-        if seconduserid != int(senderID):
-            'this person is a reciver'
-            reciver_id = seconduserid
-        if firstuserid != int(senderID):
-            'this person is a reciver'
-            reciver_id = firstuserid
-        alert ={
-                'title':'membership app',
-                'body': message,
-            }
-        response= beams_client.publish_to_users(
-        user_ids=[f'{reciver_id}'],
-        publish_body={
-        'apns': {
-            'aps': {
-            'alert': alert,
-            },
-        },
-        'fcm': {
-            'notification': alert,
-        },
-        'web': {
-            'notification':alert,
-        },
-        },
-        )
+    # async def send_pusher(self,senderID,message='hellow'):
         
+    #     'note this is a one on one chat so we get the ids all i need to do is to send the notifciation to the reciver'
+        # firstuserid,seconduserid = self.room_name.splite('and') 
+        # firstuserid = int(firstuserid)
+        # seconduserid = int(seconduserid)
+
+        # reciver_id = -1
+
+        # if seconduserid != int(senderID):
+        #     'this person is a reciver'
+        #     reciver_id = seconduserid
+        # if firstuserid != int(senderID):
+        #     'this person is a reciver'
+        #     reciver_id = firstuserid
+        # alert ={
+        #         'title':'membership app',
+        #         'body': message,
+        #     }
+        # response= beams_client.publish_to_users(
+        # user_ids=[f'{reciver_id}'],
+        # publish_body={
+        # 'apns': {
+        #     'aps': {
+        #     'alert': alert,
+        #     },
+        # },
+        # 'fcm': {
+        #     'notification': alert,
+        # },
+        # 'web': {
+        #     'notification':alert,
+        # },
+        # },
+        # )
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
@@ -77,7 +77,7 @@ class ChatRoomConsumer(AsyncWebsocketConsumer):
         "here we setting the schema using the short name tha was sent from the front end"
         
         # firstuserid,seconduserid = self.room_name.splite('and') 
-        await self.send_pusher(send_user_id)
+        # await self.send_pusher(send_user_id)
         await self.validate_user(send_user_id)
         await self.create_chat(send_user_id,message)
 
