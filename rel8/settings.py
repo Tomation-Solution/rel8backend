@@ -299,6 +299,7 @@ CORS_ALLOWED_ORIGINS = [
 'https://nimrel8-production.up.railway.app',
 # "http://localhost:8000",
 # 'https://guileless-stroopwafel-666090.netlify.app'
+
 'https://cool-liger-caec7e.netlify.app',
 'http://cool-liger-caec7e.netlify.app',
 'https://nimn-frontend-production.up.railway.app',
