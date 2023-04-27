@@ -296,6 +296,7 @@ CORS_ALLOWED_ORIGINS = [
 'https://fancy-dragon-bad276.netlify.app',
 'http://members.nimn.com.ng',
 'https://members.nimn.com.ng',
+'https://nimrel8-production.up.railway.app',
 # "http://localhost:8000",
 # 'https://guileless-stroopwafel-666090.netlify.app'
 'https://cool-liger-caec7e.netlify.app',
