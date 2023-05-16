@@ -43,6 +43,7 @@ def generate_interswitch_error(MerchantReference:str,CustReference:str,Amount:in
     }
     }}}
 
+
 class PaymentSerializer(serializers.Serializer):
     MerchantReference = serializers.CharField(required=False)
     PaymentItemCode= serializers.IntegerField(required=False)
