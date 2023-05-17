@@ -1,5 +1,6 @@
 import json
 from rest_framework import parsers
+from rest_framework_xml.parsers import XMLParser
 
 
 class NestedMultipartParser(parsers.MultiPartParser):
@@ -57,3 +58,9 @@ class NestedMultipartParser(parsers.MultiPartParser):
             self.decode(key=key, value=value, data=data)
 
         return data
+
+
+
+class CustomTextXmlPaser(XMLParser):
+    media_type= "text/xml"
+
