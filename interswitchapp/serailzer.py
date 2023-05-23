@@ -39,7 +39,7 @@ def generate_interswitch_error(MerchantReference:str,CustReference:str,Amount:in
     'CustReference':CustReference,
     'CustomerReferenceAlternate':'','ThirdPartyCode':'',
     'Amount':Amount,
-    'ErrorMessage':msg
+    'Phone':msg
     }
     }}}
 
@@ -47,8 +47,10 @@ def generate_interswitch_error(MerchantReference:str,CustReference:str,Amount:in
 class PaymentSerializer(serializers.Serializer):
     MerchantReference = serializers.CharField(required=False)
     PaymentItemCode= serializers.IntegerField(required=False)
-    OrgShortName =  serializers.CharField(required=False)
-    ForWhat = serializers.CharField(required=False)
+    # OrgShortName
+    LastName =  serializers.CharField(required=False)
+    # ForWhat
+    FirstName  = serializers.CharField(required=False)
     CustReference =serializers.IntegerField(required=False)
 
     """
@@ -56,11 +58,11 @@ class PaymentSerializer(serializers.Serializer):
           when customers can pay for any amount
     """
     def validate(self, attrs):
-        schema_name = attrs.get('OrgShortName',' ')
+        schema_name = attrs.get('LastName',' ')
         merchant_reference = attrs.get('merchant_reference',' ')
         # member id number
         CustReference = attrs.get('CustReference',' ')
-        ForWhat = attrs.get('ForWhat','')
+        ForWhat = attrs.get('FirstName','')
         if not rel8tenant_related_models.Client.objects.filter(schema_name=schema_name).exists():
             error = generate_interswitch_error(merchant_reference,CustReference,0.00,'incorrect OrgShortName')
             raise PaymentError(error)

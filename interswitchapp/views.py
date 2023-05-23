@@ -10,7 +10,7 @@ from utils.custom_parsers import CustomTextXmlPaser
 # read this docs -> https://sandbox.interswitchng.com/docbase/docs/paydirect/rest-service-api/customer-data-validation/
 
 
-
+#password Password1$
 
 class PaymentValidation(viewsets.ViewSet):
     # queryset = User.objects.all()
