@@ -1,5 +1,6 @@
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import status
+from utils.custom_parsers import CustomTextXmlPaser
 
 class CustomError(PermissionDenied):
     'this helps me throw custom Errors Anytime AnyDay ;)'
@@ -17,6 +18,7 @@ class CustomError(PermissionDenied):
 class PaymentError(PermissionDenied):
     'this made for only interswitch payment gateway'
 
+    parser_classes = (CustomTextXmlPaser,)
 
     def __init__(self,error_ob:dict, status_code=status.HTTP_400_BAD_REQUEST):
         self.detail = error_ob

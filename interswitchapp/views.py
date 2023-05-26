@@ -24,5 +24,6 @@ class PaymentValidation(viewsets.ViewSet):
         payment_serializer = serailzer.PaymentSerializer(data=request.data)
         payment_serializer.is_valid(raise_exception=True)
         payment_data= payment_serializer.save()
-        return interswitchResponseWithAmountMoreTHan0(**payment_data)
+        return Response(data=payment_data,content_type="text/xml")
+        # return interswitchResponseWithAmountMoreTHan0(**payment_data)
     

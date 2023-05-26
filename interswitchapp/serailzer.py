@@ -28,7 +28,13 @@ from Dueapp import models as  due_models
 #     'ThirdPartyCode':'',
 #     'Amount':0.00}
 #     }}}
-def generate_interswitch_error(MerchantReference:str,CustReference:str,Amount:int,msg):
+def generate_interswitch_error(
+MerchantReference:str,
+CustReference:str,
+Amount:int,
+productname='',
+productcode='',
+                               ):
 
     return {
     'CustomerInformationResponse':{
@@ -37,58 +43,118 @@ def generate_interswitch_error(MerchantReference:str,CustReference:str,Amount:in
         'Customer':{
     'Status':1,
     'CustReference':CustReference,
-    'CustomerReferenceAlternate':'','ThirdPartyCode':'',
+    'CustomerReferenceAlternate':'',
+    'FirstName':'',
+    'Email':'',
+    'LastName':'',
+    'Phone':'',
+    'ThirdPartyCode':'',
     'Amount':Amount,
-    'Phone':msg
+    'Phone':'',
+    'PaymentItems':{
+        'Item':{
+            'ProductName':productname,
+            'ProductCode':productcode,
+            'Quantity':'1',
+            'Price':Amount,
+            'Subtotal':'',
+            'Tax':'',
+            'Total':Amount,
+        }
+    }
     }
     }}}
 
+	
+"""
+prospective_member_registration
+due
+event_payment
+fund_a_project
+"""
+payload = {
+    '1':'prospective_member_registration-man',
+    '2':'due-man',
+    '3':'event_payment-man',
+    # '04':'fund_a_project-man',
 
+    '5':'prospective_member_registration-nimn',
+    '6':'due-nimn',
+    '7':'event_payment-nimn',
+
+    '8':'prospective_member_registration-migos',
+    '9':'due-migos',
+    '10':'event_payment-migos',
+
+    # '08':'fund_a_project-nimn',
+}
 class PaymentSerializer(serializers.Serializer):
     MerchantReference = serializers.CharField(required=False)
-    PaymentItemCode= serializers.IntegerField(required=False)
-    # OrgShortName
-    LastName =  serializers.CharField(required=False)
-    # ForWhat
-    FirstName  = serializers.CharField(required=False)
-    CustReference =serializers.IntegerField(required=False)
+    ServiceUsername =serializers.IntegerField(required=False)
+    ServicePassword =serializers.IntegerField(required=False)
+    ThirdPartyCode =serializers.IntegerField(required=False)
+    CustReference =serializers.CharField(required=False)
+    PaymentItemCode= serializers.CharField(required=False)
 
     """
     	Amount to be paid, NB: You must return amount has 0,
           when customers can pay for any amount
     """
     def validate(self, attrs):
-        schema_name = attrs.get('LastName',' ')
-        merchant_reference = attrs.get('merchant_reference',' ')
+        # schema_name = attrs.get('LastName',' ')
+        PaymentItemCode = attrs.get('PaymentItemCode','01')
+        CustReference = attrs.get('CustReference')
+        
+        request=''
+        request = payload[PaymentItemCode]
+
+        try:
+            request = payload[PaymentItemCode]
+        except:
+            print('it try and except')
+            error = generate_interswitch_error(
+                MerchantReference='',CustReference=CustReference,
+                Amount=0.00)
+            raise PaymentError(error)
+        ForWhat,schema_name = request.split('-')
         # member id number
-        CustReference = attrs.get('CustReference',' ')
-        ForWhat = attrs.get('FirstName','')
+        # CustReference = attrs.get('CustReference',' ')
+        # ForWhat = attrs.get('FirstName','')
         if not rel8tenant_related_models.Client.objects.filter(schema_name=schema_name).exists():
-            error = generate_interswitch_error(merchant_reference,CustReference,0.00,'incorrect OrgShortName')
+            error = generate_interswitch_error(
+                MerchantReference='',CustReference=CustReference,
+                Amount=0.00)
+            print('schema- dont exist')
             raise PaymentError(error)
         # set the schema to the particular tenat we want to deal with
         connection.set_schema(schema_name=schema_name)
         
         if not user_related_models.Memeber.objects.filter(id=CustReference).exists():
             "check if a member exits"
-            error = generate_interswitch_error(merchant_reference,CustReference,0.00,'Member does not exist')
+            error = generate_interswitch_error(
+                MerchantReference='',CustReference=CustReference,
+                Amount=0.00)
             raise PaymentError(error)
         if not (ForWhat.lower() in ['due','event_payment','fund_a_project']):
-            error = generate_interswitch_error(merchant_reference,CustReference,0.00,
-            "must include at least one of this option.. 'due','event_payment','fund_a_project'")
+            print('forhwat')
+            error = generate_interswitch_error(
+                MerchantReference='',CustReference=CustReference,
+                Amount=0.00)
+            # error = generate_interswitch_error(merchant_reference,CustReference,0.00,
+            # "must include at least one of this option.. 'due','event_payment','fund_a_project'")
             raise PaymentError(error)
 
         return super().validate(attrs)
     
 
     def create(self, validated_data):
-        merchant_reference = validated_data.get('merchant_reference',' ')
-        forWhat = validated_data.get('ForWhat',)
+        item_id = validated_data.get('MerchantReference',' ')
         CustReference = validated_data.get('CustReference','')
         member =user_related_models.Memeber.objects.get(id=CustReference)
-        item_id = validated_data.get('PaymentItemCode',-1)
+        PaymentItemCode= validated_data.get('PaymentItemCode',-1)
 
-        
+        forWhat,shortname= payload[PaymentItemCode].split('-')
+        instance=''
         if forWhat=="due":
             print({'forwhj':forWhat})
             due_users = due_models.Due_User.objects.all()
@@ -99,24 +165,44 @@ class PaymentSerializer(serializers.Serializer):
                 raise PaymentError(error)
                     
             if  due_users.filter(user=member.user,id=item_id,is_paid=True).exists():
-                error = generate_interswitch_error(merchant_reference,CustReference,0.00,
-                                                    'you have paid for this due already')
+                error = generate_interswitch_error(
+                MerchantReference=item_id,CustReference=CustReference,
+                Amount=0.00)
                 raise PaymentError(error)
-            instance = due_models.Due_User.objects.get(user=member.user,id=item_id)
-
-        
-            return {
-            'CustReference':CustReference,
-            'first_name':member.full_name,
-            'email':member.user.email,
-            'phone':'',
-            'amount':instance.amount,
-            'for_what':forWhat,
-            'instance_id':instance.id,
-            'OrgShortName':validated_data.get('OrgShortName'),
-            }
-        
-        error = generate_interswitch_error(merchant_reference,
-                    CustReference,0.00,
-                    'Please Check the api parameters well you might be missing a para')
+            due_user = due_models.Due_User.objects.get(user=member.user,id=item_id)
+            instance = due_user.due
+            print(instance.amount)
+            return   {
+    'CustomerInformationResponse':{
+    'MerchantReference':item_id,
+    'Customers':{
+        'Customer':{
+    'Status':0,
+    'CustReference':CustReference,
+    'CustomerReferenceAlternate':'',
+    'FirstName':member.full_name,
+    'Email':member.user.email,
+    'LastName':'',
+    'Phone':'',
+    'ThirdPartyCode':'',
+    'Amount':int(instance.amount),
+    'Phone':'',
+    'PaymentItems':{
+        'Item':{
+            'ProductName':forWhat,
+            'ProductCode':item_id,
+            'Quantity':'1',
+            'Price':int(instance.amount),
+            'Subtotal':'',
+            'Tax':'',
+            'Total':int(instance.amount),
+        }
+    }
+    }
+    }}}
+           
+       
+        error = generate_interswitch_error(
+        MerchantReference=item_id,CustReference=CustReference,
+        Amount=0.00)
         raise PaymentError(error)
