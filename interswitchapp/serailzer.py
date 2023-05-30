@@ -126,6 +126,7 @@ class PaymentSerializer(serializers.Serializer):
     ThirdPartyCode =serializers.IntegerField(required=False)
     CustReference =serializers.CharField(required=False)
     PaymentItemCode= serializers.CharField(required=False)
+    StatusMessage =serializers.CharField(required=False)
 
     """
     	Amount to be paid, NB: You must return amount has 0,
@@ -180,7 +181,7 @@ class PaymentSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         print({"sdd":"passed validation"})
-        item_id = validated_data.get('MerchantReference',' ')
+        item_id = validated_data.get('StatusMessage',' ')
         CustReference = validated_data.get('CustReference','')
         member =user_related_models.Memeber.objects.get(id=CustReference)
         PaymentItemCode= validated_data.get('PaymentItemCode',-1)
