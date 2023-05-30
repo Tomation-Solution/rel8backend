@@ -126,7 +126,6 @@ class PaymentSerializer(serializers.Serializer):
     ThirdPartyCode =serializers.IntegerField(required=False)
     CustReference =serializers.CharField(required=False)
     PaymentItemCode= serializers.CharField(required=False)
-    StatusMessage =serializers.CharField(required=False)
 
     """
     	Amount to be paid, NB: You must return amount has 0,
@@ -134,7 +133,7 @@ class PaymentSerializer(serializers.Serializer):
     """
     def validate(self, attrs):
         # schema_name = attrs.get('LastName',' ')
-        PaymentItemCode = attrs.get('PaymentItemCode','01')
+        PaymentItemCode,item_id = attrs.get('PaymentItemCode','01-1').split('-')
         CustReference = attrs.get('CustReference')
         ForWhat,schema_name = payload[PaymentItemCode].split('-')
         
@@ -180,11 +179,11 @@ class PaymentSerializer(serializers.Serializer):
     
 
     def create(self, validated_data):
-        print({"sdd":"passed validation"})
-        item_id = validated_data.get('StatusMessage',' ')
+        PaymentItemCode,item_id = validated_data.get('PaymentItemCode','01-1').split('-')
+        # item_id = validated_data.get('StatusMessage',' ')
         CustReference = validated_data.get('CustReference','')
         member =user_related_models.Memeber.objects.get(id=CustReference)
-        PaymentItemCode= validated_data.get('PaymentItemCode',-1)
+        # PaymentItemCode= validated_data.get('PaymentItemCode',-1)
 
         forWhat,shortname= payload[PaymentItemCode].split('-')
         instance=''
@@ -210,7 +209,7 @@ class PaymentSerializer(serializers.Serializer):
             instance = due_user.due
             print(instance.amount)
             return   {
-    'MerchantReference':item_id,
+    'MerchantReference':'',
     'Customers':{
         'Customer':{
     'Status':0,
@@ -226,7 +225,7 @@ class PaymentSerializer(serializers.Serializer):
     'PaymentItems':{
         'Item':{
             'ProductName':forWhat,
-            'ProductCode':item_id,
+            'ProductCode':validated_data.get('PaymentItemCode',''),
             'Quantity':'1',
             'Price':int(instance.amount),
             'Subtotal':'',
