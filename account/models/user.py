@@ -149,6 +149,8 @@ class Memeber(models.Model):
 
 # filter(
 # )
+    def __str__(self) -> str:
+        return self.full_name
     @property
     def full_name(self,):
         possible_name_outcomes = self.usermemberinfo_set.filter(
