@@ -34,10 +34,11 @@ CustReference:str,
 Amount:int,
 productname='',
 productcode='',
+error='',
                                ):
 
+
     return {
-    'CustomerInformationResponse':{
     'MerchantReference':MerchantReference,
     'Customers':{
         'Customer':{
@@ -51,6 +52,7 @@ productcode='',
     'ThirdPartyCode':'',
     'Amount':Amount,
     'Phone':'',
+    'error':error,
     'PaymentItems':{
         'Item':{
             'ProductName':productname,
@@ -63,7 +65,36 @@ productcode='',
         }
     }
     }
-    }}}
+    }}
+    # return {
+    # 'CustomerInformationResponse':{
+    # 'MerchantReference':MerchantReference,
+    # 'Customers':{
+    #     'Customer':{
+    # 'Status':1,
+    # 'CustReference':CustReference,
+    # 'CustomerReferenceAlternate':'',
+    # 'FirstName':'',
+    # 'Email':'',
+    # 'LastName':'',
+    # 'Phone':'',
+    # 'ThirdPartyCode':'',
+    # 'Amount':Amount,
+    # 'Phone':'',
+    # 'error':error,
+    # 'PaymentItems':{
+    #     'Item':{
+    #         'ProductName':productname,
+    #         'ProductCode':productcode,
+    #         'Quantity':'1',
+    #         'Price':Amount,
+    #         'Subtotal':'',
+    #         'Tax':'',
+    #         'Total':Amount,
+    #     }
+    # }
+    # }
+    # }}}
 
 	
 """
@@ -104,6 +135,7 @@ class PaymentSerializer(serializers.Serializer):
         # schema_name = attrs.get('LastName',' ')
         PaymentItemCode = attrs.get('PaymentItemCode','01')
         CustReference = attrs.get('CustReference')
+        ForWhat,schema_name = payload[PaymentItemCode].split('-')
         
         request=''
         request = payload[PaymentItemCode]
@@ -114,16 +146,15 @@ class PaymentSerializer(serializers.Serializer):
             print('it try and except')
             error = generate_interswitch_error(
                 MerchantReference='',CustReference=CustReference,
-                Amount=0.00)
+                Amount=0.00,error='cant find PaymentItemCode')
             raise PaymentError(error)
-        ForWhat,schema_name = request.split('-')
         # member id number
         # CustReference = attrs.get('CustReference',' ')
         # ForWhat = attrs.get('FirstName','')
         if not rel8tenant_related_models.Client.objects.filter(schema_name=schema_name).exists():
             error = generate_interswitch_error(
                 MerchantReference='',CustReference=CustReference,
-                Amount=0.00)
+                Amount=0.00,error='schema does not exits')
             print('schema- dont exist')
             raise PaymentError(error)
         # set the schema to the particular tenat we want to deal with
@@ -133,13 +164,13 @@ class PaymentSerializer(serializers.Serializer):
             "check if a member exits"
             error = generate_interswitch_error(
                 MerchantReference='',CustReference=CustReference,
-                Amount=0.00)
+                Amount=0.00,error='members does not exits')
             raise PaymentError(error)
         if not (ForWhat.lower() in ['due','event_payment','fund_a_project']):
             print('forhwat')
             error = generate_interswitch_error(
                 MerchantReference='',CustReference=CustReference,
-                Amount=0.00)
+                Amount=0.00,error='the type is not due')
             # error = generate_interswitch_error(merchant_reference,CustReference,0.00,
             # "must include at least one of this option.. 'due','event_payment','fund_a_project'")
             raise PaymentError(error)
@@ -148,6 +179,7 @@ class PaymentSerializer(serializers.Serializer):
     
 
     def create(self, validated_data):
+        print({"sdd":"passed validation"})
         item_id = validated_data.get('MerchantReference',' ')
         CustReference = validated_data.get('CustReference','')
         member =user_related_models.Memeber.objects.get(id=CustReference)
@@ -155,6 +187,7 @@ class PaymentSerializer(serializers.Serializer):
 
         forWhat,shortname= payload[PaymentItemCode].split('-')
         instance=''
+        merchant_reference =item_id
         if forWhat=="due":
             print({'forwhj':forWhat})
             due_users = due_models.Due_User.objects.all()
@@ -162,18 +195,20 @@ class PaymentSerializer(serializers.Serializer):
                 error = generate_interswitch_error(merchant_reference,
                                                     CustReference,0.00,
                                                     'Due Doesnt Exist')
+                print({'exist':'due does not exist'})
                 raise PaymentError(error)
                     
             if  due_users.filter(user=member.user,id=item_id,is_paid=True).exists():
                 error = generate_interswitch_error(
                 MerchantReference=item_id,CustReference=CustReference,
                 Amount=0.00)
+                print({'exist':'due does not exist'})
+
                 raise PaymentError(error)
             due_user = due_models.Due_User.objects.get(user=member.user,id=item_id)
             instance = due_user.due
             print(instance.amount)
             return   {
-    'CustomerInformationResponse':{
     'MerchantReference':item_id,
     'Customers':{
         'Customer':{
@@ -199,10 +234,11 @@ class PaymentSerializer(serializers.Serializer):
         }
     }
     }
-    }}}
+    }}
            
        
         error = generate_interswitch_error(
         MerchantReference=item_id,CustReference=CustReference,
         Amount=0.00)
+        print({'exist':'Not due'})
         raise PaymentError(error)

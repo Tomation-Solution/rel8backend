@@ -11,12 +11,13 @@ from utils.custom_parsers import CustomTextXmlPaser
 
 
 #password Password1$
-
+class PaymentValidationXml(XMLRenderer):
+    root_tag_name='CustomerInformationResponse'
 class PaymentValidation(viewsets.ViewSet):
     # queryset = User.objects.all()
     # serializer_class = UserSerializer
     parser_classes = (CustomTextXmlPaser,)
-    renderer_classes = (XMLRenderer,)
+    renderer_classes = (PaymentValidationXml,)
 
 
     def create(self, request, *args, **kwargs):
