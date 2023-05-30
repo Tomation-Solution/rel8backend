@@ -121,9 +121,6 @@ payload = {
 }
 class PaymentSerializer(serializers.Serializer):
     MerchantReference = serializers.CharField(required=False)
-    ServiceUsername =serializers.IntegerField(required=False)
-    ServicePassword =serializers.IntegerField(required=False)
-    ThirdPartyCode =serializers.IntegerField(required=False)
     CustReference =serializers.CharField(required=False)
     PaymentItemCode= serializers.CharField(required=False)
 
