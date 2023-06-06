@@ -13,6 +13,8 @@ from utils.custom_parsers import CustomTextXmlPaser
 #password Password1$
 class PaymentValidationXml(XMLRenderer):
     root_tag_name='CustomerInformationResponse'
+    content_type ='text/xml'
+    media_type ='text/xml'
 class PaymentValidation(viewsets.ViewSet):
     # queryset = User.objects.all()
     # serializer_class = UserSerializer
