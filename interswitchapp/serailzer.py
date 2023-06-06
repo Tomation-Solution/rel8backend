@@ -52,7 +52,7 @@ error='',
     'ThirdPartyCode':'',
     'Amount':Amount,
     'Phone':'',
-    'error':error,
+    # 'error':error,
     'PaymentItems':{
         'Item':{
             'ProductName':productname,
