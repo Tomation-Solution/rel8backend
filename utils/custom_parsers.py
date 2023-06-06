@@ -63,4 +63,5 @@ class NestedMultipartParser(parsers.MultiPartParser):
 
 class CustomTextXmlPaser(XMLParser):
     media_type= "text/xml"
+    content_type ='text/xml'
 
