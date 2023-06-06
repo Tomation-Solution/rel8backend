@@ -31,7 +31,10 @@ def activateEmail(user,to_email):
         'token':account_activation_token.make_token(user=user)
         # 'protocol':'https'
     }
-    html_content = render_to_string('mail_body.html',context=data)
+    if user.user_type == 'prospective_members':
+        html_content = render_to_string('mail_body.html',context=data)
+    else:
+        html_content = render_to_string('prospective_mail_body.html',context=data)
     send_mail(
         subject='Email Activation For Membership Software',
         html_content=html_content,
