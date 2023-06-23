@@ -192,8 +192,11 @@ class InitPaymentTran(APIView):
             instance.save()
 
             return Success_response(msg='Success',data=data)
-
-        raise CustomError(message='Some Error Occured Please Try Again',status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        print(resp)
+        print(resp.json())
+        raise CustomError(message='Some Error Occured Please Try Again',
+                          data=resp.json()
+                          ,status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 @csrf_exempt
 def useWebhook(request,pk=None):
