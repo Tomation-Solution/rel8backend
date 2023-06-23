@@ -131,12 +131,12 @@ class InitPaymentTran(APIView):
             pk = instance.id#we did this cause we accessing the eventdue_user
         if forWhat =='fund_a_project':
             'since this is a donation there is no fix price we get it from the query param'
-            amount  = request.query_params.get('donated_amount',None)
+            amount  = request.query_params.get('donated_amount',1000.00)
             if amount is None:
                 raise CustomError({'error':'Please amount it missing'})
             "here we check it the"
             try:
-                amount = int(amount)
+                amount = float(int(amount))
             except ValueError:
                 raise CustomError({'error':'amount must be number '})
             fundAProject = extras_models.FundAProject.objects.get(id=pk)
