@@ -17,7 +17,6 @@ class AdminManageBallotBox(serializers.ModelSerializer):
 
 class ContestantCleaner(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
-    name = serializers.SerializerMethodField()
 
 
     def get_user(self,instance:models.Contestant):
