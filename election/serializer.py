@@ -47,7 +47,7 @@ class AdminManageContest(serializers.Serializer):
     aspirantBio = serializers.JSONField()
     upload_manifesto_docs = serializers.FileField()
     upload_manifesto_image = serializers.FileField()
-
+    manifesto_text =serializers.CharField()
 
     def validate(self, attrs):
         if not user_models.Memeber.objects.filter(id=attrs.get('member')).exists():
@@ -66,6 +66,7 @@ class AdminManageContest(serializers.Serializer):
         aspirantBio = validated_data.get('aspirantBio')
         upload_manifesto_docs =validated_data.get('upload_manifesto_docs')
         upload_manifesto_image = validated_data.get('upload_manifesto_image')
+        manifesto_text = validated_data.get('manifesto_text')
         contestant= models.Contestant.objects.create(
             member =member,
             postion =postion,
@@ -74,6 +75,7 @@ class AdminManageContest(serializers.Serializer):
             aspirantBio =aspirantBio,
             upload_manifesto_docs=upload_manifesto_docs,
             upload_manifesto_image=upload_manifesto_image,
+            manifesto_text=manifesto_text
             )
         # contestant.youtubeVidLink = validated_data.get('youtubeVidLink',contestant.youtubeVidLink)
 

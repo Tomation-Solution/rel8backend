@@ -55,9 +55,9 @@ class Contestant(models.Model):
     upload_manifesto_image = models.FileField(null=True,default=None)
     # this contestant will be running for this postion 
     postion  = models.ForeignKey(Postions,null=True,default=None,blank=True,on_delete=models.SET_NULL)
+    manifesto_text = models.TextField(default='Let Make Record')
     
 
-
-    # def __str__(self):
+    # def __str__(self):    
     #     return f'Member {self.member.id} conteting  for "{self.postion.postion_name}"'
 
