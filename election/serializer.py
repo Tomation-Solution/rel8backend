@@ -17,6 +17,8 @@ class AdminManageBallotBox(serializers.ModelSerializer):
 
 class ContestantCleaner(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+
 
     def get_user(self,instance:models.Contestant):
         photo = ''
@@ -24,7 +26,8 @@ class ContestantCleaner(serializers.ModelSerializer):
         except:photo=''
 
         return {
-            'photo':photo
+            'photo':photo,
+            'name':instance.member.full_name
         }
 
     class Meta:
