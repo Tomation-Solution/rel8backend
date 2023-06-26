@@ -40,6 +40,7 @@ class EventSerializer(serializers.Serializer):
     event_extra_details = serializers.CharField(required=False)
     event_docs = serializers.FileField(required=False)
     organiserImage = serializers.ImageField(required=False)
+    is_special = serializers.BooleanField(required=False)
     # for_chapters=serializers.BooleanField(default=False,)
     # def validate(self, attrs):
         
@@ -82,7 +83,7 @@ class EventSerializer(serializers.Serializer):
                 'link':event.address
             }
     def create(self, validated_data):
-        # for_chapters=validated_data.pop('for_chapters',None)
+
         user = self.context.get('request').user
         # Super_admin
         commitee_id = validated_data.get("commitee_id",None)
@@ -90,10 +91,8 @@ class EventSerializer(serializers.Serializer):
         schedule = validated_data.get("schedule",None)
         re_occuring = validated_data.get("re_occuring",None)
         exco_id = validated_data.get('exco_id',None)
-        # event_docs = validated_data.get('event_docs',None)
-        # organiser_extra_info = validated_data.get('organiser_extra_info','')
-        # organiser_name = validated_data.get('organiser_name','')
-        # event_extra_details = validated_data.get('event_extra_details','')
+        is_special = validated_data.pop('is_special',False)
+        is_paid_event= validated_data.pop('is_paid_event',False)
         if(re_occuring==True):
             if scheduletype is None:
                 raise CustomError({'scheduletype':'required'})
@@ -123,8 +122,14 @@ class EventSerializer(serializers.Serializer):
             except:
                 raise CustomError({'error':'Exco Does not exist'})
 
+        if is_special:
+            "special event must be paid"
+            if is_paid_event==False and is_special:raise CustomError({'error':'Special Event Must Be Paid'})
+
         event =  models.Event.objects.create(
-            **validated_data,chapters=chapter,commitee=commitee
+            **validated_data,chapters=chapter,commitee=commitee,
+            is_paid_event=is_paid_event,
+            is_special=is_special,
         )
 
         event.exco=exco
@@ -136,7 +141,6 @@ class EventSerializer(serializers.Serializer):
 class AdminManageEventActiveStatus(serializers.Serializer):
     switch_on =serializers.BooleanField()
     event_id = serializers.IntegerField()
-
 
     def validate(self, attrs):
         if attrs.get('event_id') is None:raise CustomError({'event_id':'Invalid event_id'})

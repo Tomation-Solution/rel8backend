@@ -53,7 +53,7 @@ class Event(models.Model):
     organiser_name = models.CharField(max_length=200,default='',blank=True)
     organiser_extra_info = models.CharField(max_length=200,default='',blank=True)
     organiserImage = models.ImageField(default=None,null=True,upload_to='event_organiser/%d/')
-
+    is_special = models.BooleanField(default=False)
     event_extra_details = models.TextField(default='',blank=True)
     """    
     day_of_week-0,1 - means run sunday and monday
@@ -202,6 +202,7 @@ class EventDue_User(models.Model):
     is_paid = models.BooleanField(default=False)
 
 class EventProxyAttendies(models.Model):
+    "This is are people invited for a event ... not proxy"
     event_due_user = models.ForeignKey(EventDue_User,on_delete=models.CASCADE)
     # {'participants':[]}
     participants  = models.JSONField(default=dict)

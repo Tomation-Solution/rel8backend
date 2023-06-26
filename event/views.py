@@ -41,7 +41,7 @@ class EventViewSet(viewsets.ViewSet):
         instance = serialize.save()
         duesObject = models.Event.objects.get(id=instance.id)
         clean_data = self.serializer_class(duesObject,many=False,context={'request':request})
-        return custom_response.Success_response(msg='Due created successfully',data=clean_data.data,status_code=status.HTTP_201_CREATED)
+        return custom_response.Success_response(msg='Event created successfully',data=clean_data.data,status_code=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         "we getting the query set but if the person choose is_chapters we get the chapter data"

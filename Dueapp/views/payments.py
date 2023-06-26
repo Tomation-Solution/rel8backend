@@ -23,7 +23,8 @@ from prospectivemember.models.man_prospective_model import ManProspectiveMemberP
 from mymailing import tasks as mymailing_task
 from prospectivemember.models import general as generalProspectiveModels
 from django.shortcuts import get_object_or_404
-
+from event.models import EventProxyAttendies
+from mymailing import tasks as mailing_tasks
 def very_payment(request,reference=None):
     # this would be in the call back to check if the payment is a success
     if reference is None:
@@ -124,10 +125,23 @@ class InitPaymentTran(APIView):
             if not events.filter(id=pk,).exists():raise CustomError({"error":"Event Does Not Exist maybe it was deleted"})
             event = event_models.Event.objects.get(id=pk )
             if event_users.filter(user=request.user,event=event,is_paid=True).exists():raise CustomError({"error":"Hello you have paid for this event"})
-            
             instance,_ = event_models.EventDue_User.objects.get_or_create(
                 user=request.user,event=event,amount=event.amount,)
-            amount_to_be_paid = instance.amount
+            if event.is_special:
+                invited_guest = request.data.get('invited_guest',[])
+                amount_to_be_paid = (instance.amount * len(invited_guest))+instance.amount
+                
+                event_proxy_attendies,created= EventProxyAttendies.objects.get_or_create(
+                    participants= invited_guest,
+                    event_due_user=instance)
+                
+                mailing_tasks.send_event_invitation_mail.delay(
+                    user_id=instance.user.id,
+                    event_id = event.id,
+                    event_proxy_attendies_id=event_proxy_attendies.id)
+            else:
+
+                amount_to_be_paid = instance.amount
             pk = instance.id#we did this cause we accessing the eventdue_user
         if forWhat =='fund_a_project':
             'since this is a donation there is no fix price we get it from the query param'
@@ -136,7 +150,7 @@ class InitPaymentTran(APIView):
                 raise CustomError({'error':'Please amount it missing'})
             "here we check it the"
             try:
-                amount = float(int(amount))
+                amount = int(amount)
             except ValueError:
                 raise CustomError({'error':'amount must be number '})
             fundAProject = extras_models.FundAProject.objects.get(id=pk)
