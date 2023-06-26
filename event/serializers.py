@@ -39,6 +39,7 @@ class EventSerializer(serializers.Serializer):
     organiser_name = serializers.CharField(required=False)
     event_extra_details = serializers.CharField(required=False)
     event_docs = serializers.FileField(required=False)
+    organiserImage = serializers.ImageField(required=False)
     # for_chapters=serializers.BooleanField(default=False,)
     # def validate(self, attrs):
         
