@@ -153,11 +153,15 @@ class InitPaymentTran(APIView):
                 amount = int(amount)
             except ValueError:
                 raise CustomError({'error':'amount must be number '})
+            remark = request.data.get('remark',None)
+            if remark is None:raise CustomError({'error':'a note is required'})
+
             fundAProject = extras_models.FundAProject.objects.get(id=pk)
             instance,_ = extras_models.SupportProjectInCash.objects.get_or_create(
                 member = request.user.memeber,
                 project=fundAProject,
             )
+            instance.member_remark=remark
             instance.amount=amount
             instance.save()
             fundAProject.amount_made =fundAProject.amount_made+ amount

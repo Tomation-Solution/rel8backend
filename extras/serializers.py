@@ -77,7 +77,7 @@ class MemberSupportProjectInKindSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.SupportProjectInKind
-        fields = ['heading','about','project']
+        fields = ['heading','about','project','delivery_date']
 
 class MemeberCustomerSupporSerializer(serializers.ModelSerializer):
 
