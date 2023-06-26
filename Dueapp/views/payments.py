@@ -157,10 +157,11 @@ class InitPaymentTran(APIView):
             instance,_ = extras_models.SupportProjectInCash.objects.get_or_create(
                 member = request.user.memeber,
                 project=fundAProject,
-                
             )
-            fundAProject.amount = amount
+            instance.amount=amount
             instance.save()
+            fundAProject.amount_made =fundAProject.amount_made+ amount
+            fundAProject.save()
             amount_to_be_paid=instance.amount
         # if 
         if(instance==None):raise CustomError({"error":"Something went wrong"})
