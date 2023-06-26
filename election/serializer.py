@@ -35,7 +35,8 @@ class ContestantCleaner(serializers.ModelSerializer):
             'id','member',
             'amount_vote','youtubeVidLink',
             'aspirantBio','upload_manifesto_docs',
-            'upload_manifesto_image','user','postion'
+            'upload_manifesto_image','user','postion',
+            'manifesto_text'
         ]
         # depth =1
 class AdminManageContest(serializers.Serializer):
