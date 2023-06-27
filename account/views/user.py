@@ -255,11 +255,13 @@ class MemberBioViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         instance = user_models.Memeber.objects.get(id=request.user.memeber.id)
-        serialized = self.serializer_class(instance=instance,data=request.data,context={'user':request.user})
-        serialized.is_valid(raise_exception=True)
-        member_instance = serialized.save()
+        instance.bio=request.data.get('bio',instance.bio)
+        instance.save()
+        # serialized = self.serializer_class(instance=instance,data=request.data,context={'user':request.user})
+        # serialized.is_valid(raise_exception=True)
+        # data =serialized.save()
 
-        clean_data = user.MemberSerializer(instance=member_instance,context={'user':request.user})
+        clean_data = user.MemberSerializer(instance=instance,context={'user':request.user})
         return custom_response.Success_response('Updated',data=clean_data.data)
     
 

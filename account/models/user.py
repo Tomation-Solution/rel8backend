@@ -147,6 +147,8 @@ class Memeber(models.Model):
     dob   = models.DateField(blank=True,null=True,default=None)
     citizenship    = models.CharField(default='',max_length=24)
 
+    bio = models.TextField(default='Bio Update')
+
 # filter(
 # )
     def __str__(self) -> str:

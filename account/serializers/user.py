@@ -245,8 +245,7 @@ class MemberEducationSerilizer(serializers.ModelSerializer):
         read_only_fields=('member',)
 
 class MemberUpdateBioSerializer(serializers.ModelSerializer):
-    membereducation = MemberEducationSerilizer(many=True)
-    memberemploymenthistory = MemberEmploymentHistorySerializerCleaner(many=True)
+
     id = serializers.IntegerField(required=False)
 
 
@@ -255,7 +254,7 @@ class MemberUpdateBioSerializer(serializers.ModelSerializer):
         fields= [
             'id',
             'amount_owing','is_exco','is_financial',
-            'telephone_number','address','dob','citizenship','membereducation','memberemploymenthistory'
+            'telephone_number','address','dob','citizenship',
 
         ]
         read_only_fields = ['amount_owing','is_exco','is_financial',]
@@ -264,61 +263,62 @@ class MemberUpdateBioSerializer(serializers.ModelSerializer):
         membereducation = validated_data.pop('membereducation',)
         Memberemploymenthistory = validated_data.pop('memberemploymenthistory',)
         member = self.context.get('user').memeber
-        for education in membereducation:
-             education.pop('is_delete',None)
-             user_models.MemberEducation.objects.create(**education,member=member)
+        # for education in membereducation:
+        #      education.pop('is_delete',None)
+        #      user_models.MemberEducation.objects.create(**education,member=member)
             
-        for employment in Memberemploymenthistory:
-            employment.pop('is_delete',None)
-            user_models.MemberEmploymentHistory.objects.create(**employment,member=member)
+        # for employment in Memberemploymenthistory:
+        #     employment.pop('is_delete',None)
+        #     user_models.MemberEmploymentHistory.objects.create(**employment,member=member)
 
         return member
     def update(self, instance, validated_data):
-        instance.telephone_number= validated_data.get('telephone_number',instance.telephone_number)
-        instance.address= validated_data.get('address',instance.address)
-        instance.dob= validated_data.get('dob',instance.dob)
-        instance.citizenship= validated_data.get('citizenship',instance.citizenship)
+        # instance.telephone_number= validated_data.get('telephone_number',instance.telephone_number)
+        # instance.address= validated_data.get('address',instance.address)
+        # instance.dob= validated_data.get('dob',instance.dob)
+        # instance.citizenship= validated_data.get('citizenship',instance.citizenship)
+        instance.bio= validated_data.get('bio',instance.bio)
         instance.save()
 
-        membereducation = validated_data.get('membereducation')
-        memberemploymenthistory = validated_data.get('memberemploymenthistory')
-        print(membereducation)
-        for eduction in membereducation:
-            if 'id' in eduction.keys():
-                if user_models.MemberEducation.objects.filter(id=eduction['id']).exists():
-                    member_education =user_models.MemberEducation.objects.get(id=eduction['id'])
-                    if eduction.get('is_delete',False)==True:
-                        member_education.delete()
-                    else:
-                        member_education.name_of_institution=eduction.get('name_of_institution',member_education.name_of_institution)
-                        member_education.major=eduction.get('major',member_education.major)
-                        member_education.degree=eduction.get('degree',member_education.degree)
-                        member_education.language=eduction.get('language',member_education.language)
-                        member_education.reading=eduction.get('reading',member_education.reading)
-                        member_education.speaking=eduction.get('speaking',member_education.speaking)
-                        member_education.date=eduction.get('date',member_education.date)
-                        member_education.save()
-            else:
-                eduction.pop('is_delete',None)
-                user_models.MemberEducation.objects.create(**eduction,member=instance)
+        # membereducation = validated_data.get('membereducation')
+        # memberemploymenthistory = validated_data.get('memberemploymenthistory')
+        # print(membereducation)
+        # for eduction in membereducation:
+        #     if 'id' in eduction.keys():
+        #         if user_models.MemberEducation.objects.filter(id=eduction['id']).exists():
+        #             member_education =user_models.MemberEducation.objects.get(id=eduction['id'])
+        #             if eduction.get('is_delete',False)==True:
+        #                 member_education.delete()
+        #             else:
+        #                 member_education.name_of_institution=eduction.get('name_of_institution',member_education.name_of_institution)
+        #                 member_education.major=eduction.get('major',member_education.major)
+        #                 member_education.degree=eduction.get('degree',member_education.degree)
+        #                 member_education.language=eduction.get('language',member_education.language)
+        #                 member_education.reading=eduction.get('reading',member_education.reading)
+        #                 member_education.speaking=eduction.get('speaking',member_education.speaking)
+        #                 member_education.date=eduction.get('date',member_education.date)
+        #                 member_education.save()
+        #     else:
+        #         eduction.pop('is_delete',None)
+        #         user_models.MemberEducation.objects.create(**eduction,member=instance)
 
-        for employment in memberemploymenthistory:
-            if 'id' in employment.keys():
-                if user_models.MemberEmploymentHistory.objects.filter(id=employment['id']).exists():
-                    member_employment =  user_models.MemberEmploymentHistory.objects.get(id=employment['id'])
-                    if employment.get('is_delete'):
-                        print('To be deleted',member_employment)
-                        member_employment.delete()
-                    else:
-                        print('Updated',employment.get('is_delete'))
-                        member_employment.postion_title = employment.get('postion_title',member_employment.postion_title)
-                        member_employment.employment_from = employment.get('employment_from',member_employment.employment_from)
-                        member_employment.employment_to = employment.get('employment_to',member_employment.employment_to)
-                        member_employment.employer_name_and_addresse = employment.get('employer_name_and_addresse',member_employment.employer_name_and_addresse)
-                        member_employment.save()
-            else:
-                employment.pop('is_delete',None)
-                user_models.MemberEmploymentHistory.objects.create(**employment,member=instance)
+        # for employment in memberemploymenthistory:
+        #     if 'id' in employment.keys():
+        #         if user_models.MemberEmploymentHistory.objects.filter(id=employment['id']).exists():
+        #             member_employment =  user_models.MemberEmploymentHistory.objects.get(id=employment['id'])
+        #             if employment.get('is_delete'):
+        #                 print('To be deleted',member_employment)
+        #                 member_employment.delete()
+        #             else:
+        #                 print('Updated',employment.get('is_delete'))
+        #                 member_employment.postion_title = employment.get('postion_title',member_employment.postion_title)
+        #                 member_employment.employment_from = employment.get('employment_from',member_employment.employment_from)
+        #                 member_employment.employment_to = employment.get('employment_to',member_employment.employment_to)
+        #                 member_employment.employer_name_and_addresse = employment.get('employer_name_and_addresse',member_employment.employer_name_and_addresse)
+        #                 member_employment.save()
+        #     else:
+        #         employment.pop('is_delete',None)
+        #         user_models.MemberEmploymentHistory.objects.create(**employment,member=instance)
         return instance
 
 
@@ -375,8 +375,8 @@ class MemberSerializer(serializers.ModelSerializer):
     is_active =serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
     photo =serializers.SerializerMethodField()
-    member_education = serializers.SerializerMethodField()
-    member_employment_history = serializers.SerializerMethodField()
+    # member_education = serializers.SerializerMethodField()
+    # member_employment_history = serializers.SerializerMethodField()
     full_name = serializers.SerializerMethodField()
     def get_photo(self,member):
         user = member.user
@@ -384,13 +384,13 @@ class MemberSerializer(serializers.ModelSerializer):
             return user.photo.url
         else: return ''
 
-    def get_member_education(self,member):
-        eductation = user_models.MemberEducation.objects.filter(member=member)
-        clean_data = MemberEducationSerilizer(instance=eductation,many=True)
-        return clean_data.data
-    def get_member_employment_history(self,member):
-        employment = user_models.MemberEmploymentHistory.objects.filter(member=member)
-        clean_data = MemberEmploymentHistorySerializerCleaner(instance=employment,many=True)
+    # def get_member_education(self,member):
+    #     eductation = user_models.MemberEducation.objects.filter(member=member)
+    #     clean_data = MemberEducationSerilizer(instance=eductation,many=True)
+    #     return clean_data.data
+    # def get_member_employment_history(self,member):
+    #     employment = user_models.MemberEmploymentHistory.objects.filter(member=member)
+    #     clean_data = MemberEmploymentHistorySerializerCleaner(instance=employment,many=True)
 
         return clean_data.data
     def get_is_active(self,member):return member.user.is_active
@@ -413,7 +413,8 @@ class MemberSerializer(serializers.ModelSerializer):
         model = user_models.Memeber
         fields = '__all__'
         read_only_fields = ['id','member_info','email',
-                            'member_education','member_employment_history','full_name']
+                            # 'member_education','member_employment_history',
+                            'full_name']
 
 class IsOwningSerializerCleaner(serializers.ModelSerializer):
     email  = serializers.SerializerMethodField()
