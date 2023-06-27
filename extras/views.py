@@ -169,3 +169,7 @@ class MemberPersonalGallery(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return models.MemberPersonalGallery.objects.filter(member=self.request.user.memeber)
+
+
+    def perform_create(self, serializer):
+        serializer.save(member=self.request.user.memeber)

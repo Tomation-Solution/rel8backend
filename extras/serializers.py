@@ -91,4 +91,5 @@ class MemberPersonalGallerySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.MemberPersonalGallery
-        fields ='__all__'
+        fields =['photo_file','id','member']
+        read_only_fields =['member']
