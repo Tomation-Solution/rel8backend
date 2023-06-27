@@ -4,6 +4,11 @@ from account.models import user as user_realted_models
 from datetime  import date
 
 
+class MemberPersonalGallery(models.Model):
+        photo_file = models.ImageField(upload_to="gallery_personal/")
+        member =  models.ForeignKey(user_realted_models.Memeber,on_delete=models.CASCADE,null=True,default=None)
+    
+
 
 class Gallery(models.Model):
     link = models.TextField()

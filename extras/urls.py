@@ -15,6 +15,7 @@ router.register('admin_gallery_version2',views.AdminManageGalleryV2View,basename
 router.register('admin_manage_project',views.AdminManagesProjectViewset,)
 router.register('member_support_project',views.MemeberProjectViewset,basename='member_support_project')
 router.register('memeber_customer_support',views.MemeberCustomerSupportViewSet)
+router.register('member_personal_gallery',views.MemberPersonalGallery,basename='member_personal_gallery')
 urlpatterns =[
 
 ] + router.urls

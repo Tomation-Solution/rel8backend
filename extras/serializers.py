@@ -85,3 +85,10 @@ class MemeberCustomerSupporSerializer(serializers.ModelSerializer):
         model = models.CustomerSupport
         fields = ['heading','body','status','id']
         read_only_fields=['member','status','id',]
+
+class MemberPersonalGallerySerializer(serializers.ModelSerializer):
+
+
+    class Meta:
+        model = models.MemberPersonalGallery
+        fields ='__all__'

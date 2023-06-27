@@ -159,3 +159,13 @@ class MemeberCustomerSupportViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(member=self.request.user.memeber)
+
+
+
+class MemberPersonalGallery(viewsets.ModelViewSet):
+    queryset= models.MemberPersonalGallery.objects.all()
+    permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
+    serializer_class = serializers.MemberPersonalGallerySerializer
+
+    def get_queryset(self):
+        return models.MemberPersonalGallery.objects.filter(member=self.request.user.memeber)
