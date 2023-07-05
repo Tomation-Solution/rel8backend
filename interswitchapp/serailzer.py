@@ -120,9 +120,9 @@ payload = {
     # '08':'fund_a_project-nimn',
 }
 class PaymentSerializer(serializers.Serializer):
-    MerchantReference = serializers.CharField(required=False)
-    CustReference =serializers.CharField(required=False)
-    PaymentItemCode= serializers.CharField(required=False)
+    # MerchantReference = serializers.CharField(required=False)
+    CustReference =serializers.CharField(required=False,allow_null=True)
+    PaymentItemCode= serializers.CharField(required=False,allow_null=True)
 
     """
     	Amount to be paid, NB: You must return amount has 0,
@@ -130,10 +130,22 @@ class PaymentSerializer(serializers.Serializer):
     """
     def validate(self, attrs):
         # schema_name = attrs.get('LastName',' ')
-        PaymentItemCode,item_id = attrs.get('PaymentItemCode','01-1').split('-')
-        CustReference = attrs.get('CustReference')
-        ForWhat,schema_name = payload[PaymentItemCode].split('-')
+        CustReference = attrs.get('CustReference','0')
+
+        error = generate_interswitch_error(
+        MerchantReference='',CustReference='',
+        Amount=0.00,error='cant find PaymentItemCode')
+        if not attrs.get('PaymentItemCode','01-1') or not CustReference:
+            raise PaymentError(error)
         
+        PaymentItemCode,item_id = attrs.get('PaymentItemCode','01-1').split('-')
+
+
+
+
+        ForWhat,schema_name = payload[PaymentItemCode].split('-')
+
+
         request=''
         request = payload[PaymentItemCode]
 
@@ -141,9 +153,7 @@ class PaymentSerializer(serializers.Serializer):
             request = payload[PaymentItemCode]
         except:
             print('it try and except')
-            error = generate_interswitch_error(
-                MerchantReference='',CustReference=CustReference,
-                Amount=0.00,error='cant find PaymentItemCode')
+
             raise PaymentError(error)
         # member id number
         # CustReference = attrs.get('CustReference',' ')
