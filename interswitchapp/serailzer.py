@@ -60,8 +60,9 @@ error='',
             'Quantity':'1',
             'Price':Amount,
             'Subtotal':'',
-            'Tax':'',
+            'Tax':'0',
             'Total':Amount,
+            'Subtotal':Amount,
         }
     }
     }
@@ -120,7 +121,7 @@ payload = {
     # '08':'fund_a_project-nimn',
 }
 class PaymentSerializer(serializers.Serializer):
-    # MerchantReference = serializers.CharField(required=False)
+    MerchantReference = serializers.CharField(required=False,allow_null=True)
     CustReference =serializers.CharField(required=False,allow_null=True)
     PaymentItemCode= serializers.CharField(required=False,allow_null=True)
 
@@ -131,9 +132,10 @@ class PaymentSerializer(serializers.Serializer):
     def validate(self, attrs):
         # schema_name = attrs.get('LastName',' ')
         CustReference = attrs.get('CustReference','0')
+        MerchantReference = attrs.get('MerchantReference')
 
         error = generate_interswitch_error(
-        MerchantReference='',CustReference='',
+        MerchantReference=MerchantReference,CustReference='',
         Amount=0.00,error='cant find PaymentItemCode')
         if not attrs.get('PaymentItemCode','01-1') or not CustReference:
             raise PaymentError(error)
@@ -160,7 +162,7 @@ class PaymentSerializer(serializers.Serializer):
         # ForWhat = attrs.get('FirstName','')
         if not rel8tenant_related_models.Client.objects.filter(schema_name=schema_name).exists():
             error = generate_interswitch_error(
-                MerchantReference='',CustReference=CustReference,
+                MerchantReference=MerchantReference,CustReference=CustReference,
                 Amount=0.00,error='schema does not exits')
             print('schema- dont exist')
             raise PaymentError(error)
@@ -170,13 +172,13 @@ class PaymentSerializer(serializers.Serializer):
         if not user_related_models.Memeber.objects.filter(id=CustReference).exists():
             "check if a member exits"
             error = generate_interswitch_error(
-                MerchantReference='',CustReference=CustReference,
+                MerchantReference=MerchantReference,CustReference=CustReference,
                 Amount=0.00,error='members does not exits')
             raise PaymentError(error)
         if not (ForWhat.lower() in ['due','event_payment','fund_a_project']):
             print('forhwat')
             error = generate_interswitch_error(
-                MerchantReference='',CustReference=CustReference,
+                MerchantReference=MerchantReference,CustReference=CustReference,
                 Amount=0.00,error='the type is not due')
             # error = generate_interswitch_error(merchant_reference,CustReference,0.00,
             # "must include at least one of this option.. 'due','event_payment','fund_a_project'")
@@ -236,8 +238,10 @@ class PaymentSerializer(serializers.Serializer):
             'Quantity':'1',
             'Price':int(instance.amount),
             'Subtotal':'',
-            'Tax':'',
+            'Tax':0,
             'Total':int(instance.amount),
+            'Subtotal':int(instance.amount),
+
         }
     }
     }
