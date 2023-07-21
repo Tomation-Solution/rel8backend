@@ -34,15 +34,46 @@ class PaymentValidation(viewsets.ViewSet):
     # queryset = User.objects.all()
     # serializer_class = UserSerializer
     parser_classes = (CustomTextXmlPaser,)
-    renderer_classes = (PaymentValidationXml)
+    renderer_classes = (PaymentValidationXml,PaymentValidationResponseXml)
 
-
+    def get_renderers(self):
+        return super().get_renderers()
     def create(self, request, *args, **kwargs):
         print({'data recived':request.data})
-        payment_serializer = serailzer.PaymentSerializer(data=request.data)
-        payment_serializer.is_valid(raise_exception=True)
-        payment_data= payment_serializer.save()
-        return Response(data=payment_data,content_type="text/xml")
+        if  request.data.get('Payments',None) is None:
+            payment_serializer = serailzer.PaymentSerializer(data=request.data)
+            payment_serializer.is_valid(raise_exception=True)
+            payment_data= payment_serializer.save()
+            return Response(data=payment_data,content_type="text/xml")
+        else:
+            PaymentLogId = request.data.get('Payments').get('Payment').get('PaymentLogId')
+            try:
+                data = request.data
+                IsReversal = request.data.get('Payments').get('Payment').get('IsReversal')
+                # try:
+                PaymentItemCode,item_id  = request.data.get('Payments').get('Payment').get('PaymentItems').get('PaymentItem').get('ItemCode','01-1').split('-') 
+                CustReference  = request.data.get('Payments').get('Payment').get('CustReference') 
+                ForWhat,schema_name = serailzer.payload[PaymentItemCode].split('-')
+                connection.set_schema(schema_name=schema_name)
+                member =user_related_models.Memeber.objects.get(id=CustReference)
+                due= due_models.Due_User.objects.filter(user=member.user,id=item_id,).first()
+                due.is_paid =True
+                due.save()
+                response = self.response_gen(PaymentLogId,0)
+                return Response(data=response,content_type="text/xml")
+
+            except:
+                response = self.response_gen(PaymentLogId,1)
+                return Response(data=response,content_type="text/xml")
+        
+    def response_gen(self,paymentLogID,Status):return{
+            'Payments':{
+                    'Payment':{
+                        'PaymentLogId':paymentLogID,
+                        'Status':Status
+                    }
+                }
+        }
         # return interswitchResponseWithAmountMoreTHan0(**payment_data)
 
 class PaymentNotification(viewsets.ViewSet):
