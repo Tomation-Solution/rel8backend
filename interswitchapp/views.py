@@ -39,7 +39,6 @@ class PaymentValidation(viewsets.ViewSet):
     def get_renderers(self):
         return super().get_renderers()
     def create(self, request, *args, **kwargs):
-        print({'data recived':request.data})
         if  request.data.get('Payments',None) is None:
             payment_serializer = serailzer.PaymentSerializer(data=request.data)
             payment_serializer.is_valid(raise_exception=True)
@@ -48,6 +47,7 @@ class PaymentValidation(viewsets.ViewSet):
         else:
             PaymentLogId = request.data.get('Payments').get('Payment').get('PaymentLogId')
             try:
+                
                 data = request.data
                 IsReversal = request.data.get('Payments').get('Payment').get('IsReversal')
                 # try:
@@ -57,12 +57,17 @@ class PaymentValidation(viewsets.ViewSet):
                 connection.set_schema(schema_name=schema_name)
                 member =user_related_models.Memeber.objects.get(id=CustReference)
                 due= due_models.Due_User.objects.filter(user=member.user,id=item_id,).first()
+        
+                amount = request.data.get('Payments').get('Payment').get('PaymentItems').get('PaymentItem').get('ItemAmount')
+                print({'due amount':due.amount,'actual amount passeds':amount})
+                if due.amount != amount:
+                    raise ValueError('Wrong Ammount')
                 due.is_paid =True
                 due.save()
                 response = self.response_gen(PaymentLogId,0)
                 return Response(data=response,content_type="text/xml")
 
-            except:
+            except :
                 response = self.response_gen(PaymentLogId,1)
                 return Response(data=response,content_type="text/xml")
         
