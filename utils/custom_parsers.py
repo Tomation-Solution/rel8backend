@@ -60,7 +60,7 @@ class NestedMultipartParser(parsers.MultiPartParser):
         return data
 
 
-
+# 6405 -> test merchat reference
 class CustomTextXmlPaser(XMLParser):
     media_type= "text/xml"
     content_type ='text/xml'

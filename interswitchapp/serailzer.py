@@ -132,14 +132,16 @@ class PaymentSerializer(serializers.Serializer):
     def validate(self, attrs):
         # schema_name = attrs.get('LastName',' ')
         CustReference = attrs.get('CustReference','0')
-        MerchantReference = attrs.get('MerchantReference')
+        MerchantReference = attrs.get('MerchantReference',0)
+
 
         error = generate_interswitch_error(
         MerchantReference=MerchantReference,CustReference='',
         Amount=0.00,error='cant find PaymentItemCode')
         if not attrs.get('PaymentItemCode','01-1') or not CustReference:
             raise PaymentError(error)
-        
+        if MerchantReference !='6405':
+            raise PaymentError(error)
         PaymentItemCode,item_id = attrs.get('PaymentItemCode','01-1').split('-')
 
 
