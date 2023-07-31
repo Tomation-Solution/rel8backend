@@ -12,6 +12,10 @@ class Client(TenantTimezoneMixin,TenantMixin):
     name = models.CharField(max_length=100)
     paystack_publickey = models.TextField(default='null')
     paystack_secret = models.TextField(default='null')
+
+    flutterwave_publickey = models.TextField(default='null')
+    flutterwave_secret = models.TextField(default='null')
+
     paid_until =  models.DateTimeField()
     on_trial = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)

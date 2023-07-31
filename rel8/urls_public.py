@@ -25,5 +25,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('public/auth/',include('account.urls.auth.public_auth')),
     path('public/user/',include('account.urls.user.public_user')),
-    path('webhook/',payment_views.useWebhook)
+    path('webhook/',payment_views.useWebhook),
+    path('webhook-flutterwave/',payment_views.useFlutterWaveWebhook),
 ]

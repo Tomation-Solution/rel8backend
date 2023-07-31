@@ -1,5 +1,8 @@
 from urllib import parse
 
+from decimal import Decimal
+import random
+import string
 from django.utils.encoding import force_str
 
 
@@ -13,3 +16,9 @@ def replace_query_param(url, key, val):
     query_dict[force_str(key)] = [force_str(val)]
     query = parse.urlencode(sorted(query_dict.items()), doseq=True)
     return parse.urlunsplit((scheme, netloc, path, query, fragment))
+
+
+def generate_n(number:int=10):
+    "helps u generate random char that are unqiue"
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(number))

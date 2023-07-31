@@ -25,6 +25,7 @@ from prospectivemember.models import general as generalProspectiveModels
 from django.shortcuts import get_object_or_404
 from event.models import EventProxyAttendies
 from mymailing import tasks as mailing_tasks
+from utils.extraFunc import generate_n
 def very_payment(request,reference=None):
     # this would be in the call back to check if the payment is a success
     if reference is None:
@@ -60,27 +61,11 @@ class InitPaymentTran(APIView):
         permissions.IsAuthenticated,
         custom_permissions.IsMemberOrProspectiveMember]
 
-    def post(self, request, forWhat="due",pk=None):
-        
-
+    def generateMetaData(self,request,forWhat='due',pk=None):
         """
+        'this function generate payment meta data and amount to be paid'
         forWhat can be  = due,event,deactivating_due
         """
-        if request.user.user_type== 'members':
-            if(not user_model.Memeber.objects.all().filter(user=request.user).exists()):
-                raise CustomError({"error":'member doest not exist'})
-
-        
-
-        schema_name = request.tenant.schema_name
-        client_tenant = rel8tenant_related_models.Client.objects.get(schema_name=schema_name)
-        
-        # this is checking if the user has pluged his paystack account 
-        if client_tenant.paystack_secret == 'null' or client_tenant.paystack_publickey == 'null':
-            raise CustomError({'error':'Paystack not active please reach out to the developer'})
-        PAYSTACK_SECRET = client_tenant.paystack_secret
-        instance =None
-            # Paystack intialization Url
         if forWhat == 'prospective_member_registration':
             # it will be only on instance that will ever exist
             if connection.schema_name == 'man':
@@ -176,52 +161,125 @@ class InitPaymentTran(APIView):
                 member =ManProspectiveMemberProfile.objects.get(user=request.user)
             else:
                 member = generalProspectiveModels.ProspectiveMemberProfile.objects.get(user=request.user)
-        
-        url = 'https://api.paystack.co/transaction/initialize/'
-        headers = {
-            'Authorization': f'Bearer {PAYSTACK_SECRET}',
-            'Content-Type' : 'application/json',
-            'Accept': 'application/json',}
-        body = {
-            "email": request.user.email,
-            "amount": convert_naira_to_kobo(amount_to_be_paid),
-            "metadata":{
+
+
+        return {
+            'amount':amount_to_be_paid,
+            'instance':instance,
+            'metadata':{
                 "instanceID":pk,
                 'member_id':member.id,
                 "user_id":request.user.id,
                 "forWhat":forWhat,
                 'schema_name':request.tenant.schema_name,
                 'user_type':request.user.user_type,
-                'amount_to_be_paid':str(amount_to_be_paid)
-            },
-            # "callback_url":settings.PAYMENT_FOR_MEMBERSHIP_CALLBACK,
-            }
-        try:
-            resp = requests.post(url,headers=headers,data=json.dumps(body))
-        except requests.ConnectionError:
-            raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
-        
-        if resp.status_code ==200:
-            data = resp.json()
-        
-            # we create a transaction history upload nessary data by this time is_successfull will always be false
-            # we put in paystack refrence in the current due the user wants to pay  data['data']['reference']
-            # we use wehook to confirm the payment
-            instance.paystack_key= data['data']['reference']
-            instance.save()
+                'amount_to_be_paid':str(amount_to_be_paid)}
+        }
 
-            return Success_response(msg='Success',data=data)
+
+    # def handlePaystackPayment(self,request,forwhat='due',pk=None):
+    #     return
+    def post(self, request, forWhat="due",pk=None):
+        if request.user.user_type== 'members':
+            if(not user_model.Memeber.objects.all().filter(user=request.user).exists()):
+                raise CustomError({"error":'member doest not exist'})
+
+
+        schema_name = request.tenant.schema_name
+        payment_type = request.query_params.get('payment_type','paystack')
+        client_tenant = rel8tenant_related_models.Client.objects.get(schema_name=schema_name)
+        if payment_type == 'paystack':
+            # this is checking if the user has pluged his paystack account 
+            if client_tenant.paystack_secret == 'null' or client_tenant.paystack_publickey == 'null':
+                raise CustomError({'error':'Paystack Key not active please reach out to the developer'})
+            PAYSTACK_SECRET = client_tenant.paystack_secret
+            instance =None
+
+            generateInfo = self.generateMetaData(request,forWhat,pk)
+            instance = generateInfo.get('instance')
+            # Paystack intialization Url
+            url = 'https://api.paystack.co/transaction/initialize/'
+            headers = {
+                'Authorization': f'Bearer {PAYSTACK_SECRET}',
+                'Content-Type' : 'application/json',
+                'Accept': 'application/json',}
+            body = {
+                "email": request.user.email,
+                "amount": convert_naira_to_kobo(generateInfo.get('amount')),
+                "metadata":generateInfo.get('metadata'),
+                # "callback_url":settings.PAYMENT_FOR_MEMBERSHIP_CALLBACK,
+                }
+            try:
+                resp = requests.post(url,headers=headers,data=json.dumps(body))
+            except requests.ConnectionError:
+                raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+            if resp.status_code ==200:
+                data = resp.json()
+            
+                # we create a transaction history upload nessary data by this time is_successfull will always be false
+                # we put in paystack refrence in the current due the user wants to pay  data['data']['reference']
+                # we use wehook to confirm the payment
+                instance.paystack_key= data['data']['reference']
+                instance.save()
+
+                return Success_response(msg='Success',data=data)
+        
+        if payment_type == 'flutterwave':
+            if client_tenant.flutterwave_publickey =='null' or client_tenant.flutterwave_secret =='null':
+                raise CustomError({'error':'Flutterwave Key not active please reach out to the developer'})
+            generateInfo = self.generateMetaData(request,forWhat,pk)
+            instance = generateInfo.get('instance')
+            url ='https://api.flutterwave.com/v3/payments'
+            headers = {
+                'Authorization': f'Bearer {client_tenant.flutterwave_secret}',
+                'Content-Type' : 'application/json',
+                'Accept': 'application/json',}
+            body = {
+            'tx_ref': f'{generate_n(5)}---{forWhat}--{request.user.id}--{instance.id}--{schema_name}',
+            'amount': f'{generateInfo.get("amount")}',
+            'currency': "NGN",
+            'redirect_url': "https://www.google.com/",
+            'meta':generateInfo.get('metadata'),
+            'customer': {
+                'email':'test@gmail.com',
+                'phonenumber': "08162047348",
+                'name': "Markothedev"
+            },
+            }
+
+            try:
+                resp = requests.post(url,headers=headers,data=json.dumps(body))
+            except requests.ConnectionError:
+                raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+            print({'status':resp.status_code})
+            print({'data':resp.json()})
+            if resp.status_code ==200:
+                data = resp.json()
+            
+            #     # instance.paystack_key= data['data']['reference']
+            #     # instance.save()
+
+                return Success_response(msg='Success',data=data)
+        
         raise CustomError(message=resp.json(),status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
 
-@csrf_exempt
-def useWebhook(request,pk=None):
-    "this receives Payload from paystack"
-    data = json.loads(request.body)
-    meta_data =data['data']['metadata']
-    connection.set_schema(schema_name=meta_data['schema_name'])
-    user = get_user_model().objects.get(id=meta_data['user_id'])
 
-    if data.get('event') == 'charge.success':
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def webhookPayloadhandler(meta_data,user,):
+        
         if meta_data['forWhat'] == 'due':
             # instanceID in this context means Due_User id
             due = models.Due_User.objects.get(user=user,id=meta_data['instanceID'])
@@ -298,3 +356,38 @@ def useWebhook(request,pk=None):
                 prospective_member.save()
 
         return HttpResponse(status.HTTP_200_OK)
+
+
+
+
+
+@csrf_exempt
+def useWebhook(request,pk=None):
+    "this receives Payload from paystack"
+    data = json.loads(request.body)
+    meta_data =data['data']['metadata']
+    connection.set_schema(schema_name=meta_data['schema_name'])
+    user = get_user_model().objects.get(id=meta_data['user_id'])
+
+    if data.get('event') == 'charge.success':
+        return webhookPayloadhandler(meta_data,user)
+
+
+
+@csrf_exempt
+def useFlutterWaveWebhook(request,pk=None):
+    'this receives payload from flutter waVE'
+    print(request.body)
+    data = json.loads(request.body)
+    forWhat,user_id,instanceID,schema_name = data.get('txRef').split('---')[1].split('--') 
+    meta_data ={
+        'forWhat':forWhat,
+        'instanceID':instanceID,
+        'schema_name':schema_name
+    }
+    connection.set_schema(schema_name=meta_data['schema_name'])
+    user = get_user_model().objects.get(id=user_id)
+
+
+    if data.get('status') == 'successful' or data.get('event') == 'charge.completed':
+        return webhookPayloadhandler(meta_data,user)
