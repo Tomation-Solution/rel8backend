@@ -251,8 +251,6 @@ class InitPaymentTran(APIView):
                 resp = requests.post(url,headers=headers,data=json.dumps(body))
             except requests.ConnectionError:
                 raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
-            print({'status':resp.status_code})
-            print({'data':resp.json()})
             if resp.status_code ==200:
                 data = resp.json()
             
@@ -391,3 +389,5 @@ def useFlutterWaveWebhook(request,pk=None):
 
     if data.get('status') == 'successful' or data.get('event') == 'charge.completed':
         return webhookPayloadhandler(meta_data,user)
+
+
