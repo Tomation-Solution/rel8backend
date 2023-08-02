@@ -35,6 +35,7 @@ Amount:int,
 productname='',
 productcode='',
 error='',
+Status=1
                                ):
 
 
@@ -42,7 +43,7 @@ error='',
     'MerchantReference':MerchantReference,
     'Customers':{
         'Customer':{
-    'Status':1,
+    'Status':Status,
     'CustReference':CustReference,
     'FirstName':'Null',
     'Email':'Null',
@@ -215,8 +216,14 @@ class PaymentSerializer(serializers.Serializer):
 
                 raise PaymentError(error)
             due_user = due_models.Due_User.objects.get(user=member.user,id=item_id)
+            if due_user.is_paid == True:
+                error = generate_interswitch_error(
+                MerchantReference=MerchantReference,CustReference=CustReference,
+                Amount=due_user.amount,Status=0)
+                print({'exist':'has already paid for this due so we would return error but the status code should be 0'})
+                raise PaymentError(error)    
+
             instance = due_user.due
-            print(instance.amount)
             return   {
     'MerchantReference':MerchantReference,
     'Customers':{
