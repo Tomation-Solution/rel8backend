@@ -57,19 +57,19 @@ class PaymentValidation(viewsets.ViewSet):
                 connection.set_schema(schema_name=schema_name)
                 member =user_related_models.Memeber.objects.get(id=CustReference)
                 due= due_models.Due_User.objects.filter(user=member.user,id=item_id,).first()
-                if due.is_paid:
-                    response = self.response_gen(PaymentLogId,0)
-                else:
-                    amount =request.data.get('Payments').get('Payment').get('Amount') 
-                    print({'due amount':due.amount,'actual amount passeds':amount})
-                    if due.amount != amount:
-                        raise ValueError('Wrong Ammount')
-                    if amount < 0:
-                        print('Reversal: This is a reversal error')
-                        raise ValueError('Reversal: This is a reversal error')
-                    due.is_paid =True
-                    due.save()
-                    response = self.response_gen(PaymentLogId,0)
+                # if due.is_paid:
+                response = self.response_gen(PaymentLogId,0)
+                # else:
+                amount =request.data.get('Payments').get('Payment').get('Amount') 
+                print({'due amount':due.amount,'actual amount passeds':amount})
+                if due.amount != amount:
+                    raise ValueError('Wrong Ammount')
+                if amount < 0:
+                    print('Reversal: This is a reversal error')
+                    raise ValueError('Reversal: This is a reversal error')
+                due.is_paid =True
+                due.save()
+                response = self.response_gen(PaymentLogId,0)
                 return Response(data=response,content_type="text/xml")
 
             except :
