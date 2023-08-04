@@ -60,10 +60,13 @@ class PaymentValidation(viewsets.ViewSet):
                 if due.is_paid:
                     response = self.response_gen(PaymentLogId,0)
                 else:
-                    amount = request.data.get('Payments').get('Payment').get('PaymentItems').get('PaymentItem').get('ItemAmount')
+                    amount =request.data.get('Payments').get('Payment').get('Amount') 
                     print({'due amount':due.amount,'actual amount passeds':amount})
                     if due.amount != amount:
                         raise ValueError('Wrong Ammount')
+                    if amount > 0 == False:
+                        print('Reversal: This is a reversal error')
+                        raise ValueError('Reversal: This is a reversal error')
                     due.is_paid =True
                     due.save()
                     response = self.response_gen(PaymentLogId,0)
