@@ -208,13 +208,13 @@ class PaymentSerializer(serializers.Serializer):
                 print({'exist':'due does not exist'})
                 raise PaymentError(error)
                     
-            if  due_users.filter(user=member.user,id=item_id,is_paid=True).exists():
-                error = generate_interswitch_error(
-                MerchantReference=MerchantReference,CustReference=CustReference,
-                Amount=0.00)
-                print({'exist':'due does not exist'})
+            # if  due_users.filter(user=member.user,id=item_id,is_paid=True).exists():
+            #     error = generate_interswitch_error(
+            #     MerchantReference=MerchantReference,CustReference=CustReference,
+            #     Amount=0.00)
+            #     print({'exist':'due does not exist'})
 
-                raise PaymentError(error)
+            #     raise PaymentError(error)
             due_user = due_models.Due_User.objects.get(user=member.user,id=item_id)
             if due_user.is_paid == True:
                 error = generate_interswitch_error(
