@@ -64,7 +64,7 @@ class PaymentValidation(viewsets.ViewSet):
                     print({'due amount':due.amount,'actual amount passeds':amount})
                     if due.amount != amount:
                         raise ValueError('Wrong Ammount')
-                    if amount > 0 == False:
+                    if amount < 0:
                         print('Reversal: This is a reversal error')
                         raise ValueError('Reversal: This is a reversal error')
                     due.is_paid =True
