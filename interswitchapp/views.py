@@ -40,11 +40,13 @@ class PaymentValidation(viewsets.ViewSet):
         return super().get_renderers()
     def create(self, request, *args, **kwargs):
         if  request.data.get('Payments',None) is None:
+            "This is Customer Validation"
             payment_serializer = serailzer.PaymentSerializer(data=request.data)
             payment_serializer.is_valid(raise_exception=True)
             payment_data= payment_serializer.save()
             return Response(data=payment_data,content_type="text/xml")
         else:
+            'Payment notification'
             PaymentLogId = request.data.get('Payments').get('Payment').get('PaymentLogId')
             try:
                 

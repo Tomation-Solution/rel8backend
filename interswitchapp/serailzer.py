@@ -173,6 +173,7 @@ class PaymentSerializer(serializers.Serializer):
             error = generate_interswitch_error(
                 MerchantReference=MerchantReference,CustReference=CustReference,
                 Amount=0.00,error='members does not exits')
+            print('members does not exits')
             raise PaymentError(error)
         if not (ForWhat.lower() in ['due','event_payment','fund_a_project']):
             print('forhwat')
