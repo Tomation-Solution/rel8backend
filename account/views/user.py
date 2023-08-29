@@ -257,9 +257,9 @@ class MemberBioViewSet(viewsets.ModelViewSet):
         instance = user_models.Memeber.objects.get(id=request.user.memeber.id)
         instance.bio=request.data.get('bio',instance.bio)
         instance.save()
-        # serialized = self.serializer_class(instance=instance,data=request.data,context={'user':request.user})
-        # serialized.is_valid(raise_exception=True)
-        # data =serialized.save()
+        serialized = self.serializer_class(instance=instance,data=request.data,context={'user':request.user})
+        serialized.is_valid(raise_exception=True)
+        data =serialized.save()
 
         clean_data = user.MemberSerializer(instance=instance,context={'user':request.user})
         return custom_response.Success_response('Updated',data=clean_data.data)
@@ -293,9 +293,27 @@ def council_members(request,*args,**kwargs):
 @permission_classes([permissions.IsAuthenticated,])
 def get_membershipgrade(request,*args,**kwargs):
     grades = user_models.MemberShipGrade.objects.all().values('id','name')
-    return custom_response.Success_response(msg='successful',data=grades,status_code=status.HTTP_200_OK)
+    return custom_response.Success_response(msg='successful',)
+                                            
 
-# MemberShipGrade
-# @api_view(['POST',])
-# @permission_classes([permissions.IsAuthenticated,custom_permissions.IsMember])
-    # raise CustomError({"error":"Validation UnSuccessfull"})
+
+class UpdateMemberInfoViewSet(viewsets.ModelViewSet):
+    permission_classes =[ permissions.IsAuthenticated,
+                        #  custom_permissions.IsAdminOrSuperAdmin
+                         ]
+    queryset = user_models.UserMemberInfo.objects.all()
+    serializer_class =user.AdminUpdateMemberInfoCleaner
+
+
+    def create(self, request, *args, **kwargs):
+        return
+
+    def update(self, request, *args, **kwargs):
+        user = request.user
+        loggedinMember = user_models.Memeber.objects.get(user=user.id)
+        user_member_info = user_models.UserMemberInfo.objects.filter(member=loggedinMember.id)
+
+        serailzer = self.serializer_class(instance=user_member_info,data=request.data)
+        serailzer.is_valid(raise_exception=True)
+        d=serailzer.save()
+        return custom_response.Success_response('Success',data=None )

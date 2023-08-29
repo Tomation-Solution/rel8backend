@@ -146,7 +146,8 @@ class Memeber(models.Model):
     address = models.TextField(default='')
     dob   = models.DateField(blank=True,null=True,default=None)
     citizenship    = models.CharField(default='',max_length=24)
-
+    # has_updated means that the the first time they login they need to click o updated
+    has_updated = models.BooleanField(default=False)
     bio = models.TextField(default='Bio Update')
 
 # filter(

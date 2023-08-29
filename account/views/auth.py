@@ -179,6 +179,7 @@ class Login(ObtainAuthToken):
             'userName':user.userName,
             'user_id':user.id,
             'member_id': user.memeber.id if user.user_type=='members' else None,
+            'has_updated':user.memeber.has_updated,
             
             'profile_image':profile_image
             })

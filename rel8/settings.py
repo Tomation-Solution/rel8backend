@@ -293,6 +293,7 @@ CORS_ALLOWED_ORIGINS = [
 # 'ws://localhost:6000',
 "http://localhost:3000",
 "http://localhost:5500",
+"http://localhost:3001",
 'https://spectacular-beignet-868060.netlify.app',
 'https://fancy-dragon-bad276.netlify.app',
 'http://members.nimn.com.ng',
@@ -326,6 +327,7 @@ CORS_ALLOWED_ORIGINS = [
 'https://anni.up.railway.app',
 'https://anni.up.railway.app'
 ]
+CSRF_TRUSTED_ORIGINS =CORS_ALLOWED_ORIGINS
 if os.environ.get('databaseName',None):
     CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
 
