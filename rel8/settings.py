@@ -328,8 +328,8 @@ CORS_ALLOWED_ORIGINS = [
 'https://anni.up.railway.app'
 ]
 CSRF_TRUSTED_ORIGINS =CORS_ALLOWED_ORIGINS
-if os.environ.get('databaseName',None):
-    CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
+# if os.environ.get('databaseName',None):
+#     CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
 
 CORS_ALLOW_METHODS = [
 'DELETE',
