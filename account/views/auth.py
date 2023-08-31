@@ -24,6 +24,7 @@ from mailing.models import EmailInvitation
 from account import task as acct_task
 from rest_framework.decorators import api_view
 import json
+from utils.notification import NovuProvider
 # create Super user of the Alumni which is the owner
 from pusher_push_notifications import PushNotifications
 beams_client = PushNotifications(
@@ -140,6 +141,7 @@ class Login(ObtainAuthToken):
         chapter = None
         exco=None
         commitee = []
+        has_updated= False
         if user.user_type == 'prospective_members':
             if connection.schema_name == 'man':
                 'man wants people to pay before the can login'
@@ -163,7 +165,9 @@ class Login(ObtainAuthToken):
                 'name':user.chapter.name,
                 'id':user.chapter.id
             }
+        
         if user.user_type =='members':
+            has_updated=user.memeber.has_updated
             exco =user_models.ExcoRole.objects.filter(
                 member= user.memeber
             ).values('name','id','chapter')
@@ -179,7 +183,7 @@ class Login(ObtainAuthToken):
             'userName':user.userName,
             'user_id':user.id,
             'member_id': user.memeber.id if user.user_type=='members' else None,
-            'has_updated':user.memeber.has_updated,
+            'has_updated':has_updated,
             
             'profile_image':profile_image
             })
@@ -335,7 +339,13 @@ class ManageMemberValidation(viewsets.ViewSet):
                         acct_task.group_MAN_subSector_and_sector.delay(
                             exco_name,member.id,type='sub-sector'
                         )
-                  
+            try:
+                novu = NovuProvider()
+                novu.subscribe(
+                userID=user.id,
+                email=user.email
+                )
+            except:pass  
             return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
         raise CustomError({"error":"Data is not complete"})
         
