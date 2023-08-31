@@ -67,8 +67,7 @@ class NotificationByTopicSerializer(serializers.Serializer):
                 user_ids.append(f'{member.user.id}')
         if type == 'chapters':
             users = User.objects.filter(chapter__id=id)
-            user_ids = map(lambda user:f'{user.id}',users)
-
+            user_ids = list(map(lambda user:f'{user.id}',users))
         novu.send_notification(
             name='on-boarding-notification',
             sub_id=user_ids,

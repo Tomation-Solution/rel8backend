@@ -8,6 +8,7 @@ from django.utils.text import slugify
 from novu.api import TopicApi
 from novu.api import EventApi
 from novu.dto.topic import TriggerTopicDto
+from django.db import models, connection
 
 
 
@@ -26,19 +27,21 @@ class NovuProvider:
         api_key= os.environ.get('YOUR_NOVU_API_KEY')
         NovuConfig().configure("https://api.novu.co", api_key)
         subscriber = SubscriberDto(
-        subscriber_id=f'{userID}',
+        subscriber_id=f'{userID}-{connection.schema_name}',
         email=email,)
         SubscriberApi().create(subscriber)
 
     def send_notification(self,name:str,sub_id,title,content):
         api_key= os.environ.get('YOUR_NOVU_API_KEY')
         n =NovuConfig().configure("https://api.novu.co", api_key)
+
+        clean_sub_id = list(map(lambda x:f'{x}-{connection.schema_name}',sub_id))
         print({
-            'sub':sub_id
+            'sub':clean_sub_id
         })
         EventApi().trigger(
             name=name,  
-            recipients=sub_id,
+            recipients=clean_sub_id,
             payload={"title":title,'content':content}
         )
 
