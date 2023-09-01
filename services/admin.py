@@ -4,8 +4,8 @@ from . import models
 
 
 
-admin.site.register(models.ReissuanceOfCertForm)
-admin.site.register(models.LossOfCertificateServices)
-admin.site.register(models.ReissuanceOfCertServices)
+# admin.site.register(models.ReissuanceOfCertForm)
+# admin.site.register(models.LossOfCertificateServices)
+# admin.site.register(models.ReissuanceOfCertServices)
 
 # models.
