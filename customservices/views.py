@@ -21,6 +21,14 @@ class  AdminRel8CustomServicesViewset(ModelViewSet):
         member_request.status= status
         member_request.save()
         return Success_response('Status Updated Successfully')
+
+    @action(methods=['get'],detail=False)
+    def member_submissions(self,request,*args,**kwargs):
+        service_id =request.query_params.get('service_id')
+        queryset = models.Rel8CustomMemberServiceRequests.objects.filter(custom_service__id=service_id)
+        serializer_class = serializers.MembersRel8CustomerServiceSerializer(instance=queryset,many=True)
+
+        return Success_response('Success',data=serializer_class.data)
 class MembersRel8CustomerServiceViewset(ViewSet):
     serializer_class = serializers.HandleMemberServiceSubmissions
     permission_classes = [IsAuthenticated,custom_permission.IsMember]

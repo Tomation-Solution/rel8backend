@@ -60,12 +60,25 @@ class HandleMemberServiceSubmissions(serializers.Serializer):
 class MembersRel8CustomerServiceSerializer(serializers.ModelSerializer):
     fields_subbission = serializers.SerializerMethodField()
     files =serializers.SerializerMethodField()
-
+    full_name = serializers.SerializerMethodField()
+    service_name = serializers.SerializerMethodField()
+    def get_full_name(self,instance:models.Rel8CustomMemberServiceRequests):
+        return instance.member.full_name
     def get_files(self,instance:models.Rel8CustomMemberServiceRequests):
-        return models.Rel8CustomMemberServiceRequestTextFile.objects.filter( customMember_service_request=instance).values(
-            'id','value','name'
-        )
-
+        data = []
+        for i in  models.Rel8CustomMemberServiceRequestTextFile.objects.filter( customMember_service_request=instance):
+            current = {'id':i.id,'name':i.name}
+            try:
+                current['value']= i.value.url
+            except:
+                current['value'] = ''
+            data.append(current)
+        return data
+    # .values(
+    #         'id','value','name'
+    #     )
+    def get_service_name(self,instance:models.Rel8CustomMemberServiceRequests):
+        return instance.custom_service.service_name
     def get_fields_subbission(self,instance:models.Rel8CustomMemberServiceRequests):
 
         return models.Rel8CustomMemberServiceRequestsText.objects.filter(
@@ -74,7 +87,9 @@ class MembersRel8CustomerServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Rel8CustomMemberServiceRequests
-        fields =['id','status','custom_service','amount','fields_subbission','files']
+        fields =['id','status','custom_service','amount','fields_subbission','files',
+                 'full_name','service_name'
+                 ]
 
 
     
