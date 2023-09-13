@@ -33,7 +33,20 @@ class MembersRel8CustomerServiceViewset(ViewSet):
     serializer_class = serializers.HandleMemberServiceSubmissions
     permission_classes = [IsAuthenticated,custom_permission.IsMember]
 
+    @action(methods=['get'],detail=False)
+    def get_services(self,request,*args,**kwargs):
+        service = models.Rel8CustomServices.objects.all()
+        serializer = serializers.Rel8CustomServicesSerializer(instance=service,many=True)
+        return Success_response('success',data=serializer.data)
 
+    @action(methods=['get'],detail=True)
+    def get_service(self,request,*args,**kwargs):
+        'more like a retrive function'
+        pk = kwargs['pk']
+        service = models.Rel8CustomServices.objects.get(id=pk)
+        serializer = serializers.Rel8CustomServicesSerializer(instance=service,)
+        return Success_response('success',data=serializer.data)
+    
     def create(self,request,*args,**kwargs):
         serializer_class = self.serializer_class(data=request.data,context={'member':request.user.memeber})
         serializer_class.is_valid(raise_exception=True)

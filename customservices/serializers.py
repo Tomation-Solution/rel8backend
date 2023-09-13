@@ -22,11 +22,11 @@ class HandleMemberServiceSubmissions(serializers.Serializer):
             max_length=10000000,
             use_url=False,
             write_only=True
-        ),)
+        ),required=False)
     
 
     def create(self, validated_data):
-        files = validated_data.get('files')
+        files = validated_data.get('files',[])
         fields_subbission = validated_data.get('fields_subbission')
         custom_service = validated_data.get('custom_service',-1)
         rel8_custom_services = get_object_or_404(models.Rel8CustomServices,id= custom_service,)
