@@ -107,7 +107,7 @@ TENANT_APPS = (
        'corsheaders',
        'mailing',
      'channels',
-    'anymail',
+    # 'anymail',
      'meeting',
      'interswitchapp',
      'LatestUpdate',
@@ -235,10 +235,7 @@ DEFAULT_FROM_EMAIL =os.environ['domain_mail']
 SERVER_EMAIL=DEFAULT_FROM_EMAIL
 BASE_DOMAIN=os.environ['BASE_DOMAIN']
 
-# ANYMAIL = {
-#     "SENDINBLUE_API_KEY": 
-#     # "SENDINBLUE_API_KEY": os.environ['SENDINBLUE_API_KEY'],
-# }
+
 EMAIL_BACKEND = "anymail.backends.sendinblue.EmailBackend" 
 
 TENANT_MODEL = "Rel8Tenant.Client" # app.Model

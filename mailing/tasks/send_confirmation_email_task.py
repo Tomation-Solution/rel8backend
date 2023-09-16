@@ -3,7 +3,7 @@ from rel8.celery import app
 from mailing.services.mailing import MailException
 from mailing.services.send_in_blue import SendInBlue
 from django.core.mail import EmailMultiAlternatives
-from anymail.message import attach_inline_image_file
+
 
 # @app.task()
 def send_confirmation_email(sender: dict, content: str, first_name: str, last_name: str, recipient_email: list):
