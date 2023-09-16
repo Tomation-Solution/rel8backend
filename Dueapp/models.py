@@ -115,6 +115,7 @@ class Due(models.Model):
         if self.chapters:chapterID=self.chapters.id
 
         if self.is_on_create == False:
+            print({"Yea":"Doings"})
             "if is_on_create == True ... it means this user is wants to handle the due_user creation"
             tenant = connection.tenant
             localized_time = get_localized_time(

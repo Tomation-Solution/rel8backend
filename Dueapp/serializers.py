@@ -66,9 +66,21 @@ class AdminManageDuesSerializer(serializers.Serializer):
         required=True,
     )
     startTime = serializers.TimeField()
-    scheduletype = serializers.CharField(required=False)#day_of_week or month_of_year
-    schedule = serializers.ListField(required=False)
-    alumni_year= serializers.DateField(required=False,)
+    endDate = serializers.DateField(
+          format="%d-%m-%Y",
+        input_formats=["%d-%m-%Y", "iso-8601"],
+        required=False,
+    )
+    endTime = serializers.TimeField(required=False,)
+
+
+    # scheduletype = serializers.CharField(required=False)#day_of_week or month_of_year
+    # schedule = serializers.ListField(required=False)
+    is_deactivate_users= serializers.BooleanField()
+
+
+    # alumni_year= serializers.DateField(required=False,)
+
     # alumni_year
 
     # for_chapters=serializers.BooleanField(default=False,)
@@ -92,6 +104,9 @@ class AdminManageDuesSerializer(serializers.Serializer):
         re_occuring = attrs.get('re_occuring',None)
         scheduletype= attrs.get('scheduletype',None)
         schedule= attrs.get('schedule',None)
+        is_deactivate_users = attrs.get('is_deactivate_users',False)
+        endTime = attrs.get('endTime',None)
+        endDate = attrs.get('endDate',None)
         if re_occuring:
             "if it re_occuring we need some of this fields"
             if(scheduletype is None):
@@ -100,6 +115,9 @@ class AdminManageDuesSerializer(serializers.Serializer):
                 raise serializers.ValidationError({'scheduletype':'this is re_occuring, it should be either day_of_week or month_of_year'})
             if(not isinstance(schedule,list)):
                 raise serializers.ValidationError({'schedule':'must be a list'})
+        if is_deactivate_users:
+            if endTime is None or endDate is None:
+                raise serializers.ValidationError({'error':'end time and end date is a must if you want to deactivate the user'})
         return super().validate(attrs)
 
 
@@ -124,10 +142,19 @@ class AdminManageDuesSerializer(serializers.Serializer):
         startTime =  validated_data.get('startTime')
         scheduletype =  validated_data.get('scheduletype','day_of_week')
         schedule =   validated_data.get('schedule',['0'])
+        endTime = validated_data.get('endTime',None)
+        endDate = validated_data.get('endDate',None)
+        is_deactivate_users = validated_data.get('is_deactivate_users',False)
+
         # alumni_year = validated_data.get('alumni_year',None)
         if models.Due.objects.filter(Name=name).exists():raise serializers.ValidationError({"error":'Due name exists already'})
+        print(
+            validated_data
+        )
         due = models.Due.objects.create(
             Name =name,
+            endTime=endTime,
+            endDate=endDate,
         re_occuring = re_occuring,
         is_for_excos = is_for_excos,
         amount =amount,
@@ -135,7 +162,9 @@ class AdminManageDuesSerializer(serializers.Serializer):
         startTime =  startTime,
         scheduletype = scheduletype,
         schedule =   schedule,chapters=chapter,
-        alumni_year=' '
+        alumni_year=startDate,
+        is_on_create=True,
+        is_deactivate_users=is_deactivate_users
         )
         due.chapters=chapter
         due.save()
@@ -165,6 +194,8 @@ class AdminCreateExcoDuesSerializer(serializers.Serializer):
         exco = None
         if   user_related_models.ExcoRole.objects.filter(id=exco_id).exists():
             exco = user_related_models.ExcoRole.objects.get(id=exco_id)
+        # validated_data.pop('startDate')
+        # print(validated_data)
         due= models.Due.objects.create(
             **validated_data,is_on_create=False,
             Name=name,
