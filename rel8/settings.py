@@ -123,6 +123,7 @@ INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in S
 MIDDLEWARE = [
         "utils.customTenantSubFolderUrl.CustomTenantSubFolderMiddleware",
     #  'django_tenants.middleware.main.TenantMainMiddleware',
+    'ip_restriction.IpWhitelister',
     'django.middleware.security.SecurityMiddleware',
       "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -133,6 +134,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+ALLOWED_IPS = ['41.223.145.174' , '154.72.34.174']
 
 ROOT_URLCONF = 'rel8.urls_tenant'
 PUBLIC_SCHEMA_URLCONF ="rel8.urls_public"
