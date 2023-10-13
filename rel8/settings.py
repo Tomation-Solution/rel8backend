@@ -135,7 +135,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ALLOWED_IPS = ['41.223.145.174' , '154.72.34.174']
+ALLOWED_IPS = ['41.223.145.174' , '154.72.34.174','34.127.24.176']
 
 ROOT_URLCONF = 'rel8.urls_tenant'
 PUBLIC_SCHEMA_URLCONF ="rel8.urls_public"
