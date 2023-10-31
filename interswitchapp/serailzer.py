@@ -139,22 +139,18 @@ class PaymentSerializer(serializers.Serializer):
             raise PaymentError(error)
         if MerchantReference !='8269':
             raise PaymentError(error)
-        PaymentItemCode,item_id = attrs.get('PaymentItemCode','01-1').split('-')
+        item_id = attrs.get('PaymentItemCode',None)
 
 
 
 
-        ForWhat,schema_name = payload[PaymentItemCode].split('-')
+        ForWhat = 'due'
+        schema_name = 'nimn'
 
 
         request=''
-        request = payload[PaymentItemCode]
 
-        try:
-            request = payload[PaymentItemCode]
-        except:
-            print('it try and except')
-
+        if item_id is None:
             raise PaymentError(error)
         # member id number
         # CustReference = attrs.get('CustReference',' ')
@@ -190,19 +186,19 @@ class PaymentSerializer(serializers.Serializer):
     def create(self, validated_data):
         MerchantReference = validated_data.get('MerchantReference')
 
-        PaymentItemCode,item_id = validated_data.get('PaymentItemCode','01-1').split('-')
-        # item_id = validated_data.get('StatusMessage',' ')
+        item_id = validated_data.get('PaymentItemCode',None)
         CustReference = validated_data.get('CustReference','')
         member =user_related_models.Memeber.objects.get(id=CustReference)
         # PaymentItemCode= validated_data.get('PaymentItemCode',-1)
 
-        forWhat,shortname= payload[PaymentItemCode].split('-')
+        forWhat ='due'
+        # shortname= payload[PaymentItemCode].split('-')
         instance=''
         merchant_reference =item_id
         if forWhat=="due":
             print({'forwhj':forWhat})
             due_users = due_models.Due_User.objects.all()
-            if not due_users.filter(user=member.user,id=item_id,).exists():
+            if not due_users.filter(user=member.user,item_code=item_id,).exists():
                 error = generate_interswitch_error(MerchantReference,
                                                     CustReference,0.00,
                                                     'Due Doesnt Exist',)
@@ -216,7 +212,7 @@ class PaymentSerializer(serializers.Serializer):
             #     print({'exist':'due does not exist'})
 
             #     raise PaymentError(error)
-            due_user = due_models.Due_User.objects.get(user=member.user,id=item_id)
+            due_user = due_models.Due_User.objects.get(user=member.user,item_code=item_id)
             # if due_user.is_paid == True:
             #     error = generate_interswitch_error(
             #     MerchantReference=MerchantReference,CustReference=CustReference,

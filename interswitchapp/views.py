@@ -53,12 +53,14 @@ class PaymentValidation(viewsets.ViewSet):
                 data = request.data
                 IsReversal = request.data.get('Payments').get('Payment').get('IsReversal')
                 # try:
-                PaymentItemCode,item_id  = request.data.get('Payments').get('Payment').get('PaymentItems').get('PaymentItem').get('ItemCode','01-1').split('-') 
+                item_id  = request.data.get('Payments').get('Payment').get('PaymentItems').get('PaymentItem').get('ItemCode',)
                 CustReference  = request.data.get('Payments').get('Payment').get('CustReference') 
-                ForWhat,schema_name = serailzer.payload[PaymentItemCode].split('-')
+                # ForWhat,schema_name = serailzer.payload[PaymentItemCode].split('-')
+                ForWhat='due'
+                schema_name='nimn'
                 connection.set_schema(schema_name=schema_name)
                 member =user_related_models.Memeber.objects.get(id=CustReference)
-                due= due_models.Due_User.objects.filter(user=member.user,id=item_id,).first()
+                due= due_models.Due_User.objects.filter(user=member.user,item_code=item_id,).first()
                 # if due.is_paid:
                 response = self.response_gen(PaymentLogId,0)
                 # else:
@@ -103,7 +105,7 @@ class PaymentNotification(viewsets.ViewSet):
             ForWhat,schema_name = serailzer.payload[PaymentItemCode].split('-')
             connection.set_schema(schema_name=schema_name)
             member =user_related_models.Memeber.objects.get(id=CustReference)
-            due= due_models.Due_User.objects.filter(user=member.user,id=item_id,).first()
+            due= due_models.Due_User.objects.filter(user=member.user,item_code=item_id,).first()
             due.is_paid =True
             due.save()
             response = self.response_gen(PaymentLogId,0)

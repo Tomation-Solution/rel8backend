@@ -37,7 +37,7 @@ class Due(models.Model):
     re_occuring= models.BooleanField(default=False)# due_type Once  Re-occuring|
     is_for_excos = models.BooleanField(default=False)#embers | excos
     amount=  models.DecimalField(decimal_places=4,max_digits=19,default=0.00)
-    exco = models.ForeignKey(user_model.ExcoRole,default=None,null=True,on_delete=models.CASCADE)
+    exco = models.ForeignKey(user_model.ExcoRole,default=None,null=True,on_delete=models.CASCADE,blank=True)
     # for once there must be a startDate
     startDate =models.DateField(null=True, blank=True)
     startTime = models.TimeField(null=True, blank=True)
@@ -52,6 +52,7 @@ class Due(models.Model):
     # this will be manual the date dont really matter it charges the  person on when the manully_create_due_job is manually called e.g(when a member is create)
     is_on_create = models.BooleanField(default=False)
     is_deactivate_users =models.BooleanField(default=True)
+    item_code = models.TextField(default='',)
     def __str__(self) -> str:
         return self.Name
 
@@ -180,6 +181,8 @@ class Due_User(models.Model):
     is_paid = models.BooleanField(default=False)
     amount= models.DecimalField(decimal_places=2,max_digits=10)
     paystack_key = models.TextField(default='')
+    item_code = models.TextField(default='',)
+
 
 
 

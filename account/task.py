@@ -204,20 +204,18 @@ def charge_new_member_dues__fornimn(user_id:int):
         for due in all_mannual:
             if due.dues_for_membership_grade is  not None:
                 if due.dues_for_membership_grade.name ==names.value:
-                    due_models.Due_User.objects.create(
+                    due_models.Due_User.objects.get_or_create(
                         user=user,
                         due=due,
-                        amount=due.amount)
+                        amount=due.amount,
+                        item_code=due.item_code)
             else:
-                 pass
-                #  'This means that charge the person on the pervious dues before he joined'
-                #  due_models.Due_User.objects.create(
-                #         user=user,
-                #         due=due,
-                #         amount=due.amount
-                #     )
-
-
+                 'this are dues that does not have membership grade and is_on_create'
+                 due_models.Due_User.objects.get_or_create(
+                        user=user,
+                        due=due,
+                        amount=due.amount,
+                        item_code=due.item_code)
 
 
 
