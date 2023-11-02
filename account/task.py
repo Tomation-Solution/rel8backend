@@ -234,6 +234,8 @@ def group_MAN_subSector_and_sector(exco_name,member_id,type='sector',):
         # exco
     except:pass
 
+
+
 @shared_task()
 def send_forgot_password_mail(email,link):
     'send forgot password notifcation'
