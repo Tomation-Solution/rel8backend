@@ -8,6 +8,11 @@ import random,string,json,os
 from celery import shared_task
 from Dueapp import models as due_models
 from account.models import user as user_related_models
+from django.db import connection
+from django.template.loader import render_to_string
+from account.models.user import Memeber
+from mymailing.views import send_mail
+
 def create_chat(names:list,group_name:str,headers:dict):
     body ={
     'usernames':names,
@@ -228,3 +233,33 @@ def group_MAN_subSector_and_sector(exco_name,member_id,type='sector',):
         exco.save()
         # exco
     except:pass
+
+
+
+@shared_task()
+def send_forgot_password_mail(email,link):
+    'send forgot password notifcation'
+    mail_subject =f'{connection.schema_name.upper()}Forgot Password'
+    user = get_user_model().objects.get(email=email)
+    memeber = Memeber.objects.get(user=user)
+    # link = f'https://{connection.schema_name}.rel8membership.com/reset-password/'
+    sender_name=f'{connection.schema_name.upper()} Membeership Forgot Password'
+    domain_mail = os.environ['domain_mail']
+    sender_email =domain_mail
+    
+    if connection.schema_name == 'nimn':
+         link='https://members.nimn.com.ng/forgot-password/'
+    if connection.schema_name =='test':
+         link = 'https://test.rel8membership.com/forgot-password/'
+         
+    data = {
+         'link':link,
+         'name':memeber.full_name
+    }
+    html_content = render_to_string('forgot_password.html',context=data)
+
+    send_mail(
+        subject=mail_subject,
+        html_content=html_content,
+        to=[{"email":email,"name":"rel8"}],
+        sender={"name":sender_name,"email":sender_email})
