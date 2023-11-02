@@ -247,11 +247,7 @@ def send_forgot_password_mail(email,link):
     domain_mail = os.environ['domain_mail']
     sender_email =domain_mail
     
-    if connection.schema_name == 'nimn':
-         link='https://members.nimn.com.ng/forgot-password/'
-    if connection.schema_name =='test':
-         link = 'https://test.rel8membership.com/forgot-password/'
-         
+
     data = {
          'link':link,
          'name':memeber.full_name

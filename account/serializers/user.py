@@ -483,6 +483,11 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         token = default_token_generator.make_token(user)
         domain ='app.sequentialjobs.com'
         reset_url = f"https://{connection.schema_name}.rel8membership.com/reset-password/{uid}/{token}/"
+        if connection.schema_name == 'nimn':
+            reset_url=f'https://members.nimn.com.ng/forgot-password/reset-password/{uid}/{token}/'
+        if connection.schema_name =='test':
+            reset_url = f'https://demo.rel8membership.com/reset-password/{uid}/{token}/'
+            
         send_forgot_password_mail.delay(user.email,reset_url)
         # print({'reset_url':reset_url})
     def create(self, validated_data):
