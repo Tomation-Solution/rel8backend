@@ -24,12 +24,13 @@ def activateEmail(user,to_email):
         domain_mail='rel8@members.nimn.com.ng'
         sender_email=domain_mail
         domain = 'https://members.nimn.com.ng'
+    if connection.schema_name == 'test':
+        domain = 'https://demo.rel8membership.com'   
     data = {
         user:user,
         'domain':domain,
         'uid':urlsafe_base64_encode(force_bytes(user.id)),
         'token':account_activation_token.make_token(user=user)
-        # 'protocol':'https'
     }
     if user.user_type == 'prospective_members':
         html_content = render_to_string('mail_body.html',context=data)
