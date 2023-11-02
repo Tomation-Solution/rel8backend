@@ -1,6 +1,6 @@
 from django import views
 from rest_framework import viewsets,generics
-from rest_framework.authentication import TokenAuthentication
+
 from rest_framework import permissions
 from rest_framework.decorators import action,api_view,permission_classes
 from Dueapp.models import Due_User,DeactivatingDue_User
@@ -9,7 +9,6 @@ from utils.custom_exceptions import CustomError
 from ..serializers import user
 from utils import custom_response
 from rest_framework import status
-from Rel8Tenant import models as rel8TenantModels
 from utils import permissions  as custom_permissions
 from ..serializers import user as user_serializer 
 from ..models import user as  user_models
@@ -20,6 +19,7 @@ from rest_framework.parsers import FormParser
 from django.db.models import F
 from utils.custom_parsers import NestedMultipartParser
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import AllowAny
 # from
 
 class RegisterUserToChapter(viewsets.ViewSet):
@@ -317,3 +317,26 @@ class UpdateMemberInfoViewSet(viewsets.ModelViewSet):
         serailzer.is_valid(raise_exception=True)
         d=serailzer.save()
         return custom_response.Success_response('Success',data=None )
+    
+
+
+
+
+
+class ForgotPasswordViewSet(viewsets.ViewSet):
+    permission_classes=[AllowAny]
+
+    @action(methods=['post'],detail=False,permission_classes=[AllowAny])
+    def request_password_change(self,request,*args,**kwargs):
+        print({'d':request.data})
+        serialzier= user_serializer.PasswordResetRequestSerializer(data=request.data,context={'request':request})
+        serialzier.is_valid(raise_exception=True)
+        serialzier.save()
+        return custom_response.Success_response('Forgot password link sent to your mail!')
+    
+    @action(methods=['post'],detail=False,permission_classes=[AllowAny])
+    def rest_password(self,request,*args,**kwargs):
+        serialzier =user_serializer.PasswordResetConfirmationSerializer(data=request.data,context={'request':request})
+        serialzier.is_valid(raise_exception=True)
+        serialzier.save()
+        return custom_response.Success_response('Password Rest Successfully')

@@ -9,6 +9,10 @@ from account.models import auth as  user_auth_models
 from django.shortcuts import get_object_or_404
 import os
 from account.serializers import user as user_related_serializer
+from django.utils.encoding import force_str,force_bytes
+from django.utils.http import urlsafe_base64_encode,urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+from account.task import send_forgot_password_mail
 User = get_user_model()
 WEBSITEURL = os.environ['websiteurl']
 def normalize_email(email):
@@ -462,3 +466,52 @@ class AdminUpdateMemberInfoCleaner(serializers.Serializer):
             user_models.UserMemberInfo.objects.filter(id=eachinfo.get('id')).update(value=eachinfo.get('value'))
         return dict()
     
+
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email =  serializers.EmailField()
+    def validate_email(self, email):
+        User=get_user_model()
+        if not User.objects.filter(email=email).exists():
+            raise CustomError({'error':'User with this email address does not exist.'})
+        return email
+    
+    def send_password_reset_email(self,user):
+        # current_site = get_current_site(self.context['request'])
+        uid=urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        domain ='app.sequentialjobs.com'
+        reset_url = f"https://{connection.schema_name}.rel8membership.com/reset-password/{uid}/{token}/"
+        send_forgot_password_mail.delay(user.email,reset_url)
+        # print({'reset_url':reset_url})
+    def create(self, validated_data):
+        user = get_user_model().objects.get(email=validated_data.get('email'))
+        self.send_password_reset_email(user)
+        return dict()
+    
+class PasswordResetConfirmationSerializer(serializers.Serializer):
+    new_password = serializers.CharField(write_only=True)
+    token = serializers.CharField()
+    uidb64 = serializers.CharField()
+
+    def validate(self, attrs):
+        User = get_user_model()
+        try:
+            uid =force_str(urlsafe_base64_decode(attrs['uidb64']))
+            user = User.objects.get(pk=uid)
+
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            raise CustomError({'error':'Invalid reset password link.'})
+
+        if not default_token_generator.check_token(user, attrs['token']):
+            raise  CustomError({'error':'Invalid reset password link.'})
+
+        attrs['user'] = user
+
+        return attrs
+    
+    def save(self, **kwargs):
+        user = self.validated_data['user']
+        user.set_password(self.validated_data.get('new_password'))
+        user.save()
