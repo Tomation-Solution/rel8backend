@@ -195,6 +195,7 @@ class PaymentSerializer(serializers.Serializer):
         # shortname= payload[PaymentItemCode].split('-')
         instance=''
         merchant_reference =item_id
+        productName = ''
         if forWhat=="due":
             print({'forwhj':forWhat})
             due_users = due_models.Due_User.objects.all()
@@ -213,6 +214,7 @@ class PaymentSerializer(serializers.Serializer):
 
             #     raise PaymentError(error)
             due_user = due_models.Due_User.objects.get(user=member.user,item_code=item_id)
+            productName = due_user.due.Name
             # if due_user.is_paid == True:
             #     error = generate_interswitch_error(
             #     MerchantReference=MerchantReference,CustReference=CustReference,
@@ -236,7 +238,7 @@ class PaymentSerializer(serializers.Serializer):
     # 'Phone':'',
     'PaymentItems':{
         'Item':{
-            'ProductName':forWhat,
+            'ProductName':productName,
             'ProductCode':validated_data.get('PaymentItemCode',''),
             'Quantity':'1',
             'Price':int(instance.amount),
