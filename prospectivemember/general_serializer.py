@@ -4,6 +4,7 @@ from account.models import User
 from utils.custom_exceptions import CustomError
 from django.core.files import File
 from mymailing import tasks as mymailing_task
+import threading
 
 class CreatePropectiveMemberSerializer(serializers.ModelSerializer):
     password = serializers.CharField()
@@ -26,7 +27,10 @@ class CreatePropectiveMemberSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(email=email,password=password,user_type='prospective_members')    
         user.is_prospective_Member=True
         user.save()
-        mymailing_task.send_activation_mail.delay(user.id,user.email)
+        thread = threading.Thread(target=mymailing_task.send_activation_mail,args=(user.id,user.email))
+        thread.start()
+        thread.join()
+
         prospectiveMember = general_models.ProspectiveMemberProfile.objects.create(
             user = user,**validated_data)
         return prospectiveMember

@@ -5,7 +5,7 @@ from utils.custom_exceptions import  CustomError
 from mymailing import tasks as mymailing_task
 from rest_framework.authtoken.models import Token
 from Rel8Tenant import models as rel8tenant_related_models
-import requests,json
+import requests,json,threading
 from utils.usefulFunc import convert_naira_to_kobo
 from prospectivemember.models.man_prospective_model import ManProspectiveMemberProfile,RegistrationAmountInfo
 from utils.custom_response import Success_response
@@ -82,8 +82,9 @@ class CreateManPropectiveMemberSerializer(serializers.ModelSerializer):
             user=user,
             **validated_data
         )
-        mymailing_task.send_activation_mail.delay(user.id,user.email)
-       
+        thread = threading.Thread(target=mymailing_task.send_activation_mail,args=(user.id,user.email))
+        thread.start()
+        thread.join()
        
         token,created =Token.objects.get_or_create(user=user)
         payment_info = self._process_paymentlink(self.context.get('request'),user)

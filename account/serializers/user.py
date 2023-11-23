@@ -13,6 +13,7 @@ from django.utils.encoding import force_str,force_bytes
 from django.utils.http import urlsafe_base64_encode,urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from account.task import send_forgot_password_mail
+import threading
 User = get_user_model()
 WEBSITEURL = os.environ['websiteurl']
 def normalize_email(email):
@@ -487,8 +488,11 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             reset_url=f'https://members.nimn.com.ng/forgot-password/reset-password/{uid}/{token}/'
         if connection.schema_name =='test':
             reset_url = f'https://demo.rel8membership.com/reset-password/{uid}/{token}/'
-            
-        send_forgot_password_mail.delay(user.email,reset_url)
+        
+        thread = threading.Thread(target=send_forgot_password_mail,args=(user.email,reset_url))
+        thread.start()
+        thread.join()
+        
         # print({'reset_url':reset_url})
     def create(self, validated_data):
         user = get_user_model().objects.get(email=validated_data.get('email'))

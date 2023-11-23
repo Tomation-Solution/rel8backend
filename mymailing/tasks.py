@@ -5,12 +5,12 @@ from .EmailConfirmation import activateEmail,sendInvitationMail
 
 from event.models import Event,EventProxyAttendies
 
-@shared_task()
+# @shared_task()
 def send_activation_mail(user_id,to_email):
     user = get_user_model().objects.get(id=user_id)
     activateEmail(user,to_email)
 
-@shared_task()
+# @shared_task()
 def send_event_invitation_mail(user_id,event_id,event_proxy_attendies_id):
     user = get_user_model().objects.get(id=user_id)
     event =Event.objects.get(id=event_id)

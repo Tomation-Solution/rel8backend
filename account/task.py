@@ -224,7 +224,7 @@ def charge_new_member_dues__fornimn(user_id:int):
 
 
 
-@shared_task
+# @shared_task
 def group_MAN_subSector_and_sector(exco_name,member_id,type='sector',):
     try:
         member = user_related_models.Memeber.objects.get(id=member_id)
@@ -236,7 +236,7 @@ def group_MAN_subSector_and_sector(exco_name,member_id,type='sector',):
 
 
 
-@shared_task()
+# @shared_task()
 def send_forgot_password_mail(email,link):
     'send forgot password notifcation'
     mail_subject =f'{connection.schema_name.upper()}Forgot Password'

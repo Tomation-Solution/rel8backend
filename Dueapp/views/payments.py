@@ -25,6 +25,7 @@ from prospectivemember.models import general as generalProspectiveModels
 from django.shortcuts import get_object_or_404
 from event.models import EventProxyAttendies
 from mymailing import tasks as mailing_tasks
+import threading
 from utils.extraFunc import generate_n
 def very_payment(request,reference=None):
     # this would be in the call back to check if the payment is a success
@@ -119,11 +120,9 @@ class InitPaymentTran(APIView):
                 event_proxy_attendies,created= EventProxyAttendies.objects.get_or_create(
                     participants= invited_guest,
                     event_due_user=instance)
-                
-                mailing_tasks.send_event_invitation_mail.delay(
-                    user_id=instance.user.id,
-                    event_id = event.id,
-                    event_proxy_attendies_id=event_proxy_attendies.id)
+                thread = threading.Thread(target=mailing_tasks.send_event_invitation_mail,args=(instance.user.id,event.id,event_proxy_attendies.id))
+                thread.start()
+                thread.join()
             else:
 
                 amount_to_be_paid = instance.amount
@@ -346,7 +345,9 @@ def webhookPayloadhandler(meta_data,user,):
                 prospective_member.has_paid=True
                 prospective_member.amount=float(amount_to_be_paid)
                 prospective_member.save()
-                mymailing_task.send_activation_mail.delay(prospective_member.user.id,prospective_member.user.email)
+                thread = threading.Thread(target=mymailing_task.send_activation_mail,args=(prospective_member.user.id,prospective_member.user.email))
+                thread.start()
+                thread.join()  
             else:
                 prospective_member= generalProspectiveModels.ProspectiveMemberProfile.objects.get(id=instanceID)
                 prospective_member.has_paid=True

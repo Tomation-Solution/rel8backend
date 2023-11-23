@@ -23,7 +23,7 @@ from rest_framework.generics import GenericAPIView
 from mailing.models import EmailInvitation
 from account import task as acct_task
 from rest_framework.decorators import api_view
-import json
+import json,threading
 from utils.notification import NovuProvider
 # create Super user of the Alumni which is the owner
 from pusher_push_notifications import PushNotifications
@@ -321,24 +321,26 @@ class ManageMemberValidation(viewsets.ViewSet):
                         value= request.data[key],
                         member=member
                     )
-            mymailing_task.send_activation_mail.delay(user.id,user.email)
+            thread= threading.Thread(target=mymailing_task.send_activation_mail,args=(user.id,user.email))
+            thread.start()
+            thread.join()
             # regiter_user_to_chat.delay(member.id)
             # if connection.schema_name == 'nimn':
             "this is not for nimn specific any more view the function for more info"
-            charge_new_member_dues__fornimn.delay(user.id)
-
-            if connection.schema_name == 'man':
-                for key in request.data.keys():
-                    if key == 'SECTOR':
-                        exco_name = request.data[key]
-                        acct_task.group_MAN_subSector_and_sector.delay(
-                            exco_name,member.id,type='sector'
-                        )
-                    if key == 'SUB-SECTOR':
-                        exco_name = request.data[key]
-                        acct_task.group_MAN_subSector_and_sector.delay(
-                            exco_name,member.id,type='sub-sector'
-                        )
+            
+            thread= threading.Thread(target=charge_new_member_dues__fornimn,args=(user.id))
+            thread.start()
+            thread.join()
+            # if connection.schema_name == 'man':
+            #     for key in request.data.keys():
+            #         if key == 'SECTOR':
+            #             exco_name = request.data[key]
+            #             thread= threading.Thread(target=acct_task.group_MAN_subSector_and_sector,args=(exco_name,member.id,'sector'))
+            #         if key == 'SUB-SECTOR':
+            #             exco_name = request.data[key]
+            #             acct_task.group_MAN_subSector_and_sector.delay(
+            #                 exco_name,member.id,type='sub-sector'
+            #             )
             try:
                 novu = NovuProvider()
                 novu.subscribe(
