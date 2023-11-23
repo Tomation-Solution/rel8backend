@@ -192,7 +192,7 @@ def update_commitee_chat(commitee_id:int):
 
 
 
-@shared_task
+# @shared_task
 def charge_new_member_dues__fornimn(user_id:int):
      'This Charge Members on Manul Dues .. this does not work for ont nimn but for org that have membership_grade'
      all_mannual =  due_models.Due.objects.filter(is_on_create=True)
