@@ -293,7 +293,7 @@ class ManageMemberValidation(viewsets.ViewSet):
                         value= request.data[key],
                         member=member
                     )
-            thread= threading.Thread(target=activateEmail,args=(user,user.email))
+            thread= threading.Thread(target=activateEmail,args=[user,user.email,connection.schema_name])
             thread.start()
             thread.join()
 
@@ -301,7 +301,7 @@ class ManageMemberValidation(viewsets.ViewSet):
             # if connection.schema_name == 'nimn':
             "this is not for nimn specific any more view the function for more info"
             print({'user_id':user.id})
-            thread= threading.Thread(target=charge_new_member_dues__fornimn,args=[user.id])
+            thread= threading.Thread(target=charge_new_member_dues__fornimn,args=[user.id,connection.schema_name])
             thread.start()
             thread.join()
             # if connection.schema_name == 'man':

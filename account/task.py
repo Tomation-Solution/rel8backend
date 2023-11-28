@@ -193,8 +193,9 @@ def update_commitee_chat(commitee_id:int):
 
 
 # @shared_task
-def charge_new_member_dues__fornimn(user_id:int):
+def charge_new_member_dues__fornimn(user_id:int,schema_name:str):
      'This Charge Members on Manul Dues .. this does not work for ont nimn but for org that have membership_grade'
+     connection.set_schema(schema_name=schema_name)
      all_mannual =  due_models.Due.objects.filter(is_on_create=True)
      user = User.objects.get(id=user_id)
      names = UserMemberInfo.objects.filter(Q(name='MEMBERSHIP_GRADE')|Q(name='MEMBERSHIP_GRADE'.lower()),
@@ -237,13 +238,14 @@ def group_MAN_subSector_and_sector(exco_name,member_id,type='sector',):
 
 
 # @shared_task()
-def send_forgot_password_mail(email,link):
+def send_forgot_password_mail(email,link,schema_name:str):
     'send forgot password notifcation'
-    mail_subject =f'{connection.schema_name.upper()}Forgot Password'
+    connection.set_schema(schema_name=schema_name)
+    mail_subject =f'{schema_name.upper()}Forgot Password'
     user = get_user_model().objects.get(email=email)
     memeber = Memeber.objects.get(user=user)
     # link = f'https://{connection.schema_name}.rel8membership.com/reset-password/'
-    sender_name=f'{connection.schema_name.upper()} Membeership Forgot Password'
+    sender_name=f'{schema_name.upper()} Membeership Forgot Password'
     domain_mail = os.environ['domain_mail']
     sender_email =domain_mail
     

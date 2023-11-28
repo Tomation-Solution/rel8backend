@@ -2,8 +2,8 @@ from celery import shared_task
 from django.contrib.auth import get_user_model
 
 from .EmailConfirmation import activateEmail,sendInvitationMail
-
 from event.models import Event,EventProxyAttendies
+from django.db import connection
 
 # @shared_task()
 def send_activation_mail(user_id,to_email):
@@ -11,7 +11,8 @@ def send_activation_mail(user_id,to_email):
     activateEmail(user,to_email)
 
 # @shared_task()
-def send_event_invitation_mail(user_id,event_id,event_proxy_attendies_id):
+def send_event_invitation_mail(user_id,event_id,event_proxy_attendies_id,schema_name):
+    connection.set_schema(schema_name=schema_name)
     user = get_user_model().objects.get(id=user_id)
     event =Event.objects.get(id=event_id)
     event_proxy_attendies= EventProxyAttendies.objects.get(id=event_proxy_attendies_id)

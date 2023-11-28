@@ -489,7 +489,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         if connection.schema_name =='test':
             reset_url = f'https://demo.rel8membership.com/reset-password/{uid}/{token}/'
         
-        thread = threading.Thread(target=send_forgot_password_mail,args=(user.email,reset_url))
+        thread = threading.Thread(target=send_forgot_password_mail,args=[user.email,reset_url,connection.schema_name])
         thread.start()
         thread.join()
         

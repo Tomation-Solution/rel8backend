@@ -120,7 +120,7 @@ class InitPaymentTran(APIView):
                 event_proxy_attendies,created= EventProxyAttendies.objects.get_or_create(
                     participants= invited_guest,
                     event_due_user=instance)
-                thread = threading.Thread(target=mailing_tasks.send_event_invitation_mail,args=(instance.user.id,event.id,event_proxy_attendies.id))
+                thread = threading.Thread(target=mailing_tasks.send_event_invitation_mail,args=[instance.user.id,event.id,event_proxy_attendies.id,connection.schema_name])
                 thread.start()
                 thread.join()
             else:
@@ -345,7 +345,7 @@ def webhookPayloadhandler(meta_data,user,):
                 prospective_member.has_paid=True
                 prospective_member.amount=float(amount_to_be_paid)
                 prospective_member.save()
-                thread = threading.Thread(target=mymailing_task.send_activation_mail,args=(prospective_member.user.id,prospective_member.user.email))
+                thread = threading.Thread(target=mymailing_task.send_activation_mail,args=[prospective_member.user.id,prospective_member.user.email,connection.schema_name])
                 thread.start()
                 thread.join()  
             else:

@@ -10,6 +10,7 @@ from utils.usefulFunc import convert_naira_to_kobo
 from prospectivemember.models.man_prospective_model import ManProspectiveMemberProfile,RegistrationAmountInfo
 from utils.custom_response import Success_response
 from rest_framework import status
+from django.db import connection
 
 class CreateManPropectiveMemberSerializer(serializers.ModelSerializer):
 
@@ -82,7 +83,7 @@ class CreateManPropectiveMemberSerializer(serializers.ModelSerializer):
             user=user,
             **validated_data
         )
-        thread = threading.Thread(target=mymailing_task.send_activation_mail,args=(user.id,user.email))
+        thread = threading.Thread(target=mymailing_task.send_activation_mail,args=[user.id,user.email,connection.schema_name])
         thread.start()
         thread.join()
        

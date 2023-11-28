@@ -15,7 +15,9 @@ import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 from mymailing.views import send_mail
 
-def activateEmail(user,to_email):
+def activateEmail(user,to_email,schema_name):
+    connection.set_schema(schema_name=schema_name)
+
     domain_mail = os.environ['domain_mail']
     sender_email =domain_mail
     domain = connection.schema_name+'.'+os.environ['domain']
