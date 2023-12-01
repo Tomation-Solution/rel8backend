@@ -1,6 +1,7 @@
 import datetime
 from utils.custom_exceptions import CustomError
 
+
 def check_date_formatISO8601(date_string:str):
     "check string against this date format ISO 8601"
     date_format = '%Y-%m-%d'
