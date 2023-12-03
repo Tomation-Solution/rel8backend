@@ -291,7 +291,7 @@ CORS_ALLOWED_ORIGINS = os.environ['trusted_urls'].split(',')
 CSRF_TRUSTED_ORIGINS =CORS_ALLOWED_ORIGINS
 # if os.environ.get('databaseName',None):
 #     CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
-
+CORS_ALLOW_ALL_ORIGINS=True
 CORS_ALLOW_METHODS = [
 'DELETE',
 'GET',
