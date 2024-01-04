@@ -34,7 +34,16 @@ def run(file):
                     splittedTitle=title.split('--')
                 
                     if(splittedTitle[1].lower()== 'valid'):
-                        data[splittedTitle[0]] = cell.value
+                        validValue =  cell.value
+                        #the if statement below is to ensure the membership_id is not a number or float that it a strinng 
+                        if(type(cell.value) == float):
+                            validValue = str(int(cell.value))
+                        if(type(cell.value) == str):
+                            validValue = str(int(cell.value))
+                        
+
+                        data[splittedTitle[0]] =validValue
+
                     else:
                         data[title] = cell.value
 
