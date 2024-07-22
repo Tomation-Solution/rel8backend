@@ -24,6 +24,33 @@ def run(file):
 
 
 
+    # cell_line = 0
+    # for row in rows:
+    #     data =dict()
+    #     for title,cell in zip(headers,row):
+    #         if title is not None:
+    #             if(len(title.split('--'))==2):
+    #                 'we dont want to store titleName --valid so her we removeing th --valid that if it exist'
+    #                 splittedTitle=title.split('--')
+                
+    #                 if(splittedTitle[1].lower()== 'valid'):
+    #                     validValue =  cell.value
+    #                     #the if statement below is to ensure the membership_id is not a number or float that it a strinng 
+    #                     # if(type(cell.value) == float):
+    #                     #     validValue = str(int(cell.value))
+    #                     if(type(cell.value) == str):
+    #                         validValue = str(int(cell.value))
+                        
+    #                     data[splittedTitle[0]] =validValue
+
+    #                 else:
+    #                     data[title] = cell.value
+
+                
+    #             else:
+    #                 data[title] = cell.value
+
+
     cell_line = 0
     for row in rows:
         data =dict()
@@ -34,16 +61,7 @@ def run(file):
                     splittedTitle=title.split('--')
                 
                     if(splittedTitle[1].lower()== 'valid'):
-                        validValue =  cell.value
-                        #the if statement below is to ensure the membership_id is not a number or float that it a strinng 
-                        if(type(cell.value) == float):
-                            validValue = str(int(cell.value))
-                        if(type(cell.value) == str):
-                            validValue = str(int(cell.value))
-                        
-
-                        data[splittedTitle[0]] =validValue
-
+                        data[splittedTitle[0]] = cell.value
                     else:
                         data[title] = cell.value
 
