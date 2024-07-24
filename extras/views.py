@@ -126,7 +126,7 @@ class AdminManagesProjectViewset(viewsets.ModelViewSet):
     parser_classes = (custom_parsers.NestedMultipartParser,FormParser,)
 
 
-class MemeberProjectViewset(viewsets.ViewSet):
+class MemeberProjectSupportKindViewset(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
     
     @action(detail=False,methods=['post'],)
@@ -140,6 +140,23 @@ class MemeberProjectViewset(viewsets.ViewSet):
         member_projects_instances = models.SupportProjectInKind.objects.filter(member__user=request.user)
         serializer = serializers.MemberSupportProjectInKindSerializer(instance=member_projects_instances,many=True)
         return Success_response(msg='Success',data=serializer.data,status_code=status.HTTP_200_OK)
+
+
+class MemeberProjectSupportCashViewset(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
+    
+    @action(detail=False,methods=['post'],)
+    def support_in_kind(self, request, *args, **kwargs):
+        serialzed = serializers.MemberSupportProjectInCashSerializer(data=request.data)
+        serialzed.is_valid(raise_exception=True)
+        data = serialzed.save(member=request.user.memeber)
+        return Success_response(msg='Created',data=[],status_code=status.HTTP_201_CREATED)
+
+    def list(self,request,*args,**kwargs):
+        member_projects_instances = models.SupportProjectInCash.objects.filter(member__user=request.user)
+        serializer = serializers.MemberSupportProjectInCashSerializer(instance=member_projects_instances,many=True)
+        return Success_response(msg='Success',data=serializer.data,status_code=status.HTTP_200_OK)
+
 
 
 class MemeberCustomerSupportViewSet(viewsets.ModelViewSet):

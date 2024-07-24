@@ -55,12 +55,12 @@ class SupportProjectInCash(models.Model):
     project = models.ForeignKey(FundAProject,null=True,default=True,on_delete=models.CASCADE)
     # remark = models.TextField(default='remark',)
     member_remark = models.TextField(default='Will donate')
+
 class SupportProjectInKind(models.Model):
     member = models.ForeignKey(user_realted_models.Memeber,null=True,default=True,on_delete=models.CASCADE)
     heading =models.CharField(max_length=50)
     about = models.TextField(default='')
     project = models.ForeignKey(FundAProject,null=True,default=True,on_delete=models.CASCADE)
-
     delivery_date = models.DateField(default=date.today)
 
 

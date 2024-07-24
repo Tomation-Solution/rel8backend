@@ -78,6 +78,12 @@ class MemberSupportProjectInKindSerializer(serializers.ModelSerializer):
         model = models.SupportProjectInKind
         fields = ['heading','about','project','delivery_date']
 
+class MemberSupportProjectInCashSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.SupportProjectInCash
+        fields = ['amount','member_remark','project','is_paid']
+
 class MemeberCustomerSupporSerializer(serializers.ModelSerializer):
 
     class Meta:
