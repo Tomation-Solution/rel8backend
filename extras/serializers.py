@@ -68,7 +68,7 @@ class AdminManagesProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.FundAProject
-        fields = ['heading','about','id','image','what_project_needs']
+        fields = ['heading','about','id','image','what_project_needs', 'amount_made']
 
 
 
