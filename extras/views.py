@@ -137,7 +137,7 @@ class MemeberProjectViewset(viewsets.ViewSet):
         return Success_response(msg='Created',data=[],status_code=status.HTTP_201_CREATED)
 
     def list(self,request,*args,**kwargs):
-        member_projects_instances = models.SupportProjectInCash.objects.filter(member=request.user.member)
+        member_projects_instances = models.SupportProjectInKind.objects.filter(member__user=request.user)
         serializer = serializers.MemberSupportProjectInKindSerializer(instance=member_projects_instances,many=True)
         return Success_response(msg='Success',data=serializer.data,status_code=status.HTTP_200_OK)
 
