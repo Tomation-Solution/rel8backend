@@ -146,7 +146,7 @@ class MemeberProjectSupportCashViewset(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
     
     @action(detail=False,methods=['post'],)
-    def support_in_kind(self, request, *args, **kwargs):
+    def support_in_cash(self, request, *args, **kwargs):
         serialzed = serializers.MemberSupportProjectInCashSerializer(data=request.data)
         serialzed.is_valid(raise_exception=True)
         data = serialzed.save(member=request.user.memeber)
