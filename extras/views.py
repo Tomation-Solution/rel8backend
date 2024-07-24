@@ -133,7 +133,7 @@ class MemeberProjectViewset(viewsets.ViewSet):
     def support_in_kind(self, request, *args, **kwargs):
         serialzed = serializers.MemberSupportProjectInKindSerializer(data=request.data)
         serialzed.is_valid(raise_exception=True)
-        data = serialzed.save(member=request.user.memeber)
+        data = serialzed.save(member__user=request.user)
         return Success_response(msg='Created',data=[],status_code=status.HTTP_201_CREATED)
 
     def list(self,request,*args,**kwargs):
