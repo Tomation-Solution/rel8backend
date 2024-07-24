@@ -82,7 +82,7 @@ class MemberSupportProjectInCashSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.SupportProjectInCash
-        fields = ['amount','member_remark','project','is_paid']
+        fields = ['amount','member_remark','project','is_paid', 'paystack_key']
 
 class MemeberCustomerSupporSerializer(serializers.ModelSerializer):
 
