@@ -65,7 +65,6 @@ class TicketingSerializer(serializers.ModelSerializer):
 
 
 class AdminManagesProjectSerializer(serializers.ModelSerializer):
-    
 
     class Meta:
         model = models.FundAProject
