@@ -57,29 +57,23 @@ class EmailValidateView(GenericAPIView):
         key = request.data.get("key", None)
 
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-                
-            if   EmailInvitation.objects.filter(key=key).exists():
-                email_activation_query = EmailInvitation.objects.filter(
-                    key=key
-                )
-                print("helo ")
-                confirm_query = email_activation_query.confirmable()
-                if confirm_query.count() == 1:
-                    email_activation_object: EmailInvitation = (
-                        confirm_query.first()
-                    )
-                    email_activation_object.activate()
+        serializer.is_valid(raise_exception=True)
 
-                    return Success_response(msg="Validated Successfully ",data=[],status_code=status.HTTP_200_OK)
-                else:
-                    activated_query = email_activation_query.filter(activated=True)
-                    if activated_query.exists():
-                        return Success_response(msg= "Your email has already been confirmed",data=[],status_code=status.HTTP_200_OK)
-                
-            raise CustomError({"error":"Bad Key"})
-
+        email_activation_query = EmailInvitation.objects.filter(key=key)
             
+        if not email_activation_query.exists():
+            raise CustomError({"error":"Key provided does not exist"})
+
+        confirm_query = email_activation_query.confirmable()
+        if confirm_query.count() == 1:
+            first_email_activation_object = confirm_query.first()
+            first_email_activation_object.activate()
+            return Success_response(msg="Email Validated Successfully ",data=[],status_code=status.HTTP_200_OK)
+        else:
+            activated_query = email_activation_query.filter(activated=True)
+            if activated_query.exists():
+                return Success_response(msg= "Your email has already been confirmed",data=[],status_code=status.HTTP_200_OK)
+        
 class RegisterSuperAdmin(CreateAPIView):
     serializer_class  =auth_serializers.RegisterAdminUser
     permission_classes =[AllowAny]
