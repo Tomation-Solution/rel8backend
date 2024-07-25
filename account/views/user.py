@@ -33,8 +33,6 @@ class GetExistingChapters(APIView):
 
         serializer_class  = auth_serializer.ManageChapters(data=chapters_instances, many=True)
 
-        serializer_class.is_valid(raise_exceptions=True)
-
         return custom_response.Success_response(msg="Success",data=serializer_class.data)
 
 
