@@ -1,5 +1,6 @@
 import json
 from account.task import regiter_user_to_chat,charge_new_member_dues__fornimn
+from django.shortcuts import get_object_or_404
 from mymailing import tasks as mymailing_task
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -340,8 +341,9 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
             clead_data = self.serializer_class(all_commitee_group,many=True)
         else:
             commitee_id = request.query_params.get('commitee_id',None)
-            if commitee_id is None:raise CustomError({'error':'please provide commitee_id'})
-            commitee = self.queryset.get(id=commitee_id)
+            if commitee_id is None:
+                raise CustomError({'error':'please provide commitee_id'})
+            commitee = get_object_or_404(self.queryset, id=commitee_id)
             clead_data = self.serializer_class(commitee,many=False,context={'detail':True})
         return Success_response(msg="Success",data =clead_data.data)
 
