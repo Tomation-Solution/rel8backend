@@ -32,6 +32,8 @@ class GetExistingChapters(APIView):
         chapters_instances = auth_models.Chapters.objects.all()
 
         serializer_class  = auth_serializer.ManageChapters(data=chapters_instances, many=True)
+        if not serializer_class.is_valid():
+            raise CustomError({"error": "Error occurred..."})
 
         return custom_response.Success_response(msg="Success",data=serializer_class.data)
 
