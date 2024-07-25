@@ -12,6 +12,8 @@ from account.models import User
 "the chat views for every on as long as u authenticated it just a list view"
 
 class ChatRoomViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
+    queryset = models.ChatRoom.objects.all()
+    
     def list(self, request, *args, **kwargs):
         room_name = request.query_params.get('room_name')
 
