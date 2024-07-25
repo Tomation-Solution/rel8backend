@@ -422,4 +422,4 @@ class SuperAdminMangeChapters(viewsets.ModelViewSet):
     def get_chapters(self,request, pk=None,):
         "any bodyu can list the chapters"
 
-        return Success_response(msg="Success",data=[*self.queryset.values()])
+        return Success_response(msg="Success",data=[*self.queryset.values()])   

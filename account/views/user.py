@@ -21,6 +21,7 @@ from django.db.models import F
 from utils.custom_parsers import NestedMultipartParser
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
+from ..serializers import auth as auth_serializer
 # from
 
 
@@ -30,7 +31,7 @@ class GetExistingChapters(APIView):
     def get(self,request):
         chapters_instances = auth_models.Chapters.objects.all()
 
-        serializer_class  = user_serializer.ManageChapters(data=chapters_instances, many=True)
+        serializer_class  = auth_serializer.ManageChapters(data=chapters_instances, many=True)
 
         serializer_class.is_valid(raise_exceptions=True)
 
