@@ -14,6 +14,7 @@ from ..serializers import user as user_serializer
 from ..models import user as  user_models
 from account.models import auth as  auth_models
 from rest_framework.decorators import action
+from rest_framework.views import APIView
 from event import models
 from rest_framework.parsers import FormParser
 from django.db.models import F
@@ -22,13 +23,26 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
 # from
 
+
+class GetExistingChapters(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self,request):
+        chapters_instances = auth_models.Chapters.objects.all()
+
+        serializer_class  = user_serializer.ManageChapters(data=chapters_instances, many=True)
+
+        serializer_class.is_valid(raise_exceptions=True)
+
+        return custom_response.Success_response(msg="Success",data=serializer_class.data)
+
+
 class RegisterUserToChapter(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]
     serializer_class  = user.RegisterUserToChapterView
 
     def list(self,request,format=None):
         chapters =auth_models.Chapters.objects.all().values()
-        print(chapters)
         return custom_response.Success_response(msg="Success",data=chapters)
 
     def create(self,request,format=None):

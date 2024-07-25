@@ -16,6 +16,7 @@ from account.task import send_forgot_password_mail
 import threading
 User = get_user_model()
 WEBSITEURL = os.environ['websiteurl']
+
 def normalize_email(email):
     """
     Normalize the email address by lower-casing the domain part of it.
@@ -335,9 +336,8 @@ class HandleDeleteMemberBioSerializer(serializers.Serializer):
     membereducation_ids = serializers.ListField(child=serializers.IntegerField())
 
     def create(self, validated_data):
-        print(validated_data)
-
-
+        pass
+    
 class  RegisterUserToChapterView(serializers.Serializer):
     user_id = serializers.IntegerField()
     chapter_id =serializers.IntegerField()
@@ -352,7 +352,7 @@ class  RegisterUserToChapterView(serializers.Serializer):
             raise CustomError({"error":"Chapter Does Not exist"})
 
         user = get_user_model().objects.get(id=user_id)
-        chapter =user_auth_models.Chapters.objects.get(id=chapter_id)
+        chapter = user_auth_models.Chapters.objects.get(id=chapter_id)
         if user.chapter is not None:
             raise CustomError({"error":"You already belong to a chapter"})
         user.chapter  = chapter

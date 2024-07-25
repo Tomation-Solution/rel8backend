@@ -18,5 +18,6 @@ router.register('forgot-password',user_view.ForgotPasswordViewSet,basename='forg
 urlpatterns = [
     path('profile/',user_view.profile,name='profile'),
     path('council_members/<int:pk>/',user_view.council_members,name='council_members'),
-    path('get_membershipgrade/',user_view.get_membershipgrade,name='get_membershipgrade')
+    path('get_membershipgrade/',user_view.get_membershipgrade,name='get_membershipgrade'),
+    path('chapters', user_view.GetExistingChapters.as_view(), name="get_existing_chapters")
 ] +router.urls
