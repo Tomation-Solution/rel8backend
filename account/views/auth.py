@@ -417,9 +417,3 @@ class SuperAdminMangeChapters(viewsets.ModelViewSet):
     serializer_class = auth_serializers.ManageChapters
     permission_classes =[IsAuthenticated,custom_permission.IsSuperAdmin]
     queryset = auth_models.Chapters.objects.all()
-
-    @action(detail=False,methods=['get'],permission_classes=[IsAuthenticated])
-    def get_chapters(self,request, pk=None,):
-        "any bodyu can list the chapters"
-
-        return Success_response(msg="Success",data=[*self.queryset.values()])   
