@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 # Create your models here.
 
 
-
 class ChatRoom(models.Model):
     '''
     the room name would be formated by 
@@ -20,7 +19,7 @@ class ChatRoom(models.Model):
 class Chat(models.Model):
     chat_room =models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
     message = models.TextField()
-    # this is the sendeer
+    # this is the sender
     user = models.ForeignKey(get_user_model(),null=True,on_delete=models.SET_NULL)
 
     
