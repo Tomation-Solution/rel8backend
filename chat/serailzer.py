@@ -12,7 +12,7 @@ class ChatSerializer(serializers.ModelSerializer):
         return instance.user.id
 
     def get_full_name(self,instance:models.Chat):
-        user =instance.user
+        user = instance.user
         user_full_name = None
         if user:
             if user.user_type== 'members':
