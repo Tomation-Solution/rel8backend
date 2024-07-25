@@ -11,8 +11,9 @@ class ChatRoom(models.Model):
 
     but if is_group is sent to the socket then we just use the group like that
     '''
-    room_name= models.TextField()
-    def __str__(self) -> str: return f'{self.room_name}'
+    room_name = models.TextField()
+    def __str__(self) -> str: 
+        return self.room_name
 
 
 

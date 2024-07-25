@@ -17,19 +17,20 @@ class ChatRoomViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         room_name = request.query_params.get('room_name')
-
-        if not models.ChatRoom.objects.filter(room_name=room_name).exists():
+        try:
+            room_name_instance = models.ChatRoom.objects.get(room_name=room_name)
+        except ChatRoom.DoesNotExist:
             raise CustomError(
-            message='User does not exist',
-            status_code=status.HTTP_400_BAD_REQUEST)
+            message='Chat room does not exist',
+            status_code=status.HTTP_404_NOT_FOUND)
         
-        room_name_intance  =models.ChatRoom.objects.get(room_name=room_name)
-        data = models.Chat.objects.filter(chat_room=room_name_intance)[:10]
-        serialzed = serailzer.ChatSerializer(instance=data,many=True)
+        chat_instances = models.Chat.objects.filter(chat_room=room_name_instance)[:10]
+        serialzed = serailzer.ChatSerializer(instance=chat_instances,many=True)
+        serailzer.is_valid(raise_exception=True)
         # .order_by('-id').values('message','user__id')[:10]
-        data = reversed(serialzed.data)
+        chats = reversed(serialzed.data)
 
-        return custom_response.Success_response(msg='Successful',data=data,status_code=status.HTTP_200_OK) 
+        return custom_response.Success_response(msg='Successful',data=chats,status_code=status.HTTP_200_OK) 
 
     @action(methods=['get'],detail=False)
     def get_users(self,*args,**Kwargs):
