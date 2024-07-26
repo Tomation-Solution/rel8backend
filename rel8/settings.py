@@ -295,10 +295,10 @@ def is_valid_url(url):
     return all([parsed_url.scheme, parsed_url.netloc]) and not parsed_url.path
 
 # Filter valid URLs and remove wildcard
-cors_allowed_origins = [
+CORS_ALLOWED_ORIGINS = [
     url.rstrip('/') for url in trusted_urls if is_valid_url(url) and url != '*'
 ]
-
+ 
 CSRF_TRUSTED_ORIGINS =CORS_ALLOWED_ORIGINS
 CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
 CORS_ALLOW_ALL_ORIGINS=True
