@@ -87,7 +87,7 @@ class MembersGetNews(views.APIView):
         
         try:
             news = models.News.objects.get(id=news_id)
-        except New.DoesNotExist:
+        except News.DoesNotExist:
             raise CustomError({"error": "News not found"}, status_code=404)
            
         if not news.user_that_have_reacted.all().filter(id=request.user.memeber.id).exists():
