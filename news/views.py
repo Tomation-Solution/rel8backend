@@ -90,20 +90,20 @@ class MembersGetNews(views.APIView):
         except models.News.DoesNotExist:
             raise CustomError({"error": "News not found"}, status_code=404)
            
-        if not news.user_that_have_reacted.all().filter(id=request.user.memeber.id).exists():
-            news.user_that_have_reacted.add(request.user.memeber)
-            if likes:
-                news.likes += 1
-            else:
-                news.likes -= 1
-
-            if dislikes:
-                news.dislikes += 1
-            else:
-                news.dislikes -= 1
-                
+        # if not news.user_that_have_reacted.all().filter(id=request.user.memeber.id).exists():
+        # news.user_that_have_reacted.add(request.user.memeber)
+        if likes:
+            news.likes += 1
         else:
-            raise CustomError({"error": "You have reacted to the news already"})
+            news.likes -= 1
+
+        if dislikes:
+            news.dislikes += 1
+        else:
+            news.dislikes -= 1
+                
+        # else:
+        #     raise CustomError({"error": "You have reacted to the news already"})
 
         news.save()
 
