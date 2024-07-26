@@ -17,19 +17,22 @@ class AdminManageNews(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin,custom_permission.Normal_Admin_Must_BelongToACHapter]
     serializer_class = serializers.AdminManageNewSerializer
     parser_classes =(custom_parsers.NestedMultipartParser,FormParser,)
+
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+
     def create(self,request,format=None):
         'create event'
         serialize =  self.serializer_class(data=request.data,context={"request":request})
         serialize.is_valid(raise_exception=True)
-        instance = serialize.save()
+        instance = serialize.save(writer=request.user)
+
         if self.request.user.user_type in ['admin']:
             # this means this is a admin of this chapter we force him to create the news only for his chapter
             instance.chapters = request.user.chapter
         if self.request.user.user_type in ['super_admin']:
             # this means this person is a super_amin this means this news would be National
-            instance.chapters= None#chapters are none for national
+            instance.chapters = None#chapters are none for national
         exco =None
         exco_id = request.data.get('exco_id',None)
         if exco_id:
@@ -71,46 +74,44 @@ class MembersGetNews(views.APIView):
         if news.image:
             image =  self.request.build_absolute_uri(news.image.url)#https://stackoverflow.com/questions/35522768/django-serializer-imagefield-to-get-full-url/48142428#48142428
         return {"id":news.id,"name":news.name,'likes':news.likes,
-    'dislikes':news.dislikes,'is_member':news.is_member,
-    'is_committe':news.is_committe,"is_exco":news.is_exco,
-    "hasReacted":news.user_that_have_reacted.all().filter(id=self.request.user.memeber.id).exists(),
-    "image":image
-    }
+            'dislikes':news.dislikes,'is_member':news.is_member,
+            'is_committe':news.is_committe,"is_exco":news.is_exco,
+            "hasReacted":news.user_that_have_reacted.all().filter(id=self.request.user.memeber.id).exists(),
+            "image":image
+        }
 
-
-
-    def post(self, request, format=None): 
+    def patch(self, request, format=None): 
         likes = request.data.get('like')
         dislikes= request.data.get('dislike')
-        id =request.data.get('id',None)
+        news_id =request.data.get('id')
         
-        if id:
-            if models.News.objects.filter(id=id).exists():
-                news = models.News.objects.get(id=id)
-                # print({
-                #     "user":request.user.memeber,
-                #     "members that have liked":news.user_that_have_reacted.all().filter(id=request.user.memeber.id)
-                # })
-                if not news.user_that_have_reacted.all().filter(id=request.user.memeber.id).exists():
-                    news.user_that_have_reacted.add(request.user.memeber)
-                    if likes == True:
-                        if news.likes  is None:news.likes =1
-                        else:news.likes += 1
-                    if dislikes  == True:
-                        if  news.dislikes is None: news.dislikes =1
-                        else:news.dislikes +=1
-                else:
-                    print("You have DOn this alreayd")
-                        
-                news.save()
-                return custom_response.Success_response(msg='News was updated  successfully',data=[{
-                    "likes": news.likes,
-                    "dislikes":news.dislikes,
-                    "id":news.id
-                }],status_code=status.HTTP_201_CREATED)
+        try:
+            news = models.News.objects.get(id=news_id)
+        except New.DoesNotExist:
+            raise CustomError({"error": "News not found"}, status_code=404)
+           
+        if not news.user_that_have_reacted.all().filter(id=request.user.memeber.id).exists():
+            news.user_that_have_reacted.add(request.user.memeber)
+            if likes:
+                news.likes += 1
+            else:
+                news.likes -= 1
 
-        raise CustomError({"error":"News Doesnt exist's"})
+            if dislikes:
+                news.dislikes += 1
+            else:
+                news.dislikes -= 1
+                
+        else:
+            raise CustomError({"error": "You have reacted to the news already"})
 
+        news.save()
+
+        return custom_response.Success_response(msg='News reacted to  successfully',data=[{
+            "likes": news.likes,
+            "dislikes":news.dislikes,
+            "id":news.id
+        }],status_code=status.HTTP_201_CREATED)
 
 class MemberCommentOnNews(viewsets.ModelViewSet):
     queryset = models.NewsComment.objects.all()

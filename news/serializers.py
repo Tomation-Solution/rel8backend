@@ -8,12 +8,14 @@ class NewsParagraphSerializer(serializers.Serializer):
     paragragh = serializers.CharField(allow_blank=True)
     heading = serializers.CharField(allow_blank=True)
 class AdminManageNewSerializer(serializers.ModelSerializer):
-
-
+    write = serializers.SerializerMethodField()
     paragraphs = serializers.SerializerMethodField()
     has_reacted = serializers.SerializerMethodField()
 
     news_paragraph = NewsParagraphSerializer(many=True,write_only=True,)
+
+    def get_writer(self, obj):
+        return f"{obj.writer.first_name} {obj.writer.last_name}"
 
     def create(self, validated_data):
         news_paragraph = validated_data.pop('news_paragraph',[])
@@ -35,11 +37,18 @@ class AdminManageNewSerializer(serializers.ModelSerializer):
 
         return models.NewsParagraph.objects.filter(news=news,).values('id','paragragh','heading')
     def update(self, instance, validated_data):
+        is_liked = validated_data.get('likes')
+        is_disliked = validated_data.get('dislikes')
 
-        instance.likes = validated_data.get('likes',instance.likes)
-        instance.dislikes = validated_data.get('dislikes',instance.dislikes)
+        if is_liked:
+            instance.likes += 1
+
+        if is_disliked:            
+            instance.dislikes += 1
+
         instance.save()
         return instance
+
     class Meta:
         model = models.News
         fields = "__all__"
@@ -58,7 +67,7 @@ class MemberCommentOnNewsSerializer(serializers.ModelSerializer):
         full_name = news_comment.member.full_name
         
         return {
-            'full_name':full_name,
+            'full_name': full_name,
             'photo_url':photo_url,
             'id':news_comment.member.id
         }

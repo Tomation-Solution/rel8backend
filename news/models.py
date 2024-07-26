@@ -28,8 +28,10 @@ class News(models.Model):
     danload = models.FileField(upload_to='newsFileDanload/%d/',null=True,default=None)
     exco = models.ForeignKey(user_models.ExcoRole,on_delete=models.SET_NULL,null=True,default=None,blank=True) 
     dues_for_membership_grade  =models.ForeignKey(user_models.MemberShipGrade,on_delete=models.SET_NULL,null=True,default=None,blank=True)
-    
-    def __str__(self):return self.name
+    writer = models.ManyToManyField(user_realted_models.Admin, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.name
     
     def save(self, *args,**kwargs) -> None:
         if self.is_committe:
