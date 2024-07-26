@@ -25,7 +25,7 @@ class AdminManageNews(viewsets.ModelViewSet):
         'create event'
         serialize =  self.serializer_class(data=request.data,context={"request":request})
         serialize.is_valid(raise_exception=True)
-        instance = serialize.save(writer=request.user)
+        instance = serialize.save()
 
         if self.request.user.user_type in ['admin']:
             # this means this is a admin of this chapter we force him to create the news only for his chapter

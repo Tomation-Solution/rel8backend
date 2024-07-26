@@ -8,14 +8,14 @@ class NewsParagraphSerializer(serializers.Serializer):
     paragragh = serializers.CharField(allow_blank=True)
     heading = serializers.CharField(allow_blank=True)
 class AdminManageNewSerializer(serializers.ModelSerializer):
-    write = serializers.SerializerMethodField()
+    # write = serializers.SerializerMethodField()
     paragraphs = serializers.SerializerMethodField()
     has_reacted = serializers.SerializerMethodField()
 
     news_paragraph = NewsParagraphSerializer(many=True,write_only=True,)
 
-    def get_writer(self, obj):
-        return f"{obj.writer.first_name} {obj.writer.last_name}"
+    # def get_writer(self, obj):
+    #     return f"{obj.writer.first_name} {obj.writer.last_name}"
 
     def create(self, validated_data):
         news_paragraph = validated_data.pop('news_paragraph',[])
