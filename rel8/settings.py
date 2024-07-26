@@ -264,6 +264,7 @@ REST_FRAMEWORK = {
 
 PAYSTACK_SECRET=os.environ['PAYSTACK_SECRET']
 PAYSTACK_PUBLICKEY=os.environ['PAYSTACK_PUBLICKEY']
+PAYMENT_FOR_PROJECT_CALLBACK=os.environ.get('PAYSTACK_PAYMENT_FOR_PROJECT_CALLBACK', "")
 
 if os.environ.get('REDIS_URL',None):
     "if u have a redis url u can always put it in the venv...."

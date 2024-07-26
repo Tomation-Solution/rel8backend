@@ -1,3 +1,5 @@
+import requests
+import json
 from django.shortcuts import render
 from rest_framework import viewsets,permissions
 from utils import permissions as custom_permission
@@ -10,7 +12,9 @@ from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from . import filter as custom_filter
 from utils import custom_parsers
+from django.conf import settings
 from rest_framework.parsers import  FormParser
+from utils.usefulFunc import convert_naira_to_kobo
 from utils.custom_exceptions import CustomError
 
 
@@ -188,3 +192,43 @@ class MemberPersonalGallery(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(member=self.request.user.memeber)
+
+
+class FundAProjectPayment(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self,request,*args, **kwargs):
+        """ request data
+            {
+                "amount": 0,
+                "project_id": 1,
+                "member_remark": ""
+            }
+        """
+        
+        url = 'https://api.paystack.co/transaction/initialize/'
+        headers = {
+            'Authorization': f'Bearer {settings.PAYSTACK_SECRET}',
+            'Content-Type' : 'application/json',
+            'Accept': 'application/json'
+        }
+        body = {
+            "email": request.user.email,
+            "amount": convert_naira_to_kobo(request.data.get('amount')),
+            "metadata":{
+                'project_id': request.data.get('project_id'),
+                "user_id":request.user.id,
+                "member_remark": request.data.get('member_remark'),
+                "is_paid": True
+            },
+            "callback_url": settings.PAYMENT_FOR_PROJECT_CALLBACK,
+            }
+        try:
+            response = requests.post(url,headers=headers,data=json.dumps(body))
+        except requests.ConnectionError:
+            raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+  
+        if  response.status_code in  [200, 201]:
+            return Success_response(msg='Payment processing in progress!',data=response.json())
+
+        raise CustomError(message={"error":'Some error occured please try again'},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
