@@ -285,14 +285,21 @@ sentry_sdk.init(
 )
 
 
+# Read trusted URLs from the environment variable
+trusted_urls = os.environ['trusted_urls'].split(',')
 
+# Helper function to remove URLs with paths
+def is_valid_url(url):
+    from urllib.parse import urlparse
+    parsed_url = urlparse(url)
+    return all([parsed_url.scheme, parsed_url.netloc]) and not parsed_url.path
 
+# Filter valid URLs and remove wildcard
+cors_allowed_origins = [
+    url.rstrip('/') for url in trusted_urls if is_valid_url(url) and url != '*'
+]
 
-
-CORS_ALLOWED_ORIGINS = os.environ['trusted_urls'].split(',')
 CSRF_TRUSTED_ORIGINS =CORS_ALLOWED_ORIGINS
-# if os.environ.get('databaseName',None):
-#     CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
 CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
 CORS_ALLOW_ALL_ORIGINS=True
 CORS_ALLOW_METHODS = [
