@@ -92,26 +92,39 @@ class MembersGetNews(views.APIView):
            
         # if not news.user_that_have_reacted.all().filter(id=request.user.memeber.id).exists():
         # news.user_that_have_reacted.add(request.user.memeber)
-        if likes:
+
+        if likes and dislikes:
+            raise CustomError({"error": "You cannot like and dislike a news."})
+
+        if likes and not dislikes:
             news.likes += 1
-        else:
-            news.likes -= 1
+            news.save()
 
-        if dislikes:
+            return custom_response.Success_response(msg='News reacted to  successfully',data=[{
+                "likes": news.likes,
+                "dislikes":news.dislikes,
+                "id":news.id
+            }],status_code=status.HTTP_201_CREATED)
+        elif dislikes and not likes:
             news.dislikes += 1
-        else:
+            news.save()
+
+            return custom_response.Success_response(msg='News reacted to successfully',data=[{
+                "likes": news.likes,
+                "dislikes":news.dislikes,
+                "id":news.id
+            }],status_code=status.HTTP_201_CREATED)
+        
+        elif not likes and not dislikes:
+            news.likes -= 1
             news.dislikes -= 1
-                
-        # else:
-        #     raise CustomError({"error": "You have reacted to the news already"})
+            news.save()
 
-        news.save()
-
-        return custom_response.Success_response(msg='News reacted to  successfully',data=[{
-            "likes": news.likes,
-            "dislikes":news.dislikes,
-            "id":news.id
-        }],status_code=status.HTTP_201_CREATED)
+            return custom_response.Success_response(msg='News reacted to  successfully',data=[{
+                "likes": news.likes,
+                "dislikes":news.dislikes,
+                "id":news.id
+            }],status_code=status.HTTP_201_CREATED)
 
 class MemberCommentOnNews(viewsets.ModelViewSet):
     queryset = models.NewsComment.objects.all()
