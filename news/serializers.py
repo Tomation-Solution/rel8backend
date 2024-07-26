@@ -37,17 +37,18 @@ class AdminManageNewSerializer(serializers.ModelSerializer):
 
         return models.NewsParagraph.objects.filter(news=news,).values('id','paragragh','heading')
     def update(self, instance, validated_data):
-        is_liked = validated_data.get('likes')
-        is_disliked = validated_data.get('dislikes')
+        # is_liked = validated_data.get('likes')
+        # is_disliked = validated_data.get('dislikes')
 
-        if is_liked:
-            instance.likes += 1
+        # if is_liked:
+        #     instance.likes += 1
 
-        if is_disliked:            
-            instance.dislikes += 1
+        # if is_disliked:            
+        #     instance.dislikes += 1
 
-        instance.save()
-        return instance
+        # instance.save()
+        # return instance
+        pass
 
     class Meta:
         model = models.News

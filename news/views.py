@@ -45,6 +45,7 @@ class AdminManageNews(viewsets.ModelViewSet):
         instance.save()
         clean_data =self.serializer_class(instance,many=False, context={'request': request},)
         return custom_response.Success_response(msg='News created successfully',data=[clean_data.data,],status_code=status.HTTP_201_CREATED)
+
     def list(self, request, *args, **kwargs):
         'this code let chapter see thier news '
         all_news = models.News.objects.all()
@@ -53,6 +54,13 @@ class AdminManageNews(viewsets.ModelViewSet):
         serialized = self.serializer_class(all_news,many=True, context={'request': request},)
 
         return custom_response.Success_response(msg='success',data=serialized.data,status_code=status.HTTP_200_OK)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return custom_response.Success_response(msg="Success", data=serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember])
     def get_news(self,request,format=None):
