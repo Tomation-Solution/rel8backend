@@ -60,7 +60,7 @@ class AdminManageNews(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        return custom_response.Success_response(msg="Success", data=serializer.data, status=status.HTTP_200_OK)
+        return custom_response.Success_response(msg="Success", data=serializer.data, status_code=status.HTTP_200_OK)
 
     @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember])
     def get_news(self,request,format=None):
