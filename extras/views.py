@@ -85,11 +85,11 @@ class GalleryV2View(viewsets.ModelViewSet):
         return Success_response(msg="Success",data=paginated_data,status_code=status.HTTP_200_OK)
 
 
-    @action(detail=False,methods=['get'],permission_classes=[permissions.AllowAny])
-    def get_unauthorized_image(self, request, *args, **kwargs):
-        gallery = get_object_or_404( models.GalleryV2,id=kwargs.get('pk',-1))
-        clean_data = self.serializer_class(gallery,many=False,context={'request':self.request,'get_img':True})
-        return Success_response(msg="Success",data=clean_data.data,status_code=status.HTTP_200_OK)
+    @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny])
+    def get_unauthorized_image(self, request, pk=None):
+        gallery = get_object_or_404(models.GalleryV2, id=pk)
+        clean_data = self.serializer_class(gallery, many=False)
+        return Success_response(msg="Success", data=clean_data.data, status_code=status.HTTP_200_OK)
 
 
 
