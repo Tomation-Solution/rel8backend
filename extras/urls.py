@@ -19,4 +19,5 @@ router.register('memeber_customer_support',views.MemeberCustomerSupportViewSet)
 router.register('member_personal_gallery',views.MemberPersonalGallery,basename='member_personal_gallery')
 urlpatterns =[
     path('project/payment/', views.FundAProjectPayment.as_view(), name="fund_project_payment")
+    # path('gallery/folders', views.GetUnAuthorizedGalleryFolders.as_view(), name="gallery_folders"),
 ] + router.urls

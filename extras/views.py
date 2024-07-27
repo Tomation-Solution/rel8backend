@@ -80,6 +80,14 @@ class GalleryV2View(viewsets.ModelViewSet):
 
         return Success_response(msg="Success",data=clean_data.data,status_code=status.HTTP_200_OK)
 
+    
+    @action(detail=False,methods=['get'],permission_classes=[permissions.AllowAny])
+    def get_unauthorized_images(self,request, pk=None):
+        paginated_pages = self.paginate_queryset(models.GalleryV2.objects.all())
+        serialized_data = self.serializer_class(paginated_pages, many=True)
+        paginated_data = self.get_paginated_response(serialized_data.data)
+        return Success_response(msg="Success",data=paginated_data,status_code=status.HTTP_200_OK)
+
 
 
 class AdminManageGalleryV2View(GalleryV2View):
