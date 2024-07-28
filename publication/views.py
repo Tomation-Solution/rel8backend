@@ -49,7 +49,24 @@ class AdminManagePublication(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
-class MembersGetNews(views.APIView):
+
+class GetUnauthorizedPublications(views.APIView):
+    # serializer_class  = 
+    permission_classes =[permissions.AllowAny]
+    
+    def _return_newsInDIct(self,publication):
+        return {"name":publication.name,}
+
+
+    def get(self, request):
+        "this wil get the publication based on the news specs"
+
+        all_publication=models.Publication.objects.all().order_by('-created_at')
+        filter_set = custom_filter.PublicationLookUp(request.query_params,queryset=all_publication)
+        serialized = serializers.AdminManagePublicationSerializer(filter_set.qs,many=True,context={"request":request})
+        return custom_response.Success_response(msg='success',data=serialized.data,status_code=status.HTTP_200_OK)
+
+class MembersGetPublications(views.APIView):
     # serializer_class  = 
     permission_classes =[permissions.IsAuthenticated,custom_permission.IsMember,custom_permission.Isfinancial]
     
