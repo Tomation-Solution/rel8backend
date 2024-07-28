@@ -19,5 +19,5 @@ router.register('memeber_customer_support',views.MemeberCustomerSupportViewSet)
 router.register('member_personal_gallery',views.MemberPersonalGallery,basename='member_personal_gallery')
 urlpatterns =[
     path('project/payment/', views.FundAProjectPayment.as_view(), name="fund_project_payment"),
-    path('get_unauthorized_images/<int:pk>', views.GetUnAuthorizedGalleryFolder.as_view(), name="get_gallery_folder"),
+    path('unauthorized_images/<int:pk>/', views.GetUnAuthorizedGalleryFolder.as_view(), name="get_gallery_folder"),
 ] + router.urls
