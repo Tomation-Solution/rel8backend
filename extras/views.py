@@ -84,6 +84,14 @@ class GalleryV2View(viewsets.ModelViewSet):
         return Success_response(msg="Success",data=paginated_data,status_code=status.HTTP_200_OK)
 
 
+class GetUnAuthorizedGalleryFolder(APIView):
+
+    def get(self, request, pk):
+        gallery_instance = get_object_or_404( models.GalleryV2,id=pk)
+        serializer = serializers.GalleryV2Serializer(gallery_instance,many=False)
+        return Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
+
+
 class AdminManageGalleryV2View(GalleryV2View):
     queryset= models.GalleryV2.objects.all()
 
