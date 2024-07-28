@@ -13,6 +13,6 @@ router.register('publicationview__comment',views.MemberCommentOnPublication)
 
 
 urlpatterns = [
-    path('getyourpublication/',views.MembersGetPublications.as_view(),name='getyourpublication').
+    path('getyourpublication/',views.MembersGetPublications.as_view(),name='getyourpublication'),
     path('unauthorized_publications/',views.GetUnauthorizedPublications.as_view(),name='unauthorized_publications')
 ] +router.urls

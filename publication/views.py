@@ -51,12 +51,10 @@ class AdminManagePublication(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 class GetUnauthorizedPublications(views.APIView):
-    # serializer_class  = 
     permission_classes =[permissions.AllowAny]
     
-    def _return_newsInDIct(self,publication):
-        return {"name":publication.name,}
-
+    # def _return_newsInDIct(self,publication):
+    #     return {"name":publication.name,}
 
     def get(self, request):
         "this wil get the publication based on the news specs"
