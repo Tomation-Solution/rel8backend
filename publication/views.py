@@ -3,6 +3,7 @@ from rest_framework import viewsets,permissions,views,status
 
 from utils.custom_exceptions import CustomError
 from . import models
+from rest_framework.views import APIView
 from utils import permissions as custom_permission
 from . import serializers,filter as custom_filter
 from account.models import user as user_related_models
