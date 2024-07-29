@@ -64,6 +64,16 @@ class GetUnauthorizedPublications(views.APIView):
         serialized = serializers.AdminManagePublicationSerializer(filter_set.qs,many=True,context={"request":request})
         return custom_response.Success_response(msg='success',data=serialized.data,status_code=status.HTTP_200_OK)
 
+
+
+class GetUnAuthorizedPublication(APIView):
+    permission_classes = [permissions.AllowAny]
+    def get(self, request, pk): 
+        publication_instance = get_object_or_404(models.Publication,id=pk)
+        serializer = serializers.AdminManagePublicationSerializer(publication_instance,many=False)
+        return Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
+
+
 class MembersGetPublications(views.APIView):
     # serializer_class  = 
     permission_classes =[permissions.IsAuthenticated,custom_permission.IsMember,custom_permission.Isfinancial]
