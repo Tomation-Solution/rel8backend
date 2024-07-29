@@ -17,7 +17,7 @@ from rest_framework.views import APIView
 from rest_framework.parsers import  FormParser
 from utils.usefulFunc import convert_naira_to_kobo
 from utils.custom_exceptions import CustomError
-from notifications.signals import notify
+# from notifications.signals import notify
 
 
 
@@ -72,7 +72,7 @@ class GalleryV2View(viewsets.ModelViewSet):
         data= self.get_paginated_response(clean_data.data)
         #TODO: remove later
         notification_receiver = request.user
-        notify.send(notification_receiver, recipient=notification_receiver, verb=f"{len(data)} folders received")
+        # notify.send(notification_receiver, recipient=notification_receiver, verb=f"{len(data)} folders received")
         return Success_response(msg="Success",data=data,status_code=status.HTTP_200_OK)
 
     def retrieve(self, request, *args, **kwargs):
