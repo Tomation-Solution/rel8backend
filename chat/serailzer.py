@@ -9,7 +9,7 @@ class ChatSerializer(serializers.ModelSerializer):
     user__id = serializers.SerializerMethodField()
 
     def get_user__id(self, obj):
-        return obj.user.id
+        return obj.user.id if obj.user else None
 
     def get_full_name(self,instance):
         user = instance.user
