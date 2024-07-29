@@ -4,6 +4,8 @@ from utils.custom_exceptions import CustomError
 from . import models,serailzer
 from rest_framework import mixins,viewsets,status
 from utils import custom_response
+from rest_framework import permissions
+from utils import permissions  as custom_permissions
 from rest_framework.decorators import action
 from account.models import User
 # Create your views here.
@@ -12,6 +14,7 @@ from account.models import User
 "the chat views for every on as long as u authenticated it just a list view"
 
 class ChatRoomViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
+    permission_classes = [permissions.IsAuthenticated,custom_permissions.IsMember]
     queryset = models.ChatRoom.objects.all()
     
     def list(self, request, *args, **kwargs):
