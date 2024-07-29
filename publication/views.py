@@ -72,7 +72,7 @@ class GetUnAuthorizedPublication(APIView):
     def get(self, request, pk): 
         publication_instance = get_object_or_404(models.Publication,id=pk)
         serializer = serializers.AdminManagePublicationSerializer(publication_instance,many=False)
-        return Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
+        return custom_response.Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
 
 
 class MembersGetPublications(views.APIView):
