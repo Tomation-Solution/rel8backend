@@ -70,13 +70,11 @@ SHARED_APPS = (
 
     #    "cloudinary_storage",
     "cloudinary",
-     'channels',
-     'chat',
-     'meeting',
-     'prospectivemember'
-
-     # you must list the app where your tenant model resides in
-    #    'mailing',
+    'channels',
+    'chat',
+    'meeting',
+    'prospectivemember',
+    "notifications"
 
 )
 

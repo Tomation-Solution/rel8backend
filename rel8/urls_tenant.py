@@ -40,7 +40,8 @@ urlpatterns = [
     path('interswitch_payment/',include('interswitchapp.urls')),
     path('mailing/',include('mymailing.urls')),
 
-    path('tenant/prospectivemember/',include('prospectivemember.urls'))
+    path('tenant/prospectivemember/',include('prospectivemember.urls')),
+    path('inbox/notifications/', include('notifications.urls', namespace='notifications')),
 
 ]
 
