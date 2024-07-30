@@ -14,6 +14,7 @@ from news.models import News
 from news.serializers import AdminManageNewSerializer
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from utils import custom_response
 
 
 class AdminManageNews(viewsets.ModelViewSet):
@@ -161,5 +162,5 @@ class GetUnAuthorizedNews(APIView):
     def get(self, request, pk): 
         news_instance = get_object_or_404(News,id=pk)
         serializer = AdminManageNewSerializer(news_instance,many=False)
-        return Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
+        return custom_response.Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
 
