@@ -11,6 +11,37 @@ from rest_framework.parsers import FormParser
 from utils.custom_parsers import NestedMultipartParser
 from account.serializers import user as user_related_serializer
 from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
+from rest_framework import status
+# pagination.py
+from rest_framework.pagination import PageNumberPagination
+
+class EventsResultPagination(PageNumberPagination):
+    page_size = 10  # Number of items per page
+    page_size_query_param = 'page'
+    max_page_size = 100
+
+
+class UnauthorizedEventView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, pk=None, *args, **kwargs):
+        """
+        Handle GET requests. If a PK is provided, retrieve a single event. 
+        Otherwise, list all events with pagination.
+        """
+        if pk:
+            # Get event by PK
+            event = get_object_or_404(models.Event, pk=pk)
+            serializer = serializers.EventSerializer(event, context={'request': request})
+            return custom_response.Success_response(msg="success", data=serializer.data, status_code=status.HTTP_200_OK)
+        else:
+            # List all events with pagination
+            all_events = models.Event.objects.all().order_by('-startDate')
+            paginator = EventsResultPagination()
+            paginated_events = paginator.paginate_queryset(all_events, request)
+            serializer = serializers.EventSerializer(paginated_events, many=True, context={'request': request})
+            return paginator.get_paginated_response(serializer.data)
 
 class EventViewSet(viewsets.ViewSet):
     queryset = models.Event.objects.all()

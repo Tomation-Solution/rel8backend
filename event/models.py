@@ -23,6 +23,7 @@ here is the plan:
 """
 class Event(models.Model):
     name=models.CharField(max_length=355)
+    
     class ScheduleTypes(models.TextChoices):
         day_of_week='day_of_week'
         month_of_year="month_of_year"
