@@ -10,6 +10,10 @@ from account.models import user as user_related_models
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from news.models import News
+from news.serializers import AdminManageNewSerializer
+from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 
 
 class AdminManageNews(viewsets.ModelViewSet):
@@ -150,3 +154,12 @@ class MemberCommentOnNews(viewsets.ModelViewSet):
         clean_data = self.serializer_class(instance=data,many=True)
 
         return custom_response.Success_response('Success',data=clean_data.data,)
+
+
+class GetUnAuthorizedNews(APIView):
+    permission_classes = [permissions.AllowAny]
+    def get(self, request, pk): 
+        news_instance = get_object_or_404(News,id=pk)
+        serializer = AdminManageNewSerializer(news_instance,many=False)
+        return Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
+
