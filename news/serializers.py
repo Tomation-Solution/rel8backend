@@ -48,6 +48,13 @@ class AdminManageNewSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class NewsSerializer(serializers.ModelSerializer):
+
+     class Meta:
+        model = models.News
+        fields = "__all__"
+
+
 class MemberCommentOnNewsSerializer(serializers.ModelSerializer):
 
     member =  serializers.SerializerMethodField()
