@@ -164,3 +164,12 @@ class GetUnAuthorizedNews(APIView):
         serializer = NewsSerializer(news_instance,many=False)
         return custom_response.Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
 
+
+
+class GetAllUnAuthorizedNews(APIView):
+    permission_classes = [permissions.AllowAny]
+    def get(self, request, pk): 
+        news_instances = News.objects.all().order_by('-created_at')
+        serializer = NewsSerializer(news_instances,many=True)
+        return custom_response.Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
+
