@@ -12,6 +12,15 @@ class RescheduleEventRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.RescheduleEventRequest
         fields = '__all__'
+
+
+class UnauthorizedEventSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Event
+        fields = "__all__"
+
+
 class EventSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     image =  serializers.ImageField(required=False)

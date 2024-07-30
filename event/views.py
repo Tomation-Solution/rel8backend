@@ -33,14 +33,14 @@ class UnauthorizedEventView(APIView):
         if pk:
             # Get event by PK
             event = get_object_or_404(models.Event, pk=pk)
-            serializer = serializers.EventSerializer(event, context={'request': request})
+            serializer = serializers.UnauthorizedEventSerializer(event, context={'request': request})
             return custom_response.Success_response(msg="success", data=serializer.data, status_code=status.HTTP_200_OK)
         else:
             # List all events with pagination
             all_events = models.Event.objects.all().order_by('-startDate')
             paginator = EventsResultPagination()
             paginated_events = paginator.paginate_queryset(all_events, request)
-            serializer = serializers.EventSerializer(paginated_events, many=True, context={'request': request})
+            serializer = serializers.UnauthorizedEventSerializer(paginated_events, many=True, context={'request': request})
             return paginator.get_paginated_response(serializer.data)
 
 class EventViewSet(viewsets.ViewSet):
