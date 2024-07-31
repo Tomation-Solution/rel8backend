@@ -250,6 +250,7 @@ class ManageMemberValidation(viewsets.ViewSet):
         
         if user_models.UserMemberInfo.objects.filter(value=MEMBERSHIP_NO).exists():
             raise CustomError({'error':'Membership info has been registered already'})
+
         chapter=None
         chapter_instance=None
         for key in request.data.keys():
@@ -264,13 +265,10 @@ class ManageMemberValidation(viewsets.ViewSet):
                 if  auth_models.Chapters.objects.filter(name__icontains=chapter):
                     chapter_instance = auth_models.Chapters.objects.filter(name__icontains=chapter).first()
                 # raise CustomError({'error':'chapter not found'})
-            user = user_models.User.objects.create(
+            user = get_user_model().objects.create_user(
                 email=email,
                 user_type='members',
-                password = password,
-                name=request.data.get('name', ''),
-                department=request.data.get('department', ''),
-                yog=request.data.get('yog', '')
+                password = password
                 
             )
             if chapter_instance:
@@ -280,7 +278,10 @@ class ManageMemberValidation(viewsets.ViewSet):
 
             member = user_models.Memeber.objects.create(
                 user =user,
-                alumni_year=alumni_year
+                alumni_year=alumni_year,
+                name=request.data.get('name', ''),
+                department=request.data.get('department', ''),
+                yog=request.data.get('yog', '')
             )
         
       
@@ -288,8 +289,8 @@ class ManageMemberValidation(viewsets.ViewSet):
             for key in request.data.keys():
                 if not key =='password' and  not key == 'alumni_year':
                     user_models.UserMemberInfo.objects.create(
-                        name= key,
-                        value= request.data[key],
+                        name=key,
+                        value=request.data[key],
                         member=member
                     )
             thread= threading.Thread(target=activateEmail,args=[user,user.email,connection.schema_name])
