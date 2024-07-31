@@ -255,6 +255,7 @@ class ManageMemberValidation(viewsets.ViewSet):
         for key in request.data.keys():
             if key == 'chapter':
                 chapter = request.data[key]
+                break
         # if chapter is None:
         #     raise CustomError({'error':'Chapter not found please reach out to admin'})
         if(len(alum_db['usersInfo'][0].keys())==len(request.data.keys())):
@@ -266,7 +267,10 @@ class ManageMemberValidation(viewsets.ViewSet):
             user = get_user_model().objects.create_user(
                 email=email,
                 user_type='members',
-                password =password,
+                password = password,
+                name=request.data.get('name', ''),
+                department=request.data.get('department', ''),
+                yog=request.data.get('yog', '')
                 
             )
             if chapter_instance:

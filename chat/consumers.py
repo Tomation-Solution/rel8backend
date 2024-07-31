@@ -211,7 +211,7 @@ class CommiteeChatRoomConsumer(AsyncWebsocketConsumer):
 
     @sync_to_async
     def fill_user_name(self,send_user_id:int):
-        user =get_user_model().objects.get(id=send_user_id)
+        user = get_user_model().objects.get(id=send_user_id)
         if user.user_type== 'members':
             user_full_name = user.memeber.full_name
         else:

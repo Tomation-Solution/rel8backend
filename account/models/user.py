@@ -83,6 +83,8 @@ class User(AbstractBaseUser,PermissionsMixin,):
         super_admin="super_admin"
         members = "members"
         prospective_members = "prospective_members"
+
+    name = models.CharField(max_length=100, blank=True)
     email = models.EmailField(unique=True)
     is_invited= models.BooleanField(default=False)
     is_active= models.BooleanField(default=False)
@@ -92,9 +94,10 @@ class User(AbstractBaseUser,PermissionsMixin,):
     is_prospective_Member=  models.BooleanField(default=False)
     user_type = models.CharField(choices=UserType.choices,max_length=25)
     is_superuser = models.BooleanField(default=False)
+    department = models.CharField(max_length=255, blank=True)
+    yog = models.CharField(max_length=255, blank=True)
     # any user that is in the app must belong to a distric 
     chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True)
-    # chapter = models.OneToOneField(auth_related_models.Chapters,on_delete=models.SET_NULL)
     # temp_password is use to save the owner password tempoary when he sign up but
     #  the moment he creates a alumni organization we would use his details to create an account in his alumni org and set him to super user
     temp_password = models.TextField(null=True)
@@ -154,6 +157,7 @@ class Memeber(models.Model):
 # )
     def __str__(self) -> str:
         return self.full_name
+
     @property
     def full_name(self,):
         possible_name_outcomes = self.usermemberinfo_set.filter(
