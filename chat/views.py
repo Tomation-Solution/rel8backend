@@ -26,7 +26,7 @@ class ChatRoomViewSet(mixins.ListModelMixin,viewsets.GenericViewSet):
                 status_code=status.HTTP_400_BAD_REQUEST
             )
         
-        chat_instances = models.Chat.objects.filter(chat_room__room_name=room_name)
+        chat_instances = models.Chat.objects.filter(chat_room__room_name=room_name, user=request.user)
         serializer = serailzer.ChatSerializer(chat_instances, many=True)
         return custom_response.Success_response(msg='Successful',data=serializer.data,status_code=status.HTTP_200_OK) 
 
