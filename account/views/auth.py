@@ -264,7 +264,7 @@ class ManageMemberValidation(viewsets.ViewSet):
                 if  auth_models.Chapters.objects.filter(name__icontains=chapter):
                     chapter_instance = auth_models.Chapters.objects.filter(name__icontains=chapter).first()
                 # raise CustomError({'error':'chapter not found'})
-            user = get_user_model().objects.create_user(
+            user = user_models.User.objects.create(
                 email=email,
                 user_type='members',
                 password = password,
