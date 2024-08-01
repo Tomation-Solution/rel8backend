@@ -194,7 +194,7 @@ class Event(models.Model):
                 )
 class EventDue_User(models.Model):
     "This serves as payment history for paid events."
-    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(user_model.Memeber, on_delete=models.SET_NULL, null=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     # payed_for_how_many_people = models.IntegerField(default=1, blank=True)

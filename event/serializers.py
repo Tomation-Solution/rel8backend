@@ -212,20 +212,27 @@ class RegiterForFreeEvent(serializers.Serializer):
             is_paid=True
         )
 
+        # mailing_tasks.send_event_invitation_mail(
+        #     user_id=user.id if user else None,
+        #     event_id=event.id,
+        #     event_proxy_attendies_id=event_proxy_attendies.id,
+        #     schema_name="bukaa"
+        # )
+
         # Handle proxy participants if provided
-        if proxy_participants:
+        if proxy_participants and not user:
             event_proxy_attendies, created = models.EventProxyAttendies.objects.get_or_create(
                 event_due_user=registration
             )
-            event_proxy_attendies.participants = proxy_participants
+            event_proxy_attendies.participants.update(proxy_participants[0])
             event_proxy_attendies.save()
 
-            mailing_tasks.send_event_invitation_mail(
-                user_id=user.id if user else None,
-                event_id=event.id,
-                event_proxy_attendies_id=event_proxy_attendies.id,
-                schema_name="bukaa"
-            )
+            # mailing_tasks.send_event_invitation_mail(
+            #     user_id=user.id if user else None,
+            #     event_id=event.id,
+            #     event_proxy_attendies_id=event_proxy_attendies.id,
+            #     schema_name="bukaa"
+            # )
 
         return registration
 
