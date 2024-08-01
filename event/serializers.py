@@ -207,6 +207,18 @@ class PublicEventRegisterationSerializer(serializers.Serializer):
         return public_registration
 
 
+class PublicEventSerializer(serializers.ModelSerializer):
+
+    public_attendees_count = serializers.SerializerMethodField(read_only=True)
+
+    def get_public_attendees_count(self, obj:models.PublicEvent):
+        return obj.count()
+
+    class Meta:
+        model = models.PublicEvent
+        fields = ["event", "full_name", "email", "public_attendees_count"]
+
+
 class RegiterForFreeEvent(serializers.Serializer):
     event_id =serializers.IntegerField()
     proxy_participants = EventProxyAttendiesSerializer(many=True,required=False)

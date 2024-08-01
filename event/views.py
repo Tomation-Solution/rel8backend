@@ -109,7 +109,7 @@ class EventViewSet(viewsets.ViewSet):
 
         # models.EventDue_User.objects.filter
     @action(detail=False,methods=['get'],permission_classes=[custom_permission.IsAdminOrSuperAdmin])
-    def view_attendees(self,request,*args,**kwargs):
+    def view_member_attendees(self,request,*args,**kwargs):
         event_id =  request.query_params.get('event_id',None)
 
         if not event_id:
@@ -154,6 +154,13 @@ class EventViewSet(viewsets.ViewSet):
 
         return  custom_response.Success_response(msg="Event Registration Successful", status_code=201)
 
+    @action(detail=False,methods=['get'],permission_classes=[permissions.AllowAny])
+    def public_attendees_list(self,request,format =None):
+        event_id = request.query_params.get('event_id')
+        public_events = models.PublicEvent.objects.filter(event_id=event_id)
+        serializer = serializers.PublicEventSerializer(public_events, many=True)
+        return  custom_response.Success_response(msg="Sucess", data=serializer.data, status_code=201)
+    
     @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember])
     def get_events(self,request,format=None):
         
