@@ -49,7 +49,7 @@ class Event(models.Model):
     # if it for chapters then we filter the event for only users that belongs to that chapter
     chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True,blank=True)
     image = models.ImageField(null=True,default=None,upload_to='events/image/')
-    address = models.TextField(default=" ")
+    address = models.TextField(default="")
 
     organiser_name = models.CharField(max_length=200,default='',blank=True)
     organiser_extra_info = models.CharField(max_length=200,default='',blank=True)

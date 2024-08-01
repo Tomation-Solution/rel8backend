@@ -43,14 +43,29 @@ def activateEmail(user,to_email,schema_name):
         html_content=html_content,
         to=[{"email":to_email,"name":"rel8"}],
         sender={"name":sender_name,"email":sender_email})
-    
+
+def send_event_confirmation(data):
+    domain_mail = os.environ['domain_mail']
+    domain = connection.schema_name+'.'+os.environ['domain']
+    sender_email =domain_mail
+    sender_name=f'{connection.schema_name.upper()} Membership'
+
+    html_content = render_to_string('proxy_event_mail.html',context=data)
+
+    send_mail(
+        subject=f'Invitation for {data.get('event_name')} Event',
+        html_content=html_content,
+        to=[{"email":data.get('guest_email'),"name":"rel8"}],
+        sender={"name":sender_name,"email":sender_email})
+
+
 def sendInvitationMail(user,event:event_models.Event,
                        event_proxy_attendies:event_models.EventProxyAttendies):
 
     person_that_invite_you_email= event_proxy_attendies.event_due_user.user.email
     person_that_invite_you_full_name = models_user.Memeber.objects.get(user=event_proxy_attendies.event_due_user.user.id)
-    def func(item):return {'email':item.get('email'),'name':'rel8'}
-    to_emails =map(func,event_proxy_attendies.participants)
+    def func(item):return {'email':item.get('email')}
+    to_emails = list(map(func,event_proxy_attendies.participants))
 
 
     domain_mail = os.environ['domain_mail']

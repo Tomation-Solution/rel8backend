@@ -151,7 +151,6 @@ class EventViewSet(viewsets.ViewSet):
         serializer = serializers.PublicEventRegisterationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
-
         return  custom_response.Success_response(msg="Event Registration Successful", status_code=201)
 
     @action(detail=False,methods=['get'],permission_classes=[permissions.AllowAny])

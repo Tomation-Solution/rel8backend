@@ -1,5 +1,6 @@
 from rest_framework import serializers
-
+from mymailing.EmailConfirmation import send_event_confirmation
+import threading
 from utils.custom_exceptions import CustomError
 from . import models
 from account.models import auth as auth_related_models
@@ -206,11 +207,16 @@ class PublicEventRegisterationSerializer(serializers.Serializer):
             full_name=validated_data['full_name'],
             email=validated_data['email']
         )
-        # mailing_tasks.send_event_invitation_mail(
-        #     user_id=self.context.get('request').user.id,
-        #     event_id = event.id,
-        #     event_proxy_attendies_id=event_proxy_attendies.id
-        # )
+        
+        data = {
+            "event_name": event.name,
+            "event_address": event.address,
+            "guest_email": validated_data.get('email'),
+            "short_name": "BUKAA Association"
+        }
+        thread= threading.Thread(target=send_event_confirmation,args=[data])
+        thread.start()
+        thread.join()
 
         return public_registration
 
