@@ -50,8 +50,12 @@ class EventViewSet(viewsets.ViewSet):
     parser_classes = (NestedMultipartParser,FormParser,)
     filterset_class = custom_filter.EventLookUp
 
-    def destroy(self,request,pk=None):
-        instance = self.queryset.get(id=pk)
+    def destroy(self,request, pk):
+        try
+            instance = self.queryset.get(id=pk)
+        except Event.DoesNotExist:
+            raise CustomError(message="Event is not available", status_code=404)
+
         instance.delete()
         return custom_response.Success_response(msg='Deleted',data=pk,status_code=status.HTTP_204_NO_CONTENT)
     
