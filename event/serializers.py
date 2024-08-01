@@ -175,9 +175,9 @@ class AdminManageEventActiveStatus(serializers.Serializer):
     def update(self, instance, validated_data):
         raise  CustomError({'error':'Not Available '})
 
-class EventProxyAttendiesSerializer(serializers.Serializer):
-    full_name = serializers.CharField()
-    email = serializers.EmailField()
+# class EventProxyAttendiesSerializer(serializers.Serializer):
+#     full_name = serializers.CharField()
+#     email = serializers.EmailField()
 
 
 class PublicEventRegisterationSerializer(serializers.Serializer):
@@ -229,38 +229,36 @@ class PublicEventSerializer(serializers.ModelSerializer):
 
 class RegiterForFreeEvent(serializers.Serializer):
     event_id =serializers.IntegerField()
-    proxy_participants = EventProxyAttendiesSerializer(many=True,required=False)
-
-
 
     def create(self, validated_data):
-        proxy_participants = validated_data.get('proxy_participants',[])
-        event_id =validated_data.get('event_id')
-        if not models.Event.objects.filter(id=event_id,).exists():
+        event_id = validated_data.get('event_id')
+        user =  self.context.get('request').user
+        try:
+            event = models.Event.objects.get(id=event_id)
+        except models.Event.DoesNotExist:
             raise  CustomError({'error':'Event Does Not Exists'})
-
-        event = models.Event.objects.get(id=event_id)        
+                  
         if event.is_paid_event == True: raise CustomError({'error':'You Need to pay cus this event is paid'})
         if models.EventDue_User.objects.filter(event=event, user = self.context.get('request').user,).exists():
             raise CustomError({'error':'You have registered already'})
-        # is_paid_event=True
+            
         registration = models.EventDue_User.objects.create(
-            user = self.context.get('request').user,
+            user = user,
             event=event,
             amount=0.00,
             paystack_key="free_event",
             is_paid=True
         )
-        if len(proxy_participants)!=0:
-            event_proxy_attendies,created= models.EventProxyAttendies.objects.get_or_create(
-                participants= proxy_participants,
-                event_due_user=registration
-            )
-            # mailing_tasks.send_event_invitation_mail(
-            #     user_id=self.context.get('request').user.id,
-            #     event_id = event.id,
-            #     event_proxy_attendies_id=event_proxy_attendies.id
-            # )
+
+        data = {
+            "event_name": event.name,
+            "event_address": event.address,
+            "guest_email": user.email,
+            "short_name": "BUKAA Association"
+        }
+        thread= threading.Thread(target=send_event_confirmation,args=[data])
+        thread.start()
+        thread.join()
 
         return registration
     
