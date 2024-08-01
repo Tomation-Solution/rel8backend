@@ -210,7 +210,7 @@ class PublicEventRegisterationSerializer(serializers.Serializer):
 class PublicEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.PublicEvent
-        fields = ["event", "full_name", "email", "public_attendees_count"]
+        fields = "__all__"
 
 
 class RegiterForFreeEvent(serializers.Serializer):
