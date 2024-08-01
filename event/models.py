@@ -220,10 +220,10 @@ class EventProxyAttendies(models.Model):
 class PublicEvent(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=250)
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
 
     def __str__(self):
-        return self.id
+        return self.email
 
 class RescheduleEventRequest(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
