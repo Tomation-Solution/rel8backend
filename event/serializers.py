@@ -232,25 +232,46 @@ class RegiterForFreeEvent(serializers.Serializer):
 
 
 
+from rest_framework import serializers
+from . import models, user_related_models
+
 class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
     proxy_participants = serializers.SerializerMethodField()
-    memeber = serializers.SerializerMethodField()
+    member = serializers.SerializerMethodField()
 
-    def get_memeber(self,instance:models.EventDue_User):
-        member =user_related_models.Memeber.objects.get(user=instance.user)
-        return {
-            'full_name':member.full_name,
-            'email':instance.user.email,
-            'member_id':member.id
-        }
+    def get_member(self, instance: models.EventDue_User):
+        # Handle cases where the user is None (for unauthenticated free event registrations)
+        if instance.user is None:
+            return {
+                'full_name': 'Anonymous',
+                'email': 'N/A',
+                'member_id': None
+            }
 
-    def get_proxy_participants(self,instance:models.EventDue_User):
-        meeting_proxy_attendies = models.EventProxyAttendies.objects.get(event_due_user=instance)
-        return meeting_proxy_attendies.participants
+        # Fetch and return member details if the user exists
+        try:
+            member = user_related_models.Member.objects.get(user=instance.user)
+            return {
+                'full_name': member.full_name,
+                'email': instance.user.email,
+                'member_id': member.id
+            }
+        except user_related_models.Member.DoesNotExist:
+            return {
+                'full_name': 'Unknown',
+                'email': instance.user.email if instance.user else 'N/A',
+                'member_id': None
+            }
 
+    def get_proxy_participants(self, instance: models.EventDue_User):
+        try:
+            meeting_proxy_attendies = models.EventProxyAttendies.objects.get(event_due_user=instance)
+            return meeting_proxy_attendies.participants
+        except models.EventProxyAttendies.DoesNotExist:
+            return []
 
     class Meta:
-        model =models.EventDue_User
+        model = models.EventDue_User
         fields = [
-            'proxy_participants','memeber','id'
+            'proxy_participants', 'member', 'id'
         ]

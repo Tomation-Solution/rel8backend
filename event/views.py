@@ -106,7 +106,7 @@ class EventViewSet(viewsets.ViewSet):
 
         # models.EventDue_User.objects.filter
     @action(detail=False,methods=['get'],permission_classes=[custom_permission.IsAdminOrSuperAdmin])
-    def view_attendies(self,request,*args,**kwargs):
+    def view_attendees(self,request,*args,**kwargs):
         event_id =  request.query_params.get('event_id',None)
 
         if not event_id:
