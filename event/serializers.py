@@ -184,8 +184,6 @@ class RegiterForFreeEvent(serializers.Serializer):
 
     def create(self, validated_data):
         request = self.context.get('request')
-        user = request.user if request.user.is_authenticated else None
-        member = request.user.memeber
         proxy_participants = validated_data.get('proxy_participants', [])
         event_id = validated_data.get('event_id')
             
@@ -200,12 +198,12 @@ class RegiterForFreeEvent(serializers.Serializer):
             raise CustomError({'error': 'You need to pay because this event is paid'})
 
         # Check if the user has already registered for the event (for authenticated users only)
-        if user and models.EventDue_User.objects.filter(event=event, user=user).exists():
+        if user and models.EventDue_User.objects.filter(event=event, user=request.user).exists():
             raise CustomError({'error': 'You have already registered'})
 
         # Register the user for the event or set user to None if unauthenticated
         registration = models.EventDue_User.objects.create(
-            user= member if user else user,
+            user= request.user.memeber if request.user.is_authenticated else None,
             event=event,
             amount=0.00,
             paystack_key="free_event",
@@ -220,7 +218,7 @@ class RegiterForFreeEvent(serializers.Serializer):
         # )
 
         # Handle proxy participants if provided
-        if proxy_participants and not user:
+        if proxy_participants and not request.user.is_authenticated:
             event_proxy_attendies, created = models.EventProxyAttendies.objects.get_or_create(
                 event_due_user=registration
             )
