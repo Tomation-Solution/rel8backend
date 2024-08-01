@@ -83,7 +83,7 @@ class Event(models.Model):
     # endDate =models.DateField(null=True, blank=True)
     scheduletype = models.CharField(choices=ScheduleTypes.choices,default='day_of_week',max_length=200)
     schedule = models.JSONField(null=True)
-    public = models.CharField(choices=EVENT_CHOICES, default=EVENT_CHOICES[1][0])
+    public = models.CharField(choices=EVENT_CHOICES, default=EVENT_CHOICES[1][0], max_length=5)
     # mintues  = models.CharField(max_length=30)
     # hour     = models.CharField(max_length=30)
     """
