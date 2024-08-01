@@ -267,19 +267,7 @@ class RegiterForFreeEvent(serializers.Serializer):
 
 
 class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
-    # memeber = serializers.SerializerMethodField()
-    # attendance_count = serializers.SerializerMethodField()
-
-
-    # def get_attendance_count(self, obj):
-    #     return models.EventDue_User.objects.all().count()
-
-    # def get_memeber(self,instance:models.EventDue_User):
-    #     return {
-    #         'email':instance.user.email
-    #     }
-
-
+    
     class Meta:
         model =models.EventDue_User
-        fields = ["__all__"]
+        fields = "__all__"
