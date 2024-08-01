@@ -130,7 +130,7 @@ class EventViewSet(viewsets.ViewSet):
          
         return custom_response.Success_response(msg='Active Status Updated.',data=clean_data.data,status_code=status.HTTP_200_OK)
     
-    @action(detail=False,methods=['post'],permission_classes=[permissions.AllowAny])
+    @action(detail=False,methods=['post'],permission_classes=[permissions.IsAuthenticated])
     def register_for_free_event(self,request,format =None):
         """
         this only works for free event
@@ -144,49 +144,17 @@ class EventViewSet(viewsets.ViewSet):
 
         return  custom_response.Success_response(msg="Event Registration Successful")
 
+    
+    @action(detail=False,methods=['post'],permission_classes=[permissions.AllowAny])
+    def public_event_registeration(self,request,format =None):
 
-    """    @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember])
-        def get_events(self,request,format=None):
-            # models.Event.objects.all().filter(id=instance.id).values()
-            # print(self.request.query_params.)
-            # is_for_excos
-            # is_commitee 
-            member  = user_related_models.Memeber.objects.get(user=request.user)
-            # is_exco = member.is_exco
-            # is_commitee = member.commiteegroup_set.all()
-            commitee_id=None
-            all_events = self.queryset.filter()
-            # is_for_excos=is_exco
-            get_exco_event = self.request.query_params.get('is_exco',False)
-            if get_exco_event:
-                "get exco events"
-                if member.is_exco==False:
-                    'if this user is not a exco tell he cant see exco stuff'
-                    raise CustomError({'error':'you are not an exco'})
-                # this means the person can see exco stuff
-                all_events = self.queryset.filter(is_for_excos=True)
+        serializer = serializers.PublicEventRegisterationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
 
-            if self.request.query_params.get('is_chapter',None):
-                "get event for my chapter"
-                all_events=all_events.filter(chapters = request.user.chapter)
-            else:
-                "get event for all global not chapter specific"
-                all_events=all_events.filter(chapters =None)
-            
-            if self.request.query_params.get('commitee_id',None):
-                "this would filter by commitee id"
-                # check it this member belongs to the committee
-                if member.commiteegroup_set.all().filter(members__id=member.id).exists():
-                    commitee_id=self.request.query_params.get('commitee_id')
-                    all_events = self.queryset.filter(commitee=commitee_id)
+        return  custom_response.Success_response(msg="Event Registration Successful", status_code=201)
 
-            clean_data = self.serializer_class(all_events,many=True,context={'request':request})
-            return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
-
-    """  
-    @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember],
-
-    )
+    @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember])
     def get_events(self,request,format=None):
         
         filter_set = custom_filter.EventLookUp(request.query_params,queryset=self.get_queryset().order_by('-startDate'))

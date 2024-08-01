@@ -209,6 +209,15 @@ class EventProxyAttendies(models.Model):
     # {'participants':[]}
     participants  = models.JSONField(default=dict)
 
+
+class PublicEvent(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=250)
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.id
+
 class RescheduleEventRequest(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
     startDate =models.DateField(null=True, blank=True)

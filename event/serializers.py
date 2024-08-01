@@ -178,6 +178,35 @@ class EventProxyAttendiesSerializer(serializers.Serializer):
     full_name = serializers.CharField()
     email = serializers.EmailField()
 
+
+class PublicEventRegisterationSerializer(serializers.Serializer):
+    event_id =serializers.IntegerField()
+    full_name = serializers.CharField()
+    email = serializers.EmailField()
+
+    def create(self, validated_data):
+        event_id =validated_data.get('event_id')
+        try:
+            event = models.Event.objects.get(id=event_id)
+        except models.Event.DoesNotExist:
+            raise  CustomError({'error':'Event Does Not Exists'})
+
+        if event.is_paid_event == True: raise CustomError({'error':'You need to pay for this event!'})
+        
+        public_registration = models.PublicEvent.objects.get_or_create(
+            event=event,
+            full_name=validated_data['full_name'],
+            email=validated_data['email']
+        )
+        # mailing_tasks.send_event_invitation_mail(
+        #     user_id=self.context.get('request').user.id,
+        #     event_id = event.id,
+        #     event_proxy_attendies_id=event_proxy_attendies.id
+        # )
+
+        return public_registration
+
+
 class RegiterForFreeEvent(serializers.Serializer):
     event_id =serializers.IntegerField()
     proxy_participants = EventProxyAttendiesSerializer(many=True,required=False)
@@ -229,7 +258,6 @@ class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
 
     def get_memeber(self,instance:models.EventDue_User):
         return {
-            # 'full_name':member.full_name,
             'email':instance.user.email
         }
 
