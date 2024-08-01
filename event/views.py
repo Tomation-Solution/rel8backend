@@ -110,7 +110,7 @@ class EventViewSet(viewsets.ViewSet):
         event_id =  request.query_params.get('event_id',None)
 
         if not event_id:
-            raise CustomError(msg="Required event_id query", status_code=400)
+            raise CustomError(message="Required event_id query", status_code=400)
 
         event = get_object_or_404(models.Event,id=event_id)
         event_due_user = models.EventDue_User.objects.filter(event=event)
