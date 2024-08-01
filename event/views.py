@@ -130,7 +130,7 @@ class EventViewSet(viewsets.ViewSet):
          
         return custom_response.Success_response(msg='Active Status Updated.',data=clean_data.data,status_code=status.HTTP_200_OK)
     
-    @action(detail=False,methods=['post'],permission_classes=[permissions.AllowAny,custom_permission.IsMember])
+    @action(detail=False,methods=['post'],permission_classes=[permissions.AllowAny])
     def register_for_free_event(self,request,format =None):
         """
         this only works for free event
