@@ -223,7 +223,7 @@ class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
     memeber = serializers.SerializerMethodField()
 
     def get_memeber(self,instance:models.EventDue_User):
-        member =user_related_models.Memeber.objects.get(user=instance.user)
+        member =user_related_models.Memeber.objects.get(user=instance.user.memeber)
         return {
             'full_name':member.full_name,
             'email':instance.user.email,
