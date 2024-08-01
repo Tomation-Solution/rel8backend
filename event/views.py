@@ -89,7 +89,7 @@ class EventViewSet(viewsets.ViewSet):
             return self.queryset.filter(chapters=user_chapter)
         return self.queryset.filter(chapters=None)
 
-    @action(detail=False,methods=['gte'],permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False,methods=['get'],permission_classes=[permissions.IsAuthenticated])
     def list_of_register_members(self,request,format=None):
         event_id= request.query_params.get('event_id',None)
         if event_id is None:raise CustomError({'error':'Event was not provided'})
