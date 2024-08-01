@@ -228,13 +228,6 @@ class RegiterForFreeEvent(serializers.Serializer):
 
         return registration
 
-    
-
-
-
-from rest_framework import serializers
-from . import models, user_related_models
-
 class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
     proxy_participants = serializers.SerializerMethodField()
     member = serializers.SerializerMethodField()
