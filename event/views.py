@@ -52,7 +52,7 @@ class EventViewSet(viewsets.ViewSet):
 
     def destroy(self,request, pk):
         try
-            instance = self.queryset.get(id=pk)
+            instance = Event.objects.get(id=pk)
         except Event.DoesNotExist:
             raise CustomError(message="Event is not available", status_code=404)
 
