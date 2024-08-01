@@ -216,26 +216,31 @@ class RegiterForFreeEvent(serializers.Serializer):
         return registration
     
 
+
+
 class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
     proxy_participants = serializers.SerializerMethodField()
-    attendee = serializers.SerializerMethodField()
+    memeber = serializers.SerializerMethodField()
     attendance_count = serializers.SerializerMethodField()
 
-    def get_attendance_count(self, obj):
-        # Assuming `attendance_count` is the number of attendees for the event
-        return models.EventProxyAttendies.objects.filter(event_due_user=obj).count()
 
-    def get_attendee(self, instance):
-        # Assuming `instance.user` gives you the user associated with the event
-        return instance.user
+    def get_attendance_count(self, obj):
+        return models.EventDue_User.objects.all().count()
+
+    def get_memeber(self,instance:models.EventDue_User):
+        return {
+            # 'full_name':member.full_name,
+            'email':instance.user.email
+        }
 
     def get_proxy_participants(self, instance):
         meeting_proxy_attendees = models.EventProxyAttendies.objects.filter(event_due_user=instance)
         # Assuming `participants` is a field that stores the proxy participants' information
         return meeting_proxy_attendees.values_list('participants', flat=True)
 
+
     class Meta:
-        model = models.EventDue_User
+        model =models.EventDue_User
         fields = [
-            'proxy_participants', 'attendee', 'attendance_count', 'id'
+            'proxy_participants','memeber','id', 'attendance_count'
         ]
