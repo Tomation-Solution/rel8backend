@@ -53,7 +53,7 @@ def send_event_confirmation(data):
     html_content = render_to_string('proxy_event_mail.html',context=data)
 
     send_mail(
-        subject=f'Invitation for {data.get('event_name')} Event',
+        subject=f"Invitation for {data.get('event_name')} Event",
         html_content=html_content,
         to=[{"email":data.get('guest_email'),"name":"rel8"}],
         sender={"name":sender_name,"email":sender_email})
