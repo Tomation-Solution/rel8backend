@@ -140,8 +140,7 @@ class EventSerializer(serializers.Serializer):
         event =  models.Event.objects.create(
             **validated_data,chapters=chapter,commitee=commitee,
             is_paid_event=is_paid_event,
-            is_special=is_special,
-            public=validated_data.get('public')
+            is_special=is_special
         )
 
         event.exco=exco
