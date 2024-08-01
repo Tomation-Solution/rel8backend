@@ -228,6 +228,7 @@ class RegiterForFreeEvent(serializers.Serializer):
 
         return registration
 
+
 class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
     proxy_participants = serializers.SerializerMethodField()
     member = serializers.SerializerMethodField()
@@ -243,13 +244,13 @@ class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
 
         # Fetch and return member details if the user exists
         try:
-            member = user_related_models.Member.objects.get(user=instance.user)
+            member = user_related_models.Memeber.objects.get(user=instance.user)
             return {
                 'full_name': member.full_name,
                 'email': instance.user.email,
                 'member_id': member.id
             }
-        except user_related_models.Member.DoesNotExist:
+        except user_related_models.Memeber.DoesNotExist:
             return {
                 'full_name': 'Unknown',
                 'email': instance.user.email if instance.user else 'N/A',
