@@ -184,6 +184,14 @@ class PublicEventRegisterationSerializer(serializers.Serializer):
     full_name = serializers.CharField()
     email = serializers.EmailField()
 
+    def validate_email(self, value):
+        """
+        Check that the email is not already registered for the event.
+        """
+        if models.PublicEvent.objects.filter(email=value).exists():
+            raise serializers.ValidationError("This email is already registered for the event.")
+        return value
+
     def create(self, validated_data):
         event_id =validated_data.get('event_id')
         try:
