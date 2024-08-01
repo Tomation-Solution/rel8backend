@@ -51,7 +51,7 @@ class EventViewSet(viewsets.ViewSet):
     filterset_class = custom_filter.EventLookUp
 
     def destroy(self,request, pk):
-        try
+        try:
             instance = Event.objects.get(id=pk)
         except Event.DoesNotExist:
             raise CustomError(message="Event is not available", status_code=404)
