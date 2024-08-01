@@ -179,87 +179,64 @@ class EventProxyAttendiesSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
 class RegiterForFreeEvent(serializers.Serializer):
-    event_id = serializers.IntegerField()
-    proxy_participants = EventProxyAttendiesSerializer(many=True, required=False)
+    event_id =serializers.IntegerField()
+    proxy_participants = EventProxyAttendiesSerializer(many=True,required=False)
+
+
 
     def create(self, validated_data):
-        request = self.context.get('request')
-        proxy_participants = validated_data.get('proxy_participants', [])
-        event_id = validated_data.get('event_id')
-            
+        proxy_participants = validated_data.get('proxy_participants',[])
+        event_id =validated_data.get('event_id')
+        if not models.Event.objects.filter(id=event_id,).exists():
+            raise  CustomError({'error':'Event Does Not Exists'})
 
-        try:
-            event = models.Event.objects.get(id=event_id)
-        except models.Event.DoesNotExist:
-            raise CustomError({'error': 'Event Does Not Exist'})
-
-        # Check if the event is paid
-        if event.is_paid_event:
-            raise CustomError({'error': 'You need to pay because this event is paid'})
-
-        # Check if the user has already registered for the event (for authenticated users only)
-        if request.user.is_authenticated and models.EventDue_User.objects.filter(event=event, user=request.user).exists():
-            raise CustomError({'error': 'You have already registered'})
-
-        # Register the user for the event or set user to None if unauthenticated
+        event = models.Event.objects.get(id=event_id)        
+        if event.is_paid_event == True: raise CustomError({'error':'You Need to pay cus this event is paid'})
+        if models.EventDue_User.objects.filter(event=event, user = self.context.get('request').user,).exists():
+            raise CustomError({'error':'You have registered already'})
+        # is_paid_event=True
         registration = models.EventDue_User.objects.create(
-            user= request.user.memeber if request.user.is_authenticated else None,
+            user = self.context.get('request').user,
             event=event,
             amount=0.00,
             paystack_key="free_event",
             is_paid=True
         )
-
-        # mailing_tasks.send_event_invitation_mail(
-        #     user_id=user.id if user else None,
-        #     event_id=event.id,
-        #     event_proxy_attendies_id=event_proxy_attendies.id,
-        #     schema_name="bukaa"
-        # )
-
-        # Handle proxy participants if provided
-        if proxy_participants and not request.user.is_authenticated:
-            event_proxy_attendies, created = models.EventProxyAttendies.objects.get_or_create(
+        if len(proxy_participants)!=0:
+            event_proxy_attendies,created= models.EventProxyAttendies.objects.get_or_create(
+                participants= proxy_participants,
                 event_due_user=registration
             )
-            event_proxy_attendies.participants.update(proxy_participants[0])
-            event_proxy_attendies.save()
-
             # mailing_tasks.send_event_invitation_mail(
-            #     user_id=user.id if user else None,
-            #     event_id=event.id,
-            #     event_proxy_attendies_id=event_proxy_attendies.id,
-            #     schema_name="bukaa"
+            #     user_id=self.context.get('request').user.id,
+            #     event_id = event.id,
+            #     event_proxy_attendies_id=event_proxy_attendies.id
             # )
 
         return registration
+    
+
+
 
 class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
     proxy_participants = serializers.SerializerMethodField()
-    member = serializers.SerializerMethodField()
+    memeber = serializers.SerializerMethodField()
 
-    def get_member(self, instance: models.EventDue_User):
-        # Handle cases where the user is None (for unauthenticated free event registrations)
-        if instance.user is None:
-            return {}
-
-        # Fetch and return member details if the user exists
-        member = user_related_models.Memeber.objects.get(user=instance.user.memeber)
+    def get_memeber(self,instance:models.EventDue_User):
+        member =user_related_models.Memeber.objects.get(user=instance.user)
         return {
-            'full_name': member.full_name,
-            'email': instance.user.email,
-            'member_id': member.id
+            'full_name':member.full_name,
+            'email':instance.user.email,
+            'member_id':member.id
         }
 
-    def get_proxy_participants(self, instance: models.EventDue_User):
-        try:
-            meeting_proxy_attendies = models.EventProxyAttendies.objects.get(event_due_user=instance)
-            return meeting_proxy_attendies.participants
-        except models.EventProxyAttendies.DoesNotExist:
-            return []
+    def get_proxy_participants(self,instance:models.EventDue_User):
+        meeting_proxy_attendies = models.EventProxyAttendies.objects.get(event_due_user=instance)
+        return meeting_proxy_attendies.participants
+
 
     class Meta:
-        model = models.EventDue_User
+        model =models.EventDue_User
         fields = [
-            'proxy_participants', 'member', 'id'
+            'proxy_participants','memeber','id'
         ]
