@@ -185,7 +185,7 @@ class RegiterForFreeEvent(serializers.Serializer):
     def create(self, validated_data):
         request = self.context.get('request')
         user = request.user if request.user.is_authenticated else None
-
+        member = request.user.member
         proxy_participants = validated_data.get('proxy_participants', [])
         event_id = validated_data.get('event_id')
             
@@ -205,7 +205,7 @@ class RegiterForFreeEvent(serializers.Serializer):
 
         # Register the user for the event or set user to None if unauthenticated
         registration = models.EventDue_User.objects.create(
-            user=user,
+            user= member if user else user,
             event=event,
             amount=0.00,
             paystack_key="free_event",
@@ -246,7 +246,7 @@ class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
             return {}
 
         # Fetch and return member details if the user exists
-        member = user_related_models.Memeber.objects.get(user=instance.user)
+        member = user_related_models.Memeber.objects.get(user=instance.user.member)
         return {
             'full_name': member.full_name,
             'email': instance.user.email,

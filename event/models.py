@@ -192,6 +192,7 @@ class Event(models.Model):
                 "_use_tenant_timezone": True,
                 }),
                 )
+
 class EventDue_User(models.Model):
     "This serves as payment history for paid events."
     user = models.ForeignKey(user_model.Memeber, on_delete=models.SET_NULL, null=True)
