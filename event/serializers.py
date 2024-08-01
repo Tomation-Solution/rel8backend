@@ -223,7 +223,8 @@ class RegiterForFreeEvent(serializers.Serializer):
             mailing_tasks.send_event_invitation_mail(
                 user_id=user.id if user else None,
                 event_id=event.id,
-                event_proxy_attendies_id=event_proxy_attendies.id
+                event_proxy_attendies_id=event_proxy_attendies.id,
+                schema_name="bukaa"
             )
 
         return registration
@@ -235,26 +236,15 @@ class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
     def get_member(self, instance: models.EventDue_User):
         # Handle cases where the user is None (for unauthenticated free event registrations)
         if instance.user is None:
-            return {
-                'full_name': 'Anonymous',
-                'email': 'N/A',
-                'member_id': None
-            }
+            return {}
 
         # Fetch and return member details if the user exists
-        try:
-            member = user_related_models.Memeber.objects.get(user=instance.user)
-            return {
-                'full_name': member.full_name,
-                'email': instance.user.email,
-                'member_id': member.id
-            }
-        except user_related_models.Memeber.DoesNotExist:
-            return {
-                'full_name': 'Unknown',
-                'email': instance.user.email if instance.user else 'N/A',
-                'member_id': None
-            }
+        member = user_related_models.Memeber.objects.get(user=instance.user)
+        return {
+            'full_name': member.full_name,
+            'email': instance.user.email,
+            'member_id': member.id
+        }
 
     def get_proxy_participants(self, instance: models.EventDue_User):
         try:
