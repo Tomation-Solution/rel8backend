@@ -43,6 +43,7 @@ class EventSerializer(serializers.Serializer):
     'for only write only... we want to control the adress so only paid users can access it'
     address = serializers.CharField(write_only=True)
     event_access = serializers.SerializerMethodField()
+    public = serializers.CharField(required=True)
 
 
     organiser_extra_info = serializers.CharField(required=False)
