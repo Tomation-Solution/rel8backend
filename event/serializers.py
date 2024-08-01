@@ -198,7 +198,7 @@ class RegiterForFreeEvent(serializers.Serializer):
             raise CustomError({'error': 'You need to pay because this event is paid'})
 
         # Check if the user has already registered for the event (for authenticated users only)
-        if user and models.EventDue_User.objects.filter(event=event, user=request.user).exists():
+        if request.user.is_authenticated and models.EventDue_User.objects.filter(event=event, user=request.user).exists():
             raise CustomError({'error': 'You have already registered'})
 
         # Register the user for the event or set user to None if unauthenticated
