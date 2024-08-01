@@ -21,6 +21,12 @@ here is the plan:
     if it is_paid ==true:
             event_user should be created for all the member type to pay
 """
+
+EVENT_CHOICES = (
+    ("yes", "yes"),
+    ("no", "no"),
+    ("both", "both")
+)
 class Event(models.Model):
     name=models.CharField(max_length=355)
     
@@ -77,6 +83,7 @@ class Event(models.Model):
     # endDate =models.DateField(null=True, blank=True)
     scheduletype = models.CharField(choices=ScheduleTypes.choices,default='day_of_week',max_length=200)
     schedule = models.JSONField(null=True)
+    public = models.CharField(choices=EVENT_CHOICES, default=EVENT_CHOICES[1][0])
     # mintues  = models.CharField(max_length=30)
     # hour     = models.CharField(max_length=30)
     """

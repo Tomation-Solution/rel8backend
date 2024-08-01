@@ -140,6 +140,7 @@ class EventSerializer(serializers.Serializer):
             **validated_data,chapters=chapter,commitee=commitee,
             is_paid_event=is_paid_event,
             is_special=is_special,
+            public=validated_data.get('public')
         )
 
         event.exco=exco
@@ -267,7 +268,7 @@ class RegiterForFreeEvent(serializers.Serializer):
 
 
 class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
-    
+
     class Meta:
         model =models.EventDue_User
         fields = "__all__"
