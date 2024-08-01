@@ -238,10 +238,11 @@ class RegiterForFreeEvent(serializers.Serializer):
         except models.Event.DoesNotExist:
             raise  CustomError({'error':'Event Does Not Exists'})
                   
-        if event.is_paid_event == True: raise CustomError({'error':'You Need to pay cus this event is paid'})
+        if event.is_paid_event == True: raise CustomError({'error':'Not a free event anymore.'})
+
         if models.EventDue_User.objects.filter(event=event, user = self.context.get('request').user,).exists():
             raise CustomError({'error':'You have registered already'})
-            
+
         registration = models.EventDue_User.objects.create(
             user = user,
             event=event,
