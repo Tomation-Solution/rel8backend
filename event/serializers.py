@@ -174,7 +174,6 @@ class AdminManageEventActiveStatus(serializers.Serializer):
     def update(self, instance, validated_data):
         raise  CustomError({'error':'Not Available '})
 
-
 class EventProxyAttendiesSerializer(serializers.Serializer):
     full_name = serializers.CharField()
     email = serializers.EmailField()
@@ -189,12 +188,12 @@ class RegiterForFreeEvent(serializers.Serializer):
 
         proxy_participants = validated_data.get('proxy_participants', [])
         event_id = validated_data.get('event_id')
+            
 
-        # Check if the event exists
-        if not models.Event.objects.filter(id=event_id).exists():
+        try:
+            event = models.Event.objects.get(id=event_id)
+        except models.Event.DoesNotExist:
             raise CustomError({'error': 'Event Does Not Exist'})
-
-        event = models.Event.objects.get(id=event_id)
 
         # Check if the event is paid
         if event.is_paid_event:
@@ -214,12 +213,13 @@ class RegiterForFreeEvent(serializers.Serializer):
         )
 
         # Handle proxy participants if provided
-        for participant_data in proxy_participants:
+        if proxy_participants:
             event_proxy_attendies, created = models.EventProxyAttendies.objects.get_or_create(
-                full_name=participant_data['full_name'],
-                email=participant_data['email'],
                 event_due_user=registration
             )
+            event_proxy_attendies.participants = proxy_participants
+            event_proxy_attendies.save()
+
             mailing_tasks.send_event_invitation_mail(
                 user_id=user.id if user else None,
                 event_id=event.id,
@@ -227,7 +227,6 @@ class RegiterForFreeEvent(serializers.Serializer):
             )
 
         return registration
-
 
 class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
     proxy_participants = serializers.SerializerMethodField()
