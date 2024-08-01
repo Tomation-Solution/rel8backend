@@ -139,7 +139,7 @@ class EventViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         instance = serializer.save()
 
-        return  custom_response.Success_response(msg="Registration Successful")
+        return  custom_response.Success_response(msg="Event Registration Successful")
 
 
     """    @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember])

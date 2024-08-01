@@ -180,41 +180,54 @@ class EventProxyAttendiesSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
 class RegiterForFreeEvent(serializers.Serializer):
-    event_id =serializers.IntegerField()
-    proxy_participants = EventProxyAttendiesSerializer(many=True,required=False)
-
-
+    event_id = serializers.IntegerField()
+    proxy_participants = EventProxyAttendiesSerializer(many=True, required=False)
 
     def create(self, validated_data):
-        proxy_participants = validated_data.get('proxy_participants',[])
-        event_id =validated_data.get('event_id')
-        if not models.Event.objects.filter(id=event_id,).exists():
-            raise  CustomError({'error':'Event Does Not Exists'})
+        request = self.context.get('request')
+        user = request.user if request.user.is_authenticated else None
 
-        event = models.Event.objects.get(id=event_id)        
-        if event.is_paid_event == True: raise CustomError({'error':'You Need to pay cus this event is paid'})
-        if models.EventDue_User.objects.filter(event=event, user = self.context.get('request').user,).exists():
-            raise CustomError({'error':'You have registered already'})
-        # is_paid_event=True
+        proxy_participants = validated_data.get('proxy_participants', [])
+        event_id = validated_data.get('event_id')
+
+        # Check if the event exists
+        if not models.Event.objects.filter(id=event_id).exists():
+            raise CustomError({'error': 'Event Does Not Exist'})
+
+        event = models.Event.objects.get(id=event_id)
+
+        # Check if the event is paid
+        if event.is_paid_event:
+            raise CustomError({'error': 'You need to pay because this event is paid'})
+
+        # Check if the user has already registered for the event (for authenticated users only)
+        if user and models.EventDue_User.objects.filter(event=event, user=user).exists():
+            raise CustomError({'error': 'You have already registered'})
+
+        # Register the user for the event or set user to None if unauthenticated
         registration = models.EventDue_User.objects.create(
-            user = self.context.get('request').user,
+            user=user,
             event=event,
             amount=0.00,
-            paystack_key="free_evnt",
+            paystack_key="free_event",
             is_paid=True
         )
-        if len(proxy_participants)!=0:
-            event_proxy_attendies,created= models.EventProxyAttendies.objects.get_or_create(
-                participants= proxy_participants,
+
+        # Handle proxy participants if provided
+        for participant_data in proxy_participants:
+            event_proxy_attendies, created = models.EventProxyAttendies.objects.get_or_create(
+                full_name=participant_data['full_name'],
+                email=participant_data['email'],
                 event_due_user=registration
             )
             mailing_tasks.send_event_invitation_mail(
-                user_id=self.context.get('request').user.id,
-                event_id = event.id,
+                user_id=user.id if user else None,
+                event_id=event.id,
                 event_proxy_attendies_id=event_proxy_attendies.id
             )
 
         return registration
+
     
 
 
