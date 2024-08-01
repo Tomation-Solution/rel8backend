@@ -105,13 +105,13 @@ class EventViewSet(viewsets.ViewSet):
         return custom_response.Success_response('Succes',data=data.data,status_code=status.HTTP_200_OK)
 
         # models.EventDue_User.objects.filter
-    @action(detail=False,methods=['get'],permission_classes=[custom_permission.IsAdmin])
+    @action(detail=False,methods=['get'],permission_classes=[custom_permission.IsAdminOrSuperAdmin])
     def view_attendies(self,request,*args,**kwargs):
         event_id =  request.query_params.get('event_id',None)
 
         if not event_id:
             raise CustomError(msg="Required event_id query", status_code=400)
-            
+
         event = get_object_or_404(models.Event,id=event_id)
         event_due_user = models.EventDue_User.objects.filter(event=event)
         clean_data = serializers.RegisteredEventMembersSerializerCleaner(instance=event_due_user,many=True)
