@@ -49,10 +49,12 @@ class EventViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin,custom_permission.Normal_Admin_Must_BelongToACHapter]
     parser_classes = (NestedMultipartParser,FormParser,)
     filterset_class = custom_filter.EventLookUp
+
     def destroy(self,request,pk=None):
         instance = self.queryset.get(id=pk)
         instance.delete()
         return custom_response.Success_response(msg='Deleted',data=pk,status_code=status.HTTP_204_NO_CONTENT)
+    
     def list(self, request, *args, **kwargs):
         'this code let chapter see thier news '
         all_events = self.queryset
@@ -91,14 +93,19 @@ class EventViewSet(viewsets.ViewSet):
         
     
         members = models.EventDue_User.objects.filter(event__id=event_id).values('user__memeber')
-        def filter_member(member_id):return member_id.get('user__memeber')
+
+        def filter_member(member_id):
+            return member_id.get('user__memeber')
+
         list_of_member_id = list(map(filter_member,members))
         
         list_of_member_instance = user_related_models.Memeber.objects.filter(id__in=list_of_member_id )
         data = user_related_serializer.MemberSerializer(list_of_member_instance,many=True)
+
         return custom_response.Success_response('Succes',data=data.data,status_code=status.HTTP_200_OK)
+
         # models.EventDue_User.objects.filter
-    @action(detail=False,methods=['post'],permission_classes=[permissions.IsAuthenticated,])
+    @action(detail=False,methods=['get'],permission_classes=[custom_permission.IsAdmin])
     def view_attendies(self,request,*args,**kwargs):
         event_id =  request.data.get('event_id',None)
         event = get_object_or_404(models.Event,id=event_id)
@@ -116,7 +123,7 @@ class EventViewSet(viewsets.ViewSet):
          
         return custom_response.Success_response(msg='Active Status Updated.',data=clean_data.data,status_code=status.HTTP_200_OK)
     
-    @action(detail=False,methods=['post'],permission_classes=[permissions.IsAuthenticated,custom_permission.IsMember])
+    @action(detail=False,methods=['post'],permission_classes=[permissions.AllowAny,custom_permission.IsMember])
     def register_for_free_event(self,request,format =None):
         """
         this only works for free event
