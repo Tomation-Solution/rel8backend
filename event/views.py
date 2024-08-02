@@ -56,7 +56,7 @@ class EventViewSet(viewsets.ViewSet):
         except models.Event.DoesNotExist:
             raise CustomError(message="Event is not available", status_code=404)
 
-        serializer = self.serializer_class(instance, data=request.data, partial=True)
+        serializer = self.serializer_class(instance, data=request.data, partial=True, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return custom_response.Success_response(msg="Success", data=serializer.data, status_code=status.HTTP_200_OK)
