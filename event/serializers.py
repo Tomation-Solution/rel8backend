@@ -156,7 +156,7 @@ class AdminManageEventActiveStatus(serializers.Serializer):
     def validate(self, attrs):
         if attrs.get('event_id') is None:raise CustomError({'event_id':'Invalid event_id'})
         if not models.Event.objects.filter(id=attrs.get('event_id')).exists():
-            raise CustomError({'event_id':'Invalid event_id'})
+            raise CustomError({'event_id':'Event is not found'})
         return super().validate(attrs)
 
 

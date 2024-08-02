@@ -50,6 +50,18 @@ class EventViewSet(viewsets.ViewSet):
     parser_classes = (NestedMultipartParser,FormParser,)
     filterset_class = custom_filter.EventLookUp
 
+    def partial_update(self, request, pk=None):
+        try:
+            instance = models.Event.objects.get(id=pk)
+        except models.Event.DoesNotExist:
+            raise CustomError(message="Event is not available", status_code=404)
+
+        serializer = self.serializer_class(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def destroy(self,request, pk):
         try:
             instance = models.Event.objects.get(id=pk)
