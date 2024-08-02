@@ -147,6 +147,30 @@ class EventSerializer(serializers.Serializer):
         event.save()
         return event
 
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.is_paid_event = validated_data.get('is_paid_event', instance.is_paid_event)
+        instance.re_occuring = validated_data.get('re_occuring', instance.re_occuring)
+        instance.is_virtual = validated_data.get('is_virtual', instance.is_virtual)
+        instance.commitee_id = validated_data.get('commitee_id', instance.commitee_id)
+        instance.exco_id = validated_data.get('exco_id', instance.exco_id)
+        instance.amount = validated_data.get('amount', instance.amount)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.startDate = validated_data.get('startDate', instance.startDate)
+        instance.startTime = validated_data.get('startTime', instance.startTime)
+        instance.scheduletype = validated_data.get('scheduletype', instance.scheduletype)
+        instance.schedule = validated_data.get('schedule', instance.schedule)
+        instance.address = validated_data.get('address', instance.address)
+        instance.public = validated_data.get('public', instance.public)
+        instance.organiser_extra_info = validated_data.get('organiser_extra_info', instance.organiser_extra_info)
+        instance.organiser_name = validated_data.get('organiser_name', instance.organiser_name)
+        instance.event_extra_details = validated_data.get('event_extra_details', instance.event_extra_details)
+        instance.event_docs = validated_data.get('event_docs', instance.event_docs)
+        instance.organiserImage = validated_data.get('organiserImage', instance.organiserImage)
+        instance.is_special = validated_data.get('is_special', instance.is_special)
+        instance.save()
+        return instance
+
 
 
 class AdminManageEventActiveStatus(serializers.Serializer):

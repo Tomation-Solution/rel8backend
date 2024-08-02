@@ -72,7 +72,7 @@ class EventViewSet(viewsets.ViewSet):
         return custom_response.Success_response(msg='Deleted',data=pk,status_code=status.HTTP_204_NO_CONTENT)
     
     def list(self, request, *args, **kwargs):
-        'this code let chapter see thier news '
+        'this code let chapter see thier news'
         all_events = self.queryset
         if self.request.query_params.get('is_chapter',None):
             "get event for only chapters"
