@@ -59,8 +59,8 @@ class EventViewSet(viewsets.ViewSet):
         serializer = self.serializer_class(instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return custom_response.Success_response(msg="Success", data=serializer.data, status_code=status.HTTP_200_OK)
+        raise CustomError(message="Failed to update", status_code=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self,request, pk):
         try:
