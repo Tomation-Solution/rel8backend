@@ -61,7 +61,7 @@ class EventSerializer(serializers.Serializer):
         link=''
         has_paid=False
         requests = self.context.get('request')
-        user = self.context.get('request').user
+        # user = self.context.get('request').user
 
         if requests.user.user_type in ['admin','super_admin']:
             return {
@@ -71,7 +71,7 @@ class EventSerializer(serializers.Serializer):
         else:
             "u have to be register before u see a event"
             if event.is_paid_event==False:
-                if models.EventDue_User.objects.filter(user=user,event=event,is_paid=True).exists():
+                if models.EventDue_User.objects.filter(user=requests.user,event=event,is_paid=True).exists():
                     link=event.address
                     has_paid=True
                 else:
@@ -80,8 +80,8 @@ class EventSerializer(serializers.Serializer):
                     has_paid=False
             else:
                 'this is a paid event and wee need to do some check'
-                if  models.EventDue_User.objects.filter(user=user,event=event,is_paid=True).exists():
-                    event_due_user = models.EventDue_User.objects.get(user=user,event=event)
+                if  models.EventDue_User.objects.filter(user=requests.user,event=event,is_paid=True).exists():
+                    event_due_user = models.EventDue_User.objects.get(user=urequests.user,event=event)
                     has_paid= event_due_user.is_paid
                     link=event.address
 
