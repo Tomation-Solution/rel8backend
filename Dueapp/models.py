@@ -205,7 +205,7 @@ class DeactivatingDue(models.Model):
     startTime = models.TimeField(null=True, blank=True)
     # for is re-occuring there must be a startDate and endDate
     endDate =models.DateField(null=True, blank=True)
-    month = models.IntegerField(default=0)
+    month = models.JSONField(null=True)
     chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True)
 
 

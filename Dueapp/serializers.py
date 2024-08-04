@@ -383,7 +383,7 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
             amount = amount,
             startDate = startDate,
             startTime = startTime,
-            month = int(month),
+            month = str(month),
             chapters=chapter)
         due.save()
         return due
