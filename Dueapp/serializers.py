@@ -335,53 +335,67 @@ class AdminCreateGeneralDueSerializer(serializers.Serializer):
             )
         due.save()
         return due
+
 class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
     name = serializers.CharField()
     is_for_excos = serializers.BooleanField()
     amount = serializers.FloatField()
     month = serializers.IntegerField()
     startDate = serializers.DateField(
-    format="%d-%m-%Y",
-    input_formats=["%d-%m-%Y", "iso-8601"],
-    required=True,
+        format="%d-%m-%Y",
+        input_formats=["%d-%m-%Y", "iso-8601"],
+        required=True,
     )
-    endate = serializers.DateField(
-    format="%d-%m-%Y",
-    input_formats=["%d-%m-%Y", "iso-8601"],
-    required=False,
+    endDate = serializers.DateField(
+        format="%d-%m-%Y",
+        input_formats=["%d-%m-%Y", "iso-8601"],
+        required=False,
     )
     startTime = serializers.TimeField()
 
     def create(self, validated_data):
         user = self.context.get('request').user
         chapters = None
-        if  user.user_type in ['admin']:
-            chapters = auth_related_models.Chapters.objects.get(id=user.chapter.id)
-        if  user.user_type in ['super_admin']:
-            'this is a super admin that has the right only to create a National due'
+
+        # Determine chapter based on user type
+        if user.user_type == 'admin':
+            if user.chapter is not None:
+                try:
+                    chapters = auth_related_models.Chapters.objects.get(id=user.chapter.id)
+                except auth_related_models.Chapters.DoesNotExist:
+                    raise serializers.ValidationError({"chapter": "Chapter does not exist"})
+            else:
+                raise serializers.ValidationError({"chapter": "User does not belong to any chapter"})
+        elif user.user_type == 'super_admin':
+            # Super admin has the right to create a National due, thus no chapter assignment
             chapters = None
 
+        # Extract validated data
         name = validated_data.get('name')
         is_for_excos = validated_data.get('is_for_excos')
         amount = validated_data.get('amount')
         startDate = validated_data.get('startDate')
         endDate = validated_data.get('endDate')
-        startTime =  validated_data.get('startTime')
-        month =   validated_data.get('month')
-        if month == 0:
-            raise serializers.ValidationError({"month":'must be 1 or more'})
+        startTime = validated_data.get('startTime')
+        month = validated_data.get('month')
 
+        # Validate month
+        if month <= 0:
+            raise serializers.ValidationError({"month": "must be 1 or more"})
+
+        # Check for duplicate due names
         if models.DeactivatingDue.objects.filter(name=name).exists():
-            raise serializers.ValidationError({"name":'Deactivating Due name exists already'})
+            raise serializers.ValidationError({"name": "Deactivating Due name exists already"})
 
+        # Create DeactivatingDue
         due = models.DeactivatingDue.objects.create(
-            name = name,
-            is_for_excos = is_for_excos,
-            amount = amount,
-            startDate = startDate,
+            name=name,
+            is_for_excos=is_for_excos,
+            amount=amount,
+            startDate=startDate,
             endDate=endDate,
-            startTime = startTime,
-            month = str(month),
-            chapters=chapters)
-        due.save()
+            startTime=startTime,
+            month=month,  # Assuming `month` is now an integer instead of a string or JSONField
+            chapters=chapters
+        )
         return due
