@@ -211,44 +211,88 @@ class DeactivatingDue(models.Model):
 
 
 
+
     def deactivating_due_job(self):
         tenant = connection.tenant
-        # first we have to create all the dues for the user then activate the perodic task...
-        # it the perodic task once activated will check if people have paid if not we deactivate the user knowing fully well
-        if PeriodicTask.objects.all().filter(name=f"{self.name} {str(self.id)}").exists():
-            raise CustomError({"error":"Try another name this name has been taken"})
 
-        schedule,_ =CrontabSchedule.objects.get_or_create(
+        # Check if the periodic task already exists
+        if PeriodicTask.objects.filter(name=f"{self.name} {str(self.id)}").exists():
+            raise CustomError({"error": "Try another name; this name has been taken"})
+
+        # Retrieve or create a CrontabSchedule
+        schedules = CrontabSchedule.objects.filter(
             month_of_year=self.month,
-            hour=convert12Hour(self.startTime.hour), minute=self.startTime.minute,
-
+            hour=convert12Hour(self.startTime.hour),
+            minute=self.startTime.minute
         )
-        # localized_time = get_localized_time(
-        #     self.startDate, self.startTime, tenant.timezone
-        # )
-        chapterID = None
-        if self.chapters:chapterID=self.chapters.id
-        create_deactivating_user_model(self.id,chapterID)
 
-        PeriodicTask.objects.create(
-                crontab=schedule,
-                name=f"{self.name} {str(self.id)}",  # task name
-                task="Dueapp.tasks.deactivating_due_job",   # task.
-                args=json.dumps(
-                    [
-                        self.id,
-                        chapterID
-                    ]
-                ),  # arguments
-                description="this will check",
-                one_off=True,
-                headers=json.dumps(
-                    {
-                        "_schema_name": tenant.schema_name,
-                        "_use_tenant_timezone": True,
-                    }
-                ),
+        if schedules.exists():
+            schedule = schedules.first()  # Use the first matching schedule
+        else:
+            schedule = CrontabSchedule.objects.create(
+                month_of_year=self.month,
+                hour=convert12Hour(self.startTime.hour),
+                minute=self.startTime.minute
             )
+
+        chapterID = None
+        if self.chapters:
+            chapterID = self.chapters.id
+
+        create_deactivating_user_model(self.id, chapterID)
+
+        # Create a new periodic task
+        PeriodicTask.objects.create(
+            crontab=schedule,
+            name=f"{self.name} {str(self.id)}",  # task name
+            task="Dueapp.tasks.deactivating_due_job",   # task.
+            args=json.dumps([self.id, chapterID]),  # arguments
+            description="This will check if people have paid, and if not, deactivate the user.",
+            one_off=True,
+            headers=json.dumps({
+                "_schema_name": tenant.schema_name,
+                "_use_tenant_timezone": True,
+            }),
+        )
+
+    # def deactivating_due_job(self):
+    #     tenant = connection.tenant
+    #     # first we have to create all the dues for the user then activate the perodic task...
+    #     # it the perodic task once activated will check if people have paid if not we deactivate the user knowing fully well
+    #     if PeriodicTask.objects.all().filter(name=f"{self.name} {str(self.id)}").exists():
+    #         raise CustomError({"error":"Try another name this name has been taken"})
+
+    #     schedule,_ =CrontabSchedule.objects.get_or_create(
+    #         month_of_year=self.month,
+    #         hour=convert12Hour(self.startTime.hour), minute=self.startTime.minute,
+
+    #     )
+    #     # localized_time = get_localized_time(
+    #     #     self.startDate, self.startTime, tenant.timezone
+    #     # )
+    #     chapterID = None
+    #     if self.chapters:chapterID=self.chapters.id
+    #     create_deactivating_user_model(self.id,chapterID)
+
+    #     PeriodicTask.objects.create(
+    #             crontab=schedule,
+    #             name=f"{self.name} {str(self.id)}",  # task name
+    #             task="Dueapp.tasks.deactivating_due_job",   # task.
+    #             args=json.dumps(
+    #                 [
+    #                     self.id,
+    #                     chapterID
+    #                 ]
+    #             ),  # arguments
+    #             description="this will check",
+    #             one_off=True,
+    #             headers=json.dumps(
+    #                 {
+    #                     "_schema_name": tenant.schema_name,
+    #                     "_use_tenant_timezone": True,
+    #                 }
+    #             ),
+    #         )
 
 
 class DeactivatingDue_User(models.Model):
