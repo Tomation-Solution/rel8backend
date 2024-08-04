@@ -314,7 +314,7 @@ class AdminCreateGeneralDueSerializer(serializers.Serializer):
     required=True,
     )
     endTime = serializers.TimeField()
-    chapterID= serializers.IntegerField(required=False)
+    chapterID = serializers.IntegerField(required=False)
 
     def create(self, validated_data):
         name = validated_data.pop('name')
@@ -352,23 +352,24 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
         required=False,
     )
     startTime = serializers.TimeField()
+    chapter_id = serializers.IntegerField()
 
     def create(self, validated_data):
-        user = self.context.get('request').user
-        chapters = None
+        # user = self.context.get('request').user
+        # chapters = None
 
-        # Determine chapter based on user type
-        if user.user_type == 'admin':
-            if user.chapter is not None:
-                try:
-                    chapters = auth_related_models.Chapters.objects.get(id=user.chapter.id)
-                except auth_related_models.Chapters.DoesNotExist:
-                    raise serializers.ValidationError({"chapter": "Chapter does not exist"})
-            else:
-                raise serializers.ValidationError({"chapter": "User does not belong to any chapter"})
-        elif user.user_type == 'super_admin':
-            # Super admin has the right to create a National due, thus no chapter assignment
-            chapters = None
+        # # Determine chapter based on user type
+        # if user.user_type == 'admin':
+        #     if user.chapter is not None:
+        #         try:
+        #             chapters = auth_related_models.Chapters.objects.get(id=user.chapter.id)
+        #         except auth_related_models.Chapters.DoesNotExist:
+        #             raise serializers.ValidationError({"chapter": "Chapter does not exist"})
+        #     else:
+        #         raise serializers.ValidationError({"chapter": "User does not belong to any chapter"})
+        # elif user.user_type == 'super_admin':
+        #     # Super admin has the right to create a National due, thus no chapter assignment
+        #     chapters = None
 
         # Extract validated data
         name = validated_data.get('name')
@@ -378,13 +379,14 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
         endDate = validated_data.get('endDate')
         startTime = validated_data.get('startTime')
         month = validated_data.get('month')
+        chapter_id = validated_data.get('chapter_id')
 
         # Validate month
         if month <= 0:
             raise serializers.ValidationError({"month": "must be 1 or more"})
 
         # Check for duplicate due names
-        if models.DeactivatingDue.objects.filter(name=name).exists():
+        if models.DeactivatingDue.objects.filter(name=name, chapters=chapter_id).exists():
             raise serializers.ValidationError({"name": "Deactivating Due name exists already"})
 
         # Create DeactivatingDue
@@ -396,6 +398,6 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
             endDate=endDate,
             startTime=startTime,
             month=month,  # Assuming `month` is now an integer instead of a string or JSONField
-            chapters=chapters
+            chapters=chapter_id
         )
         return due
