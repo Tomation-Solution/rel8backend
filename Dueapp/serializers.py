@@ -33,7 +33,7 @@ class MemberDueUSerSerializer(serializers.ModelSerializer):
 
 class DueCleanSerialier(serializers.ModelSerializer):
     chapter = serializers.SerializerMethodField()
-    
+    is_deactivate_users = serialiers.BooleanField(default=True, required=False)
     def get_chapter(self,due):
         if(due.chapters): return {
             'name':due.chapters.name,
