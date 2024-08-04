@@ -27,6 +27,8 @@ from event.models import EventProxyAttendies
 from mymailing import tasks as mailing_tasks
 import threading
 from utils.extraFunc import generate_n
+
+
 def very_payment(request,reference=None):
     # this would be in the call back to check if the payment is a success
     if reference is None:
@@ -179,7 +181,7 @@ class InitPaymentTran(APIView):
     # def handlePaystackPayment(self,request,forwhat='due',pk=None):
     #     return
     def post(self, request, forWhat="due",pk=None):
-        if request.user.user_type== 'members':
+        if request.user.user_type == 'members':
             if(not user_model.Memeber.objects.all().filter(user=request.user).exists()):
                 raise CustomError({"error":'member doest not exist'})
 

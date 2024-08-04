@@ -52,7 +52,8 @@ class DueCleanSerialier(serializers.ModelSerializer):
             "endDate",
             "scheduletype",
             "schedule",
-            'chapter','id'
+            'chapter','id',
+            'is_deactivate_users'
         ]
 
 class AdminManageDuesSerializer(serializers.Serializer):
