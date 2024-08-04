@@ -96,6 +96,12 @@ class AdminManageDeactivatingDue(viewsets.ViewSet):
     custom_permissions.Normal_Admin_Must_BelongToACHapter]
     serializer_class = serializers.AdminManageDeactivatingDuesSerializer
 
+    def list(self,request):
+        deactivating_dues = models.DeactivatingDue.objects.all()
+        clean_data  = self.serializer_class(deactivating_dues,many=True)
+        return custom_response.Success_response(msg='Dues',data =clean_data.data,status_code=status.HTTP_200_OK)
+
+
     def create(self,request,format=None):
         'an admin is creating Due for the user'
         serializer = self.serializer_class(data=request.data,context={"request":request})
