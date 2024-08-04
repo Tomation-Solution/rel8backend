@@ -345,30 +345,27 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
     input_formats=["%d-%m-%Y", "iso-8601"],
     required=True,
     )
+    endate = serializers.DateField(
+    format="%d-%m-%Y",
+    input_formats=["%d-%m-%Y", "iso-8601"],
+    required=False,
+    )
     startTime = serializers.TimeField()
-    # for_chapters=serializers.BooleanField(default=False,)
-
 
     def create(self, validated_data):
-        for_chapters=validated_data.pop('for_chapters',None)
         user = self.context.get('request').user
-        chapter = None
+        chapters = None
         if  user.user_type in ['admin']:
-            chapter = auth_related_models.Chapters.objects.get(id=user.chapter.id)
+            chapters = auth_related_models.Chapters.objects.get(id=user.chapter.id)
         if  user.user_type in ['super_admin']:
             'this is a super admin that has the right only to create a National due'
-            chapter = None
-
-            # if not user_related_models.Super_admin.objects.all().filter(user=user).exists():
-            #     "if this user is not a super admin there is a problem he cant create a national event"
-            #     raise CustomError({"error":"You can't Create A national Event"})
-
-
+            chapters = None
 
         name = validated_data.get('name')
         is_for_excos = validated_data.get('is_for_excos')
         amount = validated_data.get('amount')
         startDate = validated_data.get('startDate')
+        endDate = validated_data.get('endDate')
         startTime =  validated_data.get('startTime')
         month =   validated_data.get('month')
         if month == 0:
@@ -382,8 +379,9 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
             is_for_excos = is_for_excos,
             amount = amount,
             startDate = startDate,
+            endDate=endDate,
             startTime = startTime,
             month = str(month),
-            chapters=chapter)
+            chapters=chapters)
         due.save()
         return due
