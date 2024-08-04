@@ -191,14 +191,15 @@ class AdminCreateExcoDuesSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         name = validated_data.pop('name')
-        exco_id =validated_data.pop('exco_id','-1')
-        exco = None
-        if   user_related_models.ExcoRole.objects.filter(id=exco_id).exists():
+        exco_id =validated_data.pop('exco_id')
+        try:
             exco = user_related_models.ExcoRole.objects.get(id=exco_id)
-        # validated_data.pop('startDate')
-        # print(validated_data)
+        except user_related_models.ExcoRole.DoesNotExist:
+            raise CustomError(message="Exco does not exist", status_code=404)
+
         due= models.Due.objects.create(
-            **validated_data,is_on_create=False,
+            **validated_data,
+            is_on_create=False,
             Name=name,
             exco = exco
             )
