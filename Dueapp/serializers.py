@@ -336,6 +336,7 @@ class AdminCreateGeneralDueSerializer(serializers.Serializer):
         due.save()
         return due
 
+
 class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
     name = serializers.CharField()
     is_for_excos = serializers.BooleanField()
@@ -352,7 +353,7 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
         required=False,
     )
     startTime = serializers.TimeField()
-    chapter_id = serializers.IntegerField()
+    chapter_id = serializers.IntegerField(write_only=True, required=True)
 
     def create(self, validated_data):
         name = validated_data.get('name')
@@ -369,15 +370,13 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
         except auth_related_models.Chapters.DoesNotExist:
             raise serializers.ValidationError({"chapter": "Chapter does not exist"})
 
-        # Extract validated data
-
         # Validate month
         if month <= 0:
             raise serializers.ValidationError({"month": "must be 1 or more"})
 
-        # Check for duplicate due names
-        if models.DeactivatingDue.objects.filter(name=name, chapters=chapter_id).exists():
-            raise serializers.ValidationError({"name": "Deactivating Due name exists already"})
+        # Check for duplicate due names within the same chapter
+        if models.DeactivatingDue.objects.filter(name=name, chapters=chapters).exists():
+            raise serializers.ValidationError({"name": "Deactivating Due name exists already in this chapter"})
 
         # Create DeactivatingDue
         due = models.DeactivatingDue.objects.create(
@@ -387,7 +386,7 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
             startDate=startDate,
             endDate=endDate,
             startTime=startTime,
-            month=month,  # Assuming `month` is now an integer instead of a string or JSONField
+            month=month,
             chapters=chapters
         )
         return due
