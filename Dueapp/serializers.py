@@ -355,23 +355,6 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
     chapter_id = serializers.IntegerField()
 
     def create(self, validated_data):
-        # user = self.context.get('request').user
-        # chapters = None
-
-        # # Determine chapter based on user type
-        # if user.user_type == 'admin':
-        #     if user.chapter is not None:
-        #         try:
-        #             chapters = auth_related_models.Chapters.objects.get(id=user.chapter.id)
-        #         except auth_related_models.Chapters.DoesNotExist:
-        #             raise serializers.ValidationError({"chapter": "Chapter does not exist"})
-        #     else:
-        #         raise serializers.ValidationError({"chapter": "User does not belong to any chapter"})
-        # elif user.user_type == 'super_admin':
-        #     # Super admin has the right to create a National due, thus no chapter assignment
-        #     chapters = None
-
-        # Extract validated data
         name = validated_data.get('name')
         is_for_excos = validated_data.get('is_for_excos')
         amount = validated_data.get('amount')
@@ -380,6 +363,13 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
         startTime = validated_data.get('startTime')
         month = validated_data.get('month')
         chapter_id = validated_data.get('chapter_id')
+        
+        try:
+            chapters = auth_related_models.Chapters.objects.get(id=chapter_id)
+        except auth_related_models.Chapters.DoesNotExist:
+            raise serializers.ValidationError({"chapter": "Chapter does not exist"})
+
+        # Extract validated data
 
         # Validate month
         if month <= 0:
@@ -398,6 +388,6 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
             endDate=endDate,
             startTime=startTime,
             month=month,  # Assuming `month` is now an integer instead of a string or JSONField
-            chapters=chapter_id
+            chapters=chapters
         )
         return due
