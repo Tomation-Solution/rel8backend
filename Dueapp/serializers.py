@@ -205,7 +205,8 @@ class AdminCreateExcoDuesSerializer(serializers.Serializer):
             )
         due.save()
         self.create_perodic_task(due)
-        return due   
+        return due
+        
     def create_perodic_task(self,due):
         tenant = connection.tenant
 
@@ -254,10 +255,12 @@ class AdminCreateMembershipGradeDuesSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         name = validated_data.pop('name')
-        membership_due_id =validated_data.pop('membership_due_id','-1')
-        dues_for_membership_grade =None
-        if user_related_models.MemberShipGrade.objects.filter(id=membership_due_id).exists():
+        membership_due_id =validated_data.pop('membership_due_id')
+        try:
             dues_for_membership_grade = user_related_models.MemberShipGrade.objects.get(id=membership_due_id)
+        except user_related_models.MemberShipGrade.DoesNotExist:
+            raise CustomError(message="Member grade profile does not exist", status_code=404)
+
         due = models.Due.objects.create(
             **validated_data,
             Name=name,
