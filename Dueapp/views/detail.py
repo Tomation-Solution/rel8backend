@@ -98,22 +98,10 @@ class AdminManageDeactivatingDue(viewsets.ViewSet):
 
     def create(self,request,format=None):
         'an admin is creating Due for the user'
-        # print(request.data)
-        serialized = self.serializer_class(data=request.data,context={"request":request})
-        serialized.is_valid(raise_exception=True)
-        due_id =serialized.save()
-        due = models.DeactivatingDue.objects.get(id=due_id)
-        return custom_response.Success_response(msg='Deactivating Due created successfully',data=[
-        {
-        'id':due.id,
-        'name':due.name,
-        'is_for_excos':due.is_for_excos,
-        'amount':due.amount,
-        'startDate':due.startDate,
-        'startTime':due.startTime,
-        'month':due.month,
-        }
-        ],status_code=status.HTTP_201_CREATED)
+        serializer = self.serializer_class(data=request.data,context={"request":request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return custom_response.Success_response(msg='Deactivating Due created successfully',data=serializer.data,status_code=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk=None):
         if(models.DeactivatingDue.objects.filter(id=pk).exists()):
