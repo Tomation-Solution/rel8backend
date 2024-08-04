@@ -297,6 +297,7 @@ class DeactivatingDue(models.Model):
 
 class DeactivatingDue_User(models.Model):
     #To get how much the user is owing we query useing the user object and the is_paid
+    id = models.AutoField(primary_key=True)
     user=models.ForeignKey(get_user_model(),on_delete=models.SET_NULL,null=True)
     deactivatingdue = models.ForeignKey(DeactivatingDue,on_delete=models.CASCADE)
     is_overdue = models.BooleanField(default=False)
