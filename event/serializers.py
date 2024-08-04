@@ -29,7 +29,7 @@ class EventSerializer(serializers.Serializer):
     is_paid_event =serializers.BooleanField(required=True)
     re_occuring= serializers.BooleanField(required=True)# due_type Once  Re-occuring|
     is_virtual=serializers.BooleanField(required=True)
-    # is_for_excos = serializers.BooleanField(required=True)#embers | excos
+    is_for_excos = serializers.BooleanField(required=True)#embers | excos
     commitee_id = serializers.IntegerField(required=False)
     exco_id = serializers.IntegerField(required=False)
     amount=  serializers.CharField(required=True)
@@ -44,19 +44,14 @@ class EventSerializer(serializers.Serializer):
     address = serializers.CharField(write_only=True)
     event_access = serializers.SerializerMethodField()
     public = serializers.CharField(required=True)
-
-
     organiser_extra_info = serializers.CharField(required=False)
     organiser_name = serializers.CharField(required=False)
     event_extra_details = serializers.CharField(required=False)
     event_docs = serializers.FileField(required=False)
     organiserImage = serializers.ImageField(required=False)
     is_special = serializers.BooleanField(required=False)
-    # for_chapters=serializers.BooleanField(default=False,)
-    # def validate(self, attrs):
-        
-    #     return super().validate(attrs)
-    # def get_address(self,event)
+    
+    
     def get_event_access(self,event):
         link=''
         has_paid=False
@@ -148,6 +143,8 @@ class EventSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
+        instance.image = validated_data.get('image', instance.image)
+        instance.is_for_excos = validated_data.get('is_for_excos', instance.is_for_excos)
         instance.is_paid_event = validated_data.get('is_paid_event', instance.is_paid_event)
         instance.re_occuring = validated_data.get('re_occuring', instance.re_occuring)
         instance.is_virtual = validated_data.get('is_virtual', instance.is_virtual)
