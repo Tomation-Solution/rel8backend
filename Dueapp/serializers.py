@@ -374,7 +374,8 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
         if month == 0:
             raise serializers.ValidationError({"month":'must be 1 or more'})
 
-        if models.DeactivatingDue.objects.filter(name=name).exists():raise serializers.ValidationError({"name":'Deactivating Due name exists already'})
+        if models.DeactivatingDue.objects.filter(name=name).exists():
+            raise serializers.ValidationError({"name":'Deactivating Due name exists already'})
 
         due = models.DeactivatingDue.objects.create(
             name = name,
@@ -382,7 +383,7 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
             amount = amount,
             startDate = startDate,
             startTime = startTime,
-            month = month,
+            month = int(month),
             chapters=chapter)
         due.save()
         return due
