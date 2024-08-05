@@ -142,7 +142,7 @@ class TicketingView(viewsets.ModelViewSet):
 class AdminManagesProjectViewset(viewsets.ModelViewSet):
     serializer_class = serializers.AdminManagesProjectSerializer
     queryset = models.FundAProject.objects.all()
-    permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
+    permission_classes = [permissions.IsAuthenticated]
     parser_classes = (custom_parsers.NestedMultipartParser,FormParser,)
 
 
