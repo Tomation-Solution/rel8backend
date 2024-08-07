@@ -113,13 +113,6 @@ class CreateAlumniSerializers(serializers.ModelSerializer):
             raise serializers.ValidationError({'key':_})
         # return super().create(validated_data)
 
-
-
-from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
-from .models import ExcoRole, Memeber, Chapters
-from .exceptions import CustomError
-
 class ExcoRoleSerializer(serializers.ModelSerializer):
     members = serializers.SerializerMethodField(read_only=True)
 
