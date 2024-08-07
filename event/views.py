@@ -111,7 +111,7 @@ class EventViewSet(viewsets.ViewSet):
         with transaction.atomic():
 
             # Filter EventDue_User instances by event_id and retrieve member IDs
-            members = models.EventDue_User.objects.filter(event__id=event_id).values('user__member')
+            members = models.EventDue_User.objects.filter(event__id=event_id).values_list('user__memeber', flat=True)
 
             # Filter Member instances by the retrieved member IDs
             list_of_member_instance = user_related_models.Memeber.objects.filter(id__in=members)
