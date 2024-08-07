@@ -117,7 +117,7 @@ class EventViewSet(viewsets.ViewSet):
             list_of_member_instance = user_related_models.Memeber.objects.filter(id__in=members)
 
             # Serialize the members to get only name and email
-            data = [{'name': member.name, 'email': member.email} for member in list_of_member_instance]
+            data = [{'name': member.name, 'email': member.user.email} for member in list_of_member_instance]
 
             return custom_response.Success_response(msg='Success', data=data, status_code=200)
 
