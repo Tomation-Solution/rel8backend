@@ -115,6 +115,21 @@ class CreateAlumniSerializers(serializers.ModelSerializer):
 
 
 
+from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
+from .models import ExcoRole, Memeber, Chapters
+from .exceptions import CustomError
+
+class ExcoRoleSerializer(serializers.ModelSerializer):
+    members = serializers.SerializerMethodField(read_only=True)
+
+    def get_members(self, obj):
+        return [member.name for member in obj.member.all()]
+
+    class Meta:
+        model = ExcoRole
+        fields = '__all__'
+
 class CreateExcoRole(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
@@ -136,15 +151,14 @@ class CreateExcoRole(serializers.Serializer):
             chapter = self.context.get('request').user.chapter
 
         if chapter_id:
-            chapter = get_object_or_404(auth_related_models.Chapters, id=chapter_id)
+            chapter = get_object_or_404(Chapters, id=chapter_id)
 
-        exco_role = user_models.ExcoRole.objects.create(
+        exco_role = ExcoRole.objects.create(
             name=name, about=about, can_upload_min=can_upload_min, chapter=chapter
         )
-
         if member_ids:
             for member_id in member_ids:
-                member = get_object_or_404(user_models.Memeber, id=member_id)
+                member = get_object_or_404(Memeber, id=member_id)
                 member.is_exco = True
                 member.save()
                 exco_role.member.add(member)
@@ -155,7 +169,7 @@ class CreateExcoRole(serializers.Serializer):
     def validate(self, attrs):
         member_ids = attrs.get('member_ids', [])
         for member_id in member_ids:
-            if not user_models.Memeber.objects.filter(id=member_id).exists():
+            if not Memeber.objects.filter(id=member_id).exists():
                 raise CustomError({"error": f"Member with id {member_id} doesn't exist"})
         return super().validate(attrs)
 
@@ -165,13 +179,13 @@ class CreateExcoRole(serializers.Serializer):
 
         if is_remove_member:
             for member_id in member_ids:
-                member = get_object_or_404(user_models.Memeber, id=member_id)
+                member = get_object_or_404(Memeber, id=member_id)
                 member.is_exco = False
                 member.save()
                 instance.member.remove(member)
         else:
             for member_id in member_ids:
-                member = get_object_or_404(user_models.Memeber, id=member_id)
+                member = get_object_or_404(Memeber, id=member_id)
 
                 if instance.chapter is not None:
                     if member.user.chapter is None:
@@ -186,18 +200,9 @@ class CreateExcoRole(serializers.Serializer):
         instance.name = validated_data.get('name', instance.name)
         instance.about = validated_data.get('about', instance.about)
         instance.can_upload_min = validated_data.get('can_upload_min', instance.can_upload_min)
+
         instance.save()
         return instance
-
-class ExcoRoleSerializer(serializers.ModelSerializer):
-    members = serializers.SerializerMethodField(read_only=True)
-
-    def get_members(self, obj):
-        return [member.name for member in obj.member.all()]
-
-    class Meta:
-        model = user_models.ExcoRole
-        fields = '__all__'
 
 
 # class CreateExcoRole(serializers.Serializer):
