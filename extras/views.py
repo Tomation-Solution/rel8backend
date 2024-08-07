@@ -148,6 +148,11 @@ class AdminManagesProjectViewset(viewsets.ModelViewSet):
 
 class MemeberProjectSupportKindViewset(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
+
+    def retrieve(self, request, *args, **kwargs):
+        cash_support_project_instance = get_object_or_404( models.SupportProjectInCash,id=kwargs.get('pk',-1))
+        clean_data = self.serializer_class(cash_support_project_instance,many=False,context={'request':self.request,'get_img':True})
+        return Success_response(msg="Success",data=clean_data.data,status_code=status.HTTP_200_OK)
     
     @action(detail=False,methods=['post'],)
     def support_in_kind(self, request, *args, **kwargs):
@@ -164,6 +169,11 @@ class MemeberProjectSupportKindViewset(viewsets.ViewSet):
 
 class MemeberProjectSupportCashViewset(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
+
+    def retrieve(self, request, *args, **kwargs):
+        kind_support_project_instance = get_object_or_404( models.SupportProjectInKind,id=kwargs.get('pk',-1))
+        clean_data = self.serializer_class(kind_support_project_instance,many=False,context={'request':self.request,'get_img':True})
+        return Success_response(msg="Success",data=clean_data.data,status_code=status.HTTP_200_OK)
     
     @action(detail=False,methods=['post'],)
     def support_in_cash(self, request, *args, **kwargs):
