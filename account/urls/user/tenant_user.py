@@ -5,7 +5,7 @@ from rest_framework.routers import  DefaultRouter
 
 
 router = DefaultRouter()
-router.register("ManageAssigningExcos",user_view.ManageAssigningExos,basename='ManageAssigningExos')
+router.register("ManageAssigningExcos",user_view.ManageAssigningExcos,basename='ManageAssigningExcos')
 router.register("CreateAnyAdminType",user_view.CreateAnyAdminType,basename='CreateAnyAdminType')
 router.register("RegisterUserToChapter",user_view.RegisterUserToChapter,basename='RegisterUserToChapter')
 router.register("AdminRelatedViews",user_view.AdminRelatedViews,basename='AdminRelatedViews')
