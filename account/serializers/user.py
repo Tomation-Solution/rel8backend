@@ -1,4 +1,7 @@
 import datetime 
+import threading
+import os
+
 from rest_framework import serializers
 from Rel8Tenant import models
 from utils.custom_exceptions import CustomError
@@ -7,13 +10,12 @@ from django.contrib.auth import get_user_model
 from ..models import user as user_models
 from account.models import auth as  user_auth_models
 from django.shortcuts import get_object_or_404
-import os
+from ..models import auth as auth_related_models
 from account.serializers import user as user_related_serializer
 from django.utils.encoding import force_str,force_bytes
 from django.utils.http import urlsafe_base64_encode,urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from account.task import send_forgot_password_mail
-import threading
 User = get_user_model()
 WEBSITEURL = os.environ['websiteurl']
 
@@ -111,79 +113,157 @@ class CreateAlumniSerializers(serializers.ModelSerializer):
             raise serializers.ValidationError({'key':_})
         # return super().create(validated_data)
 
+
+from rest_framework import serializers
+from .exceptions import CustomError
+
 class CreateExcoRole(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    name  = serializers.CharField()
+    name = serializers.CharField()
     about = serializers.CharField()
-    can_upload_min = serializers.BooleanField()
-    member_id = serializers.IntegerField(required=False)
-    is_remove_member = serializers.BooleanField(required=False)
-    chapter_id = serializers.IntegerField(read_only=True)
-
-
+    can_upload_min = serializers.BooleanField(default=False)
+    member_ids = serializers.ListField(child=serializers.IntegerField(), required=False)
+    is_remove_member = serializers.BooleanField(required=False, default=False)
+    chapter_id = serializers.IntegerField(required=False)
 
     def create(self, validated_data):
-        name  = validated_data.get('name')
-        about =validated_data.get('about')
-        can_upload_min = validated_data.get('can_upload_min',False)
+        name = validated_data.get('name')
+        about = validated_data.get('about')
+        can_upload_min = validated_data.get('can_upload_min', False)
+        chapter_id = validated_data.get('chapter_id')
+        member_ids = validated_data.get('member_ids', [])
 
-        "an exco postion can be for a chapter or global... global exco has None in their chapter column"
-        chapter =None#it only super_user that can create a global exco
-        if(self.context.get('request').user.user_type=='admin'):
-            "if this person creating the role is an admin then the role is for that admins chaper..."
-            chapter=self.context.get('request').user.chapter
-        print({'chapter':chapter})
+        chapter = None
+        if self.context.get('request').user.user_type == 'admin':
+            chapter = self.context.get('request').user.chapter
+
+        if chapter_id:
+            chapter = get_object_or_404(auth_related_models.Chapters, id=chapter_id)
+
         exco_role = user_models.ExcoRole.objects.create(
-            name=name,about=about,can_upload_min=can_upload_min,
-            chapter = chapter
+            name=name, about=about, can_upload_min=can_upload_min, chapter=chapter
         )
+
+        if member_ids:
+            for member_id in member_ids:
+                member = get_object_or_404(user_models.Memeber, id=member_id)
+                member.is_exco = True
+                member.save()
+                exco_role.member.add(member)
+
         exco_role.save()
         return exco_role
+
     def validate(self, attrs):
-        "here we doing all validation and incase the member_id was sent we wounld include the member in it"
-        if not  attrs.get('member_id',None):
-            if user_models.Memeber.objects.all().filter(id= attrs.get('member_id')).exists():
-                raise CustomError({"error":"this member doesn't exists"})
+        member_ids = attrs.get('member_ids', [])
+        for member_id in member_ids:
+            if not user_models.Memeber.objects.filter(id=member_id).exists():
+                raise CustomError({"error": f"Member with id {member_id} doesn't exist"})
         return super().validate(attrs)
 
     def update(self, instance, validated_data):
+        member_ids = validated_data.get('member_ids', [])
+        is_remove_member = validated_data.get('is_remove_member', False)
 
-        member_id = validated_data.get('member_id',None)
-        if validated_data.get("is_remove_member",None):#this means u want to remove a member from this role
-            member = get_object_or_404(user_models.Memeber,id=member_id)
-            member.is_exco=False
-            member.save()
-            instance.member.remove(member)
-            instance.save()
+        if is_remove_member:
+            for member_id in member_ids:
+                member = get_object_or_404(user_models.Memeber, id=member_id)
+                member.is_exco = False
+                member.save()
+                instance.member.remove(member)
         else:
-            previous_member =None
-
-            if member_id:#this means this admin wants add this member as an exco
-                member = get_object_or_404(user_models.Memeber,id=member_id)
+            for member_id in member_ids:
+                member = get_object_or_404(user_models.Memeber, id=member_id)
 
                 if instance.chapter is not None:
-                    if member.user.chapter is None: raise CustomError({"chapter":'member does not belong to a chapter yet'})
-                    if instance.chapter.id !=member.user.chapter.id:
-                        raise CustomError({'chapter':f'member does not belong to {instance.chapter.name} chapter'})
-                # if instance.member.count() !=0 :
-                #     if instance.member.id !=member_id:
-                #         'this means we are setting a new member we have to set the previous_member exco to fals'
+                    if member.user.chapter is None:
+                        raise CustomError({"chapter": 'Member does not belong to a chapter yet'})
+                    if instance.chapter.id != member.user.chapter.id:
+                        raise CustomError({'chapter': f'Member does not belong to {instance.chapter.name} chapter'})
 
-                #         previous_member_id=instance.member.id 
-                #         previous_member = user_models.Memeber.objects.get(id=previous_member_id)
-                #         previous_member.is_exco=False
-                #         previous_member.save()
-                member.is_exco=True 
+                member.is_exco = True
                 member.save()
-                instance.member.add( member)
-        validated_data.get('name',instance.name)
-        instance.name= validated_data.get('name',instance.name)
-        instance.about= validated_data.get('about',instance.about)
-        instance.can_upload_min= validated_data.get('can_upload_min',instance.can_upload_min)
+                instance.member.add(member)
 
-    
+        instance.name = validated_data.get('name', instance.name)
+        instance.about = validated_data.get('about', instance.about)
+        instance.can_upload_min = validated_data.get('can_upload_min', instance.can_upload_min)
         instance.save()
         return instance
+
+# class CreateExcoRole(serializers.Serializer):
+#     id = serializers.IntegerField(read_only=True)
+#     name  = serializers.CharField()
+#     about = serializers.CharField()
+#     can_upload_min = serializers.BooleanField()
+#     member_id = serializers.IntegerField(required=False)
+#     is_remove_member = serializers.BooleanField(required=False)
+#     chapter_id = serializers.IntegerField(read_only=True)
+
+#     def create(self, validated_data):
+#         name  = validated_data.get('name')
+#         about =validated_data.get('about')
+#         can_upload_min = validated_data.get('can_upload_min',False)
+
+#         "an exco postion can be for a chapter or global... global exco has None in their chapter column"
+#         chapter =None #it only super_user that can create a global exco
+#         if(self.context.get('request').user.user_type == 'admin'):
+#             "if this person creating the role is an admin then the role is for that admins chaper..."
+#             chapter=self.context.get('request').user.chapter
+
+#         print({'chapter':chapter})
+#         exco_role = user_models.ExcoRole.objects.create(
+#             name=name,about=about,can_upload_min=can_upload_min,
+#             chapter = chapter
+#         )
+#         exco_role.save()
+#         return exco_role
+
+#     def validate(self, attrs):
+#         "here we doing all validation and incase the member_id was sent we wounld include the member in it"
+#         if not  attrs.get('member_id',None):
+#             if user_models.Memeber.objects.all().filter(id= attrs.get('member_id')).exists():
+#                 raise CustomError({"error":"this member doesn't exists"})
+#         return super().validate(attrs)
+
+#     def update(self, instance, validated_data):
+
+#         member_id = validated_data.get('member_id',None)
+#         if validated_data.get("is_remove_member",None):#this means u want to remove a member from this role
+#             member = get_object_or_404(user_models.Memeber,id=member_id)
+#             member.is_exco=False
+#             member.save()
+#             instance.member.remove(member)
+#             instance.save()
+#         else:
+#             previous_member =None
+
+#             if member_id:#this means this admin wants add this member as an exco
+#                 member = get_object_or_404(user_models.Memeber,id=member_id)
+
+#                 if instance.chapter is not None:
+#                     if member.user.chapter is None: raise CustomError({"chapter":'member does not belong to a chapter yet'})
+#                     if instance.chapter.id !=member.user.chapter.id:
+#                         raise CustomError({'chapter':f'member does not belong to {instance.chapter.name} chapter'})
+#                 # if instance.member.count() !=0 :
+#                 #     if instance.member.id !=member_id:
+#                 #         'this means we are setting a new member we have to set the previous_member exco to fals'
+
+#                 #         previous_member_id=instance.member.id 
+#                 #         previous_member = user_models.Memeber.objects.get(id=previous_member_id)
+#                 #         previous_member.is_exco=False
+#                 #         previous_member.save()
+#                 member.is_exco=True 
+#                 member.save()
+#                 instance.member.add( member)
+#         validated_data.get('name',instance.name)
+#         instance.name= validated_data.get('name',instance.name)
+#         instance.about= validated_data.get('about',instance.about)
+#         instance.can_upload_min= validated_data.get('can_upload_min',instance.can_upload_min)
+
+    
+#         instance.save()
+#         return instance
 
            
 

@@ -95,7 +95,7 @@ class CreateAnyAdminType(viewsets.ViewSet):
             "user_type":user.user_type
         }],status_code=status.HTTP_201_CREATED)
 
-class ManageAssigningExos(viewsets.ViewSet):
+class ManageAssigningExcos(viewsets.ViewSet):
     # permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdmin]
     permission_classes = [permissions.IsAuthenticated,]#chnage to admin late
 
@@ -105,14 +105,15 @@ class ManageAssigningExos(viewsets.ViewSet):
         else:
             self.permission_classes=[permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]
         return super(ManageAssigningExos,self).get_permissions()
+
     def create(self,request,format=None):
         'here admin can create more exco postion type'
         serialized = user_serializer.CreateExcoRole(data=request.data,context={'request':request})
 
         serialized.is_valid(raise_exception=True)
         data =serialized.save()
-        clead_data = user_serializer.CreateExcoRole(data,many=False)
-        return custom_response.Success_response(msg='Exco Role created successfully',data=[clead_data.data],status_code=status.HTTP_201_CREATED)
+        # clead_data = user_serializer.CreateExcoRole(data,many=False)
+        return custom_response.Success_response(msg='Exco Role created successfully',data=[],status_code=status.HTTP_201_CREATED)
 
     def partial_update(self, request, pk=None):
         if not user_models.ExcoRole.objects.filter(id=pk).exists():
@@ -140,7 +141,7 @@ class ManageAssigningExos(viewsets.ViewSet):
         for member in exco_members:
             member.is_exco = False
             member.save()
-        return custom_response.Success_response(msg='Deleted exco role. Kindly relieve any member ',data=[],status_code =status.HTTP_204_NO_CONTENT)
+        return custom_response.Success_response(msg='Deleted exco role.',data=[],status_code =status.HTTP_204_NO_CONTENT)
 
 class AdminRelatedViews(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]#chnage to admin late
