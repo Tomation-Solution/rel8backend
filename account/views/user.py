@@ -144,6 +144,13 @@ class ManageAssigningExcos(viewsets.ViewSet):
 class ListExcoRolesView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
+
+        exco_role_id = request.query_params.get('exco_role_id', None)
+        if exco_role_id is not None:
+            data = user_models.ExcoRole.objects.get(id=exco_role_id)
+            clean_data = user_serializer.ExcoRoleSerializer(data,many=False)
+            return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
+
         data = user_models.ExcoRole.objects.all()
         clean_data = user_serializer.ExcoRoleSerializer(data,many=True)
         return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
