@@ -291,7 +291,7 @@ class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
     member = serializers.SerializerMethodField(read_only=True)
 
     def get_member(self, obj):
-        return obj.user__memeber.name or obj.user__memeber.user.email
+        return obj.user.memeber.name or obj.user.email
 
     class Meta:
         model =models.EventDue_User
