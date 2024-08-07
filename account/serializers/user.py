@@ -114,9 +114,9 @@ class CreateAlumniSerializers(serializers.ModelSerializer):
         # return super().create(validated_data)
 
 class ExcoRoleSerializer(serializers.ModelSerializer):
-    members = serializers.SerializerMethodField(read_only=True)
+    member = serializers.SerializerMethodField(read_only=True)
 
-    def get_members(self, obj):
+    def get_member(self, obj):
         return [member.name for member in obj.member.all()]
 
     class Meta:
