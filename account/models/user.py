@@ -195,7 +195,7 @@ class UserMemberInfo(models.Model):
 
     
 class ExcoRole(models.Model):
-    member = models.ManyToManyField(Memeber,) 
+    member = models.ManyToManyField(Memeber) 
     name = models.CharField(max_length=500)
     about = models.TextField(default=' ')
     can_upload_min= models.BooleanField(default=False)#this means "can upload minute & Report in the exco insights/archieve"

@@ -130,27 +130,17 @@ class ManageAssigningExos(viewsets.ViewSet):
         return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
     
     def destroy(self,request, pk=None):
-        if not user_models.ExcoRole.objects.filter(id=pk).exists():
+        try:
+            instance = user_models.ExcoRole.objects.get(id=pk)
+        except user_models.ExcoRole.DoesNotExist:
             raise CustomError({'exco_role':'This Role does not exist or must have been deleted'})
-        instance = user_models.ExcoRole.objects.get(id=pk)
-        exco_memeber_id = instance.member.id
-
+        
+        exco_members = instance.member.all()
         instance.delete()
-        if exco_memeber_id is not None:
-            "we just checking if there is a exco memeber here if there is one we have to remove the exco badge from him/her"
-            try:
-                "so we would not have a error what if this user has been deleted we dont want to even find out we just pass it"
-                d = user_models.Memeber.objects.get(id=exco_memeber_id)
-                d.is_exco=False
-                d.save()
-            except:pass 
-            
-        return custom_response.Success_response(msg='Deleted',data=[],status_code =status.HTTP_204_NO_CONTENT)
-
-    
-    # @action(detail=False,methods=['post'])
-    # def remove_excorole_from_member(self,request, pk=None):
-    #     "think of it like unseating memers from a certain role"
+        for member in exco_members:
+            member.is_exco = False
+            member.save()
+        return custom_response.Success_response(msg='Deleted exco role. Kindly relieve any member ',data=[],status_code =status.HTTP_204_NO_CONTENT)
 
 class AdminRelatedViews(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]#chnage to admin late
