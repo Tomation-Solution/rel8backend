@@ -70,7 +70,7 @@ class AdminManagesProjectSerializer(serializers.ModelSerializer):
 
 class MemberSupportProjectInKindSerializer(serializers.ModelSerializer):
 
-    member = seriailizers.SerializerMethodField(write_only=True)
+    member = serializers.SerializerMethodField(write_only=True)
 
     def get_member(self, obj):
         return obj.member.name
@@ -80,7 +80,7 @@ class MemberSupportProjectInKindSerializer(serializers.ModelSerializer):
         fields = ['heading','about','project','delivery_date', 'member']
 
 class MemberSupportProjectInCashSerializer(serializers.ModelSerializer):
-    member = seriailizers.SerializerMethodField(write_only=True)
+    member = serializers.SerializerMethodField(write_only=True)
 
     def get_member(self, obj):
         return obj.member.name
@@ -90,7 +90,7 @@ class MemberSupportProjectInCashSerializer(serializers.ModelSerializer):
         fields = ['member', 'amount','member_remark','project','is_paid', 'paystack_key']
 
 class MemeberCustomerSupporSerializer(serializers.ModelSerializer):
-    member = seriailizers.SerializerMethodField(write_only=True)
+    member = serializers.SerializerMethodField(write_only=True)
 
     def get_member(self, obj):
         return obj.member.name
@@ -103,11 +103,11 @@ class MemeberCustomerSupporSerializer(serializers.ModelSerializer):
 
 class MemberPersonalGallerySerializer(serializers.ModelSerializer):
 
-    member = seriailizers.SerializerMethodField(write_only=True)
+    member = serializers.SerializerMethodField(write_only=True)
 
     def get_member(self, obj):
         return obj.member.name
-        
+
     class Meta:
         model = models.MemberPersonalGallery
         fields =['photo_file','id','member']
