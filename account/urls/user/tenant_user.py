@@ -21,5 +21,5 @@ urlpatterns = [
     path('get_membershipgrade/',user_view.get_membershipgrade,name='get_membershipgrade'),
     path('chapters', user_view.GetExistingChapters.as_view(), name="get_existing_chapters"),
     path('exco_roles', user_view.ListExcoRolesView.as_view(), name='get_exco_roles'),
-    path('exco_roles/remove_membber', user_view.RemoveMemberFromExcoRoleView.as_view(), name="remove_membber")
+    path('exco_roles/remove_member', user_view.RemoveMemberFromExcoRoleView.as_view(), name="remove_member")
 ] +router.urls
