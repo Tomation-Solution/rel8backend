@@ -129,9 +129,11 @@ class EventViewSet(viewsets.ViewSet):
         if not event_id:
             raise CustomError(message="Required event_id query", status_code=400)
 
-        event = get_object_or_404(models.Event,id=event_id)
-        event_due_user = models.EventDue_User.objects.filter(event=event)
-        clean_data = serializers.RegisteredEventMembersSerializerCleaner(instance=event_due_user,many=True)
+        # event = get_object_or_404(models.Event,id=event_id)
+        # event_due_user = models.EventDue_User.objects.filter(event=event)
+        event_due_users = models.EventDue_User.objects.filter(event__id=event_id)
+
+        clean_data = serializers.RegisteredEventMembersSerializerCleaner(instance=event_due_users,many=True)
         
         return custom_response.Success_response('Success',data=clean_data.data,status_code=status.HTTP_200_OK)
 
