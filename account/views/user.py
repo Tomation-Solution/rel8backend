@@ -22,6 +22,9 @@ from utils.custom_parsers import NestedMultipartParser
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
 from ..serializers import auth as auth_serializer
+from rest_framework.response import Response
+from django.db import transaction
+
 # from
 
 
@@ -155,6 +158,36 @@ class ListExcoRolesView(APIView):
         exco_roles = user_models.ExcoRole.objects.all()
         serializer = user_serializer.ExcoRoleSerializer(exco_roles, many=True)
         return custom_response.Success_response(msg='Success', data=serializer.data, status_code=status.HTTP_200_OK)
+
+
+
+class RemoveMemberFromExcoRoleView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        member_name = request.data.get('member_name', None)
+        
+        if member_name is None:
+            return Response({'error': 'Member name is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            try:
+                # Find the member with the given name
+                member = user_models.Memeber.objects.get(name=member_name)
+            except user_models.Memeber.DoesNotExist:
+                return Response({'error': 'Member not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            # Find ExcoRoles where the member is associated
+            exco_roles = user_models.ExcoRole.objects.filter(member=member)
+            
+            if not exco_roles.exists():
+                return Response({'message': 'No ExcoRoles found for the given member.'}, status=status.HTTP_404_NOT_FOUND)
+
+            # Remove the member from all associated ExcoRoles
+            for exco_role in exco_roles:
+                exco_role.member.remove(member)
+
+            return Response({'message': 'Member successfully removed from ExcoRoles.'}, status=status.HTTP_200_OK)
 
 
 class AdminRelatedViews(viewsets.ViewSet):
