@@ -96,15 +96,12 @@ class CreateAnyAdminType(viewsets.ViewSet):
         }],status_code=status.HTTP_201_CREATED)
 
 class ManageAssigningExcos(viewsets.ViewSet):
-    # permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdmin]
-    permission_classes = [permissions.IsAuthenticated,]#chnage to admin late
-
     def get_permissions(self):
         if self.request.method == 'GET':
             self.permission_classes =  [permissions.IsAuthenticated]
         else:
             self.permission_classes=[permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]
-        return super(ManageAssigningExos,self).get_permissions()
+        return super(ManageAssigningExcos,self).get_permissions()
 
     def create(self,request,format=None):
         'here admin can create more exco postion type'
