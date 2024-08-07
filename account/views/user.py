@@ -162,7 +162,7 @@ class ListExcoRolesView(APIView):
 
 
 class RemoveMemberFromExcoRoleView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [custom_permissions.IsAdminOrSuperAdmin]
 
     def post(self, request, *args, **kwargs):
         member_name = request.data.get('member_name', None)
