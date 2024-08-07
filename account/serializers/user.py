@@ -114,8 +114,6 @@ class CreateAlumniSerializers(serializers.ModelSerializer):
         # return super().create(validated_data)
 
 
-from rest_framework import serializers
-from .exceptions import CustomError
 
 class CreateExcoRole(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
