@@ -102,26 +102,6 @@ class EventViewSet(viewsets.ViewSet):
             return self.queryset.filter(chapters=user_chapter)
         return self.queryset.filter(chapters=None)
 
-    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
-    def list_of_register_members(self, request, format=None):
-        event_id = request.query_params.get('event_id', None)
-        if event_id is None:
-            raise CustomError({'error': 'Event was not provided'})
-        
-        with transaction.atomic():
-
-            # Filter EventDue_User instances by event_id and retrieve member IDs
-            members = models.EventDue_User.objects.filter(event__id=event_id).values_list('user__memeber', flat=True)
-
-            # Filter Member instances by the retrieved member IDs
-            list_of_member_instance = user_related_models.Memeber.objects.filter(id__in=members)
-
-            # Serialize the members to get only name and email
-            data = [{'name': member.name, 'email': member.user.email} for member in list_of_member_instance]
-
-            return custom_response.Success_response(msg='Success', data=data, status_code=200)
-
-        # models.EventDue_User.objects.filter
     @action(detail=False,methods=['get'],permission_classes=[custom_permission.IsAdminOrSuperAdmin])
     def view_member_attendees(self,request,*args,**kwargs):
         event_id =  request.query_params.get('event_id',None)
@@ -129,13 +109,12 @@ class EventViewSet(viewsets.ViewSet):
         if not event_id:
             raise CustomError(message="Required event_id query", status_code=400)
 
-        # event = get_object_or_404(models.Event,id=event_id)
-        # event_due_user = models.EventDue_User.objects.filter(event=event)
-        event_due_users = models.EventDue_User.objects.filter(event__id=event_id)
+        with transaction.atomic():
+            event_due_users = models.EventDue_User.objects.filter(event__id=event_id)
 
-        clean_data = serializers.RegisteredEventMembersSerializerCleaner(instance=event_due_users,many=True)
-        
-        return custom_response.Success_response('Success',data=clean_data.data,status_code=status.HTTP_200_OK)
+            clean_data = serializers.RegisteredEventMembersSerializerCleaner(instance=event_due_users,many=True)
+            
+            return custom_response.Success_response('Success',data=clean_data.data,status_code=status.HTTP_200_OK)
 
     @action(detail=False,methods=['post'],permission_classes=[permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin])
     def activate_event(self,request,format =None):
