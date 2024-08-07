@@ -13,6 +13,8 @@ from account.serializers import user as user_related_serializer
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework import status
+from django.db import transaction
+
 # pagination.py
 from rest_framework.pagination import PageNumberPagination
 
@@ -101,23 +103,25 @@ class EventViewSet(viewsets.ViewSet):
             return self.queryset.filter(chapters=user_chapter)
         return self.queryset.filter(chapters=None)
 
-    @action(detail=False,methods=['get'],permission_classes=[permissions.IsAuthenticated])
-    def list_of_register_members(self,request,format=None):
-        event_id= request.query_params.get('event_id',None)
-        if event_id is None:raise CustomError({'error':'Event was not provided'})
-        # event = models.Event.objects.get(id=event_id)
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def list_of_register_members(self, request, format=None):
+        event_id = request.query_params.get('event_id', None)
+        if event_id is None:
+            raise CustomError({'error': 'Event was not provided'})
         
-        members = models.EventDue_User.objects.filter(event__id=event_id).values('user__memeber')
+        with transaction.atomic():
 
-        def filter_member(member_id):
-            return member_id.get('user__memeber')
+            # Filter EventDue_User instances by event_id and retrieve member IDs
+            members = models.EventDue_User.objects.filter(event__id=event_id).values_list('user__member', flat=True)
 
-        list_of_member_id = list(map(filter_member,members))
-        
-        list_of_member_instance = user_related_models.Memeber.objects.filter(id__in=list_of_member_id )
-        data = user_related_serializer.MemberSerializer(list_of_member_instance,many=True)
+            # Filter Member instances by the retrieved member IDs
+            list_of_member_instance = user_related_models.Memeber.objects.filter(id__in=members)
 
-        return custom_response.Success_response('Succes',data=data.data,status_code=status.HTTP_200_OK)
+            # Serialize the members to get only name and email
+            data = [{'name': member.name, 'email': member.email} for member in list_of_member_instance]
+
+            return custom_response.Success_response(msg='Success', data=data, status_code=200)
+
 
         # models.EventDue_User.objects.filter
     @action(detail=False,methods=['get'],permission_classes=[custom_permission.IsAdminOrSuperAdmin])

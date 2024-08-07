@@ -288,7 +288,11 @@ class RegiterForFreeEvent(serializers.Serializer):
 
 
 class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
+    member = serializers.SerializerMethodField(read_only=True)
 
+    def get_member(self, obj):
+        return obj.user.email
+        
     class Meta:
         model =models.EventDue_User
         fields = "__all__"
