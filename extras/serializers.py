@@ -60,10 +60,6 @@ class TicketingSerializer(serializers.ModelSerializer):
         model = models.Ticketing
         fields = "__all__"
 
-
-
-
-
 class AdminManagesProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -74,26 +70,44 @@ class AdminManagesProjectSerializer(serializers.ModelSerializer):
 
 class MemberSupportProjectInKindSerializer(serializers.ModelSerializer):
 
+    member = seriailizers.SerializerMethodField(write_only=True)
+
+    def get_member(self, obj):
+        return obj.member.name
+
     class Meta:
         model = models.SupportProjectInKind
-        fields = ['heading','about','project','delivery_date']
+        fields = ['heading','about','project','delivery_date', 'member']
 
 class MemberSupportProjectInCashSerializer(serializers.ModelSerializer):
+    member = seriailizers.SerializerMethodField(write_only=True)
+
+    def get_member(self, obj):
+        return obj.member.name
 
     class Meta:
         model = models.SupportProjectInCash
-        fields = ['amount','member_remark','project','is_paid', 'paystack_key']
+        fields = ['member', 'amount','member_remark','project','is_paid', 'paystack_key']
 
 class MemeberCustomerSupporSerializer(serializers.ModelSerializer):
+    member = seriailizers.SerializerMethodField(write_only=True)
+
+    def get_member(self, obj):
+        return obj.member.name
 
     class Meta:
         model = models.CustomerSupport
         fields = ['heading','body','status','id']
+
         read_only_fields=['member','status','id',]
 
 class MemberPersonalGallerySerializer(serializers.ModelSerializer):
 
+    member = seriailizers.SerializerMethodField(write_only=True)
 
+    def get_member(self, obj):
+        return obj.member.name
+        
     class Meta:
         model = models.MemberPersonalGallery
         fields =['photo_file','id','member']

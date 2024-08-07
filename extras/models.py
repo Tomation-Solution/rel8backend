@@ -5,10 +5,9 @@ from datetime  import date
 
 
 class MemberPersonalGallery(models.Model):
-        photo_file = models.ImageField(upload_to="gallery_personal/")
-        member =  models.ForeignKey(user_realted_models.Memeber,on_delete=models.CASCADE,null=True,default=None)
+    photo_file = models.ImageField(upload_to="gallery_personal/")
+    member =  models.ForeignKey(user_realted_models.Memeber,on_delete=models.CASCADE,null=True,default=None)
     
-
 
 class Gallery(models.Model):
     link = models.TextField()
@@ -53,7 +52,6 @@ class SupportProjectInCash(models.Model):
     paystack_key = models.TextField(default='')
     is_paid = models.BooleanField(default=False)
     project = models.ForeignKey(FundAProject,null=True,default=True,on_delete=models.CASCADE)
-    # remark = models.TextField(default='remark',)
     member_remark = models.TextField(default='Will donate')
 
 class SupportProjectInKind(models.Model):
