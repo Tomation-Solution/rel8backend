@@ -120,7 +120,7 @@ class ExcoRoleSerializer(serializers.ModelSerializer):
         return [member.name for member in obj.member.all()]
 
     class Meta:
-        model = ExcoRole
+        model = user_models.ExcoRole
         fields = '__all__'
 
 class CreateExcoRole(serializers.Serializer):
@@ -144,14 +144,14 @@ class CreateExcoRole(serializers.Serializer):
             chapter = self.context.get('request').user.chapter
 
         if chapter_id:
-            chapter = get_object_or_404(Chapters, id=chapter_id)
+            chapter = get_object_or_404(auth_related_models.Chapters, id=chapter_id)
 
-        exco_role = ExcoRole.objects.create(
+        exco_role = user_models.ExcoRole.objects.create(
             name=name, about=about, can_upload_min=can_upload_min, chapter=chapter
         )
         if member_ids:
             for member_id in member_ids:
-                member = get_object_or_404(Memeber, id=member_id)
+                member = get_object_or_404(user_models.Memeber, id=member_id)
                 member.is_exco = True
                 member.save()
                 exco_role.member.add(member)
@@ -162,7 +162,7 @@ class CreateExcoRole(serializers.Serializer):
     def validate(self, attrs):
         member_ids = attrs.get('member_ids', [])
         for member_id in member_ids:
-            if not Memeber.objects.filter(id=member_id).exists():
+            if not user_models.Memeber.objects.filter(id=member_id).exists():
                 raise CustomError({"error": f"Member with id {member_id} doesn't exist"})
         return super().validate(attrs)
 
@@ -172,13 +172,13 @@ class CreateExcoRole(serializers.Serializer):
 
         if is_remove_member:
             for member_id in member_ids:
-                member = get_object_or_404(Memeber, id=member_id)
+                member = get_object_or_404(user_models.Memeber, id=member_id)
                 member.is_exco = False
                 member.save()
                 instance.member.remove(member)
         else:
             for member_id in member_ids:
-                member = get_object_or_404(Memeber, id=member_id)
+                member = get_object_or_404(user_models.Memeber, id=member_id)
 
                 if instance.chapter is not None:
                     if member.user.chapter is None:
