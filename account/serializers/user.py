@@ -114,10 +114,10 @@ class CreateAlumniSerializers(serializers.ModelSerializer):
         # return super().create(validated_data)
 
 class ExcoRoleSerializer(serializers.ModelSerializer):
-    # members = serializers.SerializerMethodField(read_only=True)
+    members = serializers.SerializerMethodField(read_only=True)
 
-    # def get_members(self, obj):
-    #     return [{"exco_name": member.name} for member in obj.member.all()]
+    def get_members(self, obj):
+        return [member.name for member in obj.member.all()]
 
     class Meta:
         model = user_models.ExcoRole
@@ -149,12 +149,11 @@ class CreateExcoRole(serializers.Serializer):
         exco_role = user_models.ExcoRole.objects.create(
             name=name, about=about, can_upload_min=can_upload_min, chapter=chapter
         )
-        if member_ids:
-            for member_id in member_ids:
-                member = get_object_or_404(user_models.Memeber, id=member_id)
-                member.is_exco = True
-                member.save()
-                exco_role.member.add(member)
+        for member_id in member_ids:
+            member = get_object_or_404(user_models.Memeber, id=member_id)
+            member.is_exco = True
+            member.save()
+            exco_role.member.add(member)
 
         exco_role.save()
         return exco_role
@@ -544,15 +543,29 @@ class userInfoSerializer(serializers.Serializer):
     name = serializers.CharField()
     value = serializers.CharField()
     id = serializers.IntegerField()
+
+
 class AdminUpdateMemberInfoCleaner(serializers.Serializer):
     user_info = userInfoSerializer(many=True)
+
+    # def update(self, instance, validated_data):
+    #     user_info = validated_data.get('user_info')
+        
+    #     for eachinfo in user_info:
+    #         user_models.UserMemberInfo.objects.filter(id=eachinfo.get('id')).update(value=eachinfo.get('value'))
+    #     return dict()
 
     def update(self, instance, validated_data):
         user_info = validated_data.get('user_info')
         
         for eachinfo in user_info:
-            user_models.UserMemberInfo.objects.filter(id=eachinfo.get('id')).update(value=eachinfo.get('value'))
-        return dict()
+            user_member_info = user_models.UserMemberInfo.objects.filter(id=eachinfo.get('id')).first()
+            if user_member_info:
+                user_member_info.value = eachinfo.get('value')
+                user_member_info.save()
+        
+        # Returning the instance to follow the convention of update methods
+        return instance
     
 
 
