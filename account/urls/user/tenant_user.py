@@ -19,5 +19,6 @@ urlpatterns = [
     path('profile/',user_view.profile,name='profile'),
     path('council_members/<int:pk>/',user_view.council_members,name='council_members'),
     path('get_membershipgrade/',user_view.get_membershipgrade,name='get_membershipgrade'),
-    path('chapters', user_view.GetExistingChapters.as_view(), name="get_existing_chapters")
+    path('chapters', user_view.GetExistingChapters.as_view(), name="get_existing_chapters"),
+    path('exco_roles', user_view.ListExcoRolesView.as_view(), 'get_exco_roles')
 ] +router.urls

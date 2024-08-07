@@ -189,6 +189,17 @@ class CreateExcoRole(serializers.Serializer):
         instance.save()
         return instance
 
+class ExcoRoleSerializer(serializers.ModelSerializer):
+    members = serializers.SerializerMethodField(read_only=True)
+
+    def get_members(self, obj):
+        return [member.name for member in obj.member.all()]
+
+    class Meta:
+        model = user_models.ExcoRole
+        fields = '__all__'
+
+
 # class CreateExcoRole(serializers.Serializer):
 #     id = serializers.IntegerField(read_only=True)
 #     name  = serializers.CharField()

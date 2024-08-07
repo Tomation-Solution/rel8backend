@@ -122,10 +122,10 @@ class ManageAssigningExcos(viewsets.ViewSet):
         clean_data = user_serializer.CreateExcoRole(updated_instance,many=False)
         return custom_response.Success_response(msg='Exco Role Updated successfully',data=clean_data.data,status_code=status.HTTP_201_CREATED)
 
-    def list(self,request,format=None):
-        data = user_models.ExcoRole.objects.all()
-        clean_data = user_serializer.CreateExcoRole(data,many=True)
-        return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
+    # def list(self,request,format=None):
+    #     data = user_models.ExcoRole.objects.all()
+    #     clean_data = user_serializer.CreateExcoRole(data,many=True)
+    #     return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
     
     def destroy(self,request, pk=None):
         try:
@@ -139,6 +139,15 @@ class ManageAssigningExcos(viewsets.ViewSet):
             member.is_exco = False
             member.save()
         return custom_response.Success_response(msg='Deleted exco role.',data=[],status_code =status.HTTP_204_NO_CONTENT)
+
+
+class ListExcoRolesView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request):
+        data = user_models.ExcoRole.objects.all()
+        clean_data = user_serializer.ExcoRoleSerializer(data,many=True)
+        return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
+
 
 class AdminRelatedViews(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]#chnage to admin late
