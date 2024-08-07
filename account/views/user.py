@@ -122,10 +122,10 @@ class ManageAssigningExcos(viewsets.ViewSet):
         clean_data = user_serializer.CreateExcoRole(updated_instance,many=False)
         return custom_response.Success_response(msg='Exco Role Updated successfully',data=clean_data.data,status_code=status.HTTP_201_CREATED)
 
-    # def list(self,request,format=None):
-    #     data = user_models.ExcoRole.objects.all()
-    #     clean_data = user_serializer.CreateExcoRole(data,many=True)
-    #     return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
+    def list(self,request,format=None):
+        data = user_models.ExcoRole.objects.all()
+        clean_data = user_serializer.CreateExcoRole(data,many=True)
+        return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
     
     def destroy(self,request, pk=None):
         try:
