@@ -125,9 +125,9 @@ class ExcoRoleSerializer(serializers.ModelSerializer):
 
 class CreateExcoRole(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField()
-    about = serializers.CharField()
-    can_upload_min = serializers.BooleanField(default=False)
+    name = serializers.CharField(required=False)
+    about = serializers.CharField(required=False)
+    can_upload_min = serializers.BooleanField(required=False, default=False)
     member_ids = serializers.ListField(child=serializers.IntegerField(), required=False)
     is_remove_member = serializers.BooleanField(required=False, default=False)
     chapter_id = serializers.IntegerField(required=False)
