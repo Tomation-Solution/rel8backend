@@ -98,7 +98,78 @@ class CreateAnyAdminType(viewsets.ViewSet):
             "user_type":user.user_type
         }],status_code=status.HTTP_201_CREATED)
 
+# class ManageAssigningExcos(viewsets.ViewSet):
+#     def get_permissions(self):
+#         if self.request.method == 'GET':
+#             self.permission_classes =  [permissions.IsAuthenticated]
+#         else:
+#             self.permission_classes=[permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]
+#         return super(ManageAssigningExcos,self).get_permissions()
+
+#     def create(self,request,format=None):
+#         'here admin can create more exco postion type'
+#         serialized = user_serializer.CreateExcoRole(data=request.data,context={'request':request})
+
+#         serialized.is_valid(raise_exception=True)
+#         data =serialized.save()
+#         # clead_data = user_serializer.CreateExcoRole(data,many=False)
+#         return custom_response.Success_response(msg='Exco Role created successfully',data=[],status_code=status.HTTP_201_CREATED)
+
+#     def update(self, request, pk=None):
+#         queryset = ExcoRole.objects.all()
+#         exco_role = get_object_or_404(queryset, pk=pk)
+#         serializer = user_serializer.CreateExcoRole(instance=exco_role, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return custom_response.Success_response(msg="Sucess", data=serializer.data, status_code=201)
+#         return CustomError(message="Failed to save! Check the fields properly", status_code=400)
+
+#     def partial_update(self, request, pk=None):
+#         if not user_models.ExcoRole.objects.filter(id=pk).exists():
+#             raise CustomError({"error":"ExcoRole Does not exist"})
+#         chapter_id = request.data.get('chapter_id', None)
+#         member_ids = request.data.get('member_ids', [])
+#         new_chapter_instance = None
+#         if chapter_id is not None:
+#             try:
+#                 new_chapter_instance = auth_models.Chapters.objects.get(id=chapter_id)
+#             except auth_models.Chapters.DoesNotExist:
+#                 raise CustomError(message="Chapter is not found!", status_code=404)
+    
+#         if member_ids:
+#             members = user_models.Memeber.objects.filter(id__in=member_ids)
+#             request.data['member'] = members
+
+#         exco_role = user_models.ExcoRole.objects.get(id=pk)
+#         serialized = user_serializer.CreateExcoRole(instance=exco_role,data=request.data,context={"request":request, "chapter": new_chapter_instance})
+#         serialized.is_valid(raise_exception=True)
+#         updated_instance =serialized.save()
+#         clean_data = user_serializer.CreateExcoRole(updated_instance,many=False)
+#         return custom_response.Success_response(msg='Exco Role Updated successfully',data=clean_data.data,status_code=status.HTTP_201_CREATED)
+
+#     def list(self,request,format=None):
+#         data = user_models.ExcoRole.objects.all()
+#         clean_data = user_serializer.CreateExcoRole(data,many=True)
+#         return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
+    
+#     def destroy(self,request, pk=None):
+#         try:
+#             instance = user_models.ExcoRole.objects.get(id=pk)
+#         except user_models.ExcoRole.DoesNotExist:
+#             raise CustomError({'exco_role':'This Role does not exist or must have been deleted'})
+        
+#         exco_members = instance.member.all()
+#         instance.delete()
+#         for member in exco_members:
+#             member.is_exco = False
+#             member.save()
+#         return custom_response.Success_response(msg='Deleted exco role.',data=[],status_code =status.HTTP_204_NO_CONTENT)
+
 class ManageAssigningExcos(viewsets.ViewSet):
+    """
+    A ViewSet for CRUD operations on ExcoRole model.
+    """
+
     def get_permissions(self):
         if self.request.method == 'GET':
             self.permission_classes =  [permissions.IsAuthenticated]
@@ -106,50 +177,83 @@ class ManageAssigningExcos(viewsets.ViewSet):
             self.permission_classes=[permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]
         return super(ManageAssigningExcos,self).get_permissions()
 
-    def create(self,request,format=None):
-        'here admin can create more exco postion type'
-        serialized = user_serializer.CreateExcoRole(data=request.data,context={'request':request})
+    def list(self, request):
+        """
+        Retrieve all ExcoRole instances.
+        """
+        queryset = user_models.ExcoRole.objects.all()
+        serializer = user_serializer.CreateExcoRoleSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        serialized.is_valid(raise_exception=True)
-        data =serialized.save()
-        # clead_data = user_serializer.CreateExcoRole(data,many=False)
-        return custom_response.Success_response(msg='Exco Role created successfully',data=[],status_code=status.HTTP_201_CREATED)
+    def create(self, request):
+        """
+        Create a new ExcoRole instance.
+        """
+        serializer = user_serializer.CreateExcoRoleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        exco_role = serializer.save()
+
+        # Handle member associations
+        member_ids = request.data.get('member_ids', [])
+        for member_id in member_ids:
+            member = get_object_or_404(user_models.Memeber, id=member_id)
+            exco_role.member.add(member)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, pk=None):
+        """
+        Retrieve a specific ExcoRole instance by ID.
+        """
+        exco_role = get_object_or_404(user_models.ExcoRole, pk=pk)
+        serializer = user_serializer.CreateExcoRoleSerializer(exco_role)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def update(self, request, pk=None):
+        """
+        Update an existing ExcoRole instance.
+        """
+        exco_role = get_object_or_404(user_models.ExcoRole, pk=pk)
+        serializer = user_serializer.CreateExcoRoleSerializer(exco_role, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        exco_role = serializer.save()
+
+        # Handle member associations
+        member_ids = request.data.get('member_ids', [])
+        exco_role.member.clear()
+        for member_id in member_ids:
+            member = get_object_or_404(user_models.Memeber, id=member_id)
+            exco_role.member.add(member)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def partial_update(self, request, pk=None):
-        if not user_models.ExcoRole.objects.filter(id=pk).exists():
-            raise CustomError({"error":"ExcoRole Does not exist"})
-        chapter_id = request.data.get('chapter_id', None)
-        new_chapter_instance = None
-        if chapter_id is not None:
-            try:
-                new_chapter_instance = auth_models.Chapters.objects.get(id=chapter_id)
-            except auth_models.Chapters.DoesNotExist:
-                raise CustomError(message="Chapter is not found!", status_code=404)
+        """
+        Partially update an existing ExcoRole instance.
+        """
+        exco_role = get_object_or_404(user_models.ExcoRole, pk=pk)
+        serializer = user_serializer.CreateExcoRoleSerializer(exco_role, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        exco_role = serializer.save()
 
-        exco_role = user_models.ExcoRole.objects.get(id=pk)
-        serialized = user_serializer.CreateExcoRole(instance=exco_role,data=request.data,context={"request":request, "chapter": new_chapter_instance})
-        serialized.is_valid(raise_exception=True)
-        updated_instance =serialized.save()
-        clean_data = user_serializer.CreateExcoRole(updated_instance,many=False)
-        return custom_response.Success_response(msg='Exco Role Updated successfully',data=clean_data.data,status_code=status.HTTP_201_CREATED)
+        # Handle member associations if provided
+        member_ids = request.data.get('member_ids', None)
+        if member_ids is not None:
+            exco_role.member.clear()
+            for member_id in member_ids:
+                member = get_object_or_404(Member, id=member_id)
+                exco_role.member.add(member)
 
-    def list(self,request,format=None):
-        data = user_models.ExcoRole.objects.all()
-        clean_data = user_serializer.CreateExcoRole(data,many=True)
-        return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
-    
-    def destroy(self,request, pk=None):
-        try:
-            instance = user_models.ExcoRole.objects.get(id=pk)
-        except user_models.ExcoRole.DoesNotExist:
-            raise CustomError({'exco_role':'This Role does not exist or must have been deleted'})
-        
-        exco_members = instance.member.all()
-        instance.delete()
-        for member in exco_members:
-            member.is_exco = False
-            member.save()
-        return custom_response.Success_response(msg='Deleted exco role.',data=[],status_code =status.HTTP_204_NO_CONTENT)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def destroy(self, request, pk=None):
+        """
+        Delete an existing ExcoRole instance.
+        """
+        exco_role = get_object_or_404(user_models.ExcoRole, pk=pk)
+        exco_role.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class ListExcoRolesView(APIView):

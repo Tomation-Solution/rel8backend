@@ -128,77 +128,70 @@ class ExcoRoleSerializer(serializers.ModelSerializer):
         model = user_models.ExcoRole
         fields = '__all__'
 
-class CreateExcoRole(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField(required=False)
-    about = serializers.CharField(required=False)
-    can_upload_min = serializers.BooleanField(required=False, default=False)
-    member_ids = serializers.ListField(required=False)
-    is_remove_member = serializers.BooleanField(required=False, default=False)
-    chapter_id = serializers.IntegerField(required=False)
 
-    def create(self, validated_data):
-        name = validated_data.get('name')
-        about = validated_data.get('about')
-        can_upload_min = validated_data.get('can_upload_min', False)
-        chapter_id = validated_data.get('chapter_id')
-        member_ids = validated_data.get('member_ids', [])
+class CreateExcoRoleSerializer(serializers.ModelSerializer):
+    member_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=user_models.Memeber.objects.all(), source='member')
 
-        chapter = None
-        if self.context.get('request').user.user_type == 'admin':
-            chapter = self.context.get('request').user.chapter
+    class Meta:
+        model = ExcoRole
+        fields = ['id', 'name', 'about', 'can_upload_min', 'chapter', 'member_ids']
 
-        if chapter_id:
-            chapter = get_object_or_404(auth_related_models.Chapters, id=chapter_id)
 
-        exco_role = user_models.ExcoRole.objects.create(
-            name=name, about=about, can_upload_min=can_upload_min, chapter=chapter
-        )
-        for member_id in member_ids:
-            member = get_object_or_404(user_models.Memeber, id=member_id)
-            member.is_exco = True
-            member.save()
-            exco_role.member.add(member)
+# class CreateExcoRole(serializers.Serializer):
+#     id = serializers.IntegerField(read_only=True)
+#     name = serializers.CharField(required=False)
+#     about = serializers.CharField(required=False)
+#     can_upload_min = serializers.BooleanField(required=False, default=False)
+#     member_ids = serializers.ListField(required=False)
+#     is_remove_member = serializers.BooleanField(required=False, default=False)
+#     chapter_id = serializers.IntegerField(required=False)
 
-        exco_role.save()
-        return exco_role
+#     def create(self, validated_data):
+#         name = validated_data.get('name')
+#         about = validated_data.get('about')
+#         can_upload_min = validated_data.get('can_upload_min', False)
+#         chapter_id = validated_data.get('chapter_id')
+#         member_ids = validated_data.get('member_ids', [])
 
-    def validate(self, attrs):
-        member_ids = attrs.get('member_ids', [])
-        for member_id in member_ids:
-            if not user_models.Memeber.objects.filter(id=member_id).exists():
-                raise CustomError({"error": f"Member with id {member_id} doesn't exist"})
-        return super().validate(attrs)
+#         chapter = None
+#         if self.context.get('request').user.user_type == 'admin':
+#             chapter = self.context.get('request').user.chapter
 
-    def update(self, instance, validated_data):
-        member_ids = validated_data.get('member_ids', [])
-        is_remove_member = validated_data.get('is_remove_member', False)
-        new_chapter_instance = self.context.get('chapter')
+#         if chapter_id:
+#             chapter = get_object_or_404(auth_related_models.Chapters, id=chapter_id)
 
-        if is_remove_member:
-            for member_id in member_ids:
-                member = get_object_or_404(user_models.Memeber, id=member_id)
-                member.is_exco = False
-                member.save()
-                instance.member.remove(member)
-        else:
-            for member_id in member_ids:
-                member = get_object_or_404(user_models.Memeber, id=member_id)
+#         exco_role = user_models.ExcoRole.objects.create(
+#             name=name, about=about, can_upload_min=can_upload_min, chapter=chapter
+#         )
+#         for member_id in member_ids:
+#             member = get_object_or_404(user_models.Memeber, id=member_id)
+#             member.is_exco = True
+#             member.save()
+#             exco_role.member.add(member)
 
-                if instance.chapter and instance.chapter != member.user.chapter:
-                    raise CustomError({'chapter': f'Member does not belong to {instance.chapter.name} chapter for this role.'})
+#         exco_role.save()
+#         return exco_role
 
-                member.is_exco = True
-                member.save()
-                instance.member.add(member)
+#     # def validate(self, attrs):
+#     #     member_ids = attrs.get('member_ids', [])
+#     #     for member_id in member_ids:
+#     #         if not user_models.Memeber.objects.filter(id=member_id).exists():
+#     #             raise CustomError({"error": f"Member with id {member_id} doesn't exist"})
+#     #     return super().validate(attrs)
 
-        instance.name = validated_data.get('name', instance.name)
-        instance.chapter = new_chapter_instance if new_chapter_instance else instance.chapter
-        instance.about = validated_data.get('about', instance.about)
-        instance.can_upload_min = validated_data.get('can_upload_min', instance.can_upload_min)
+#     def update(self, instance, validated_data):
+#         # member_ids = validated_data.get('member_ids', [])
+#         is_remove_member = validated_data.get('is_remove_member', False)
+#         new_chapter_instance = self.context.get('chapter')
 
-        instance.save()
-        return instance
+#         instance.name = validated_data.get('name', instance.name)
+#         instance.member = validated_data.get('member', instance.member)
+#         instance.chapter = new_chapter_instance if new_chapter_instance else instance.chapter
+#         instance.about = validated_data.get('about', instance.about)
+#         instance.can_upload_min = validated_data.get('can_upload_min', instance.can_upload_min)
+
+#         instance.save()
+#         return instance
 
            
 
