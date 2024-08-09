@@ -124,7 +124,7 @@ class ManageAssigningExcos(viewsets.ViewSet):
             try:
                 new_chapter_instance = auth_models.Chapters.objects.get(id=chapter_id)
             except auth_models.Chapters.DoesNotExist:
-                raise CustomError(msg="Chapter is not found!", status_code=404)
+                raise CustomError(message="Chapter is not found!", status_code=404)
 
         exco_role = user_models.ExcoRole.objects.get(id=pk)
         serialized = user_serializer.CreateExcoRole(instance=exco_role,data=request.data,context={"request":request, "chapter": new_chapter_instance})
