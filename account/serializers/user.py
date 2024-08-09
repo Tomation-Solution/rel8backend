@@ -133,7 +133,7 @@ class CreateExcoRole(serializers.Serializer):
     name = serializers.CharField(required=False)
     about = serializers.CharField(required=False)
     can_upload_min = serializers.BooleanField(required=False, default=False)
-    member_ids = serializers.ListField(child=serializers.IntegerField(), required=False)
+    member_ids = serializers.ListField(required=False)
     is_remove_member = serializers.BooleanField(required=False, default=False)
     chapter_id = serializers.IntegerField(required=False)
 
@@ -185,11 +185,8 @@ class CreateExcoRole(serializers.Serializer):
             for member_id in member_ids:
                 member = get_object_or_404(user_models.Memeber, id=member_id)
 
-                if instance.chapter is not None:
-                    if member.user.chapter is None:
-                        raise CustomError({"chapter": 'Member does not belong to a chapter yet'})
-                    if instance.chapter.id != member.user.chapter.id:
-                        raise CustomError({'chapter': f'Member does not belong to {instance.chapter.name} chapter'})
+                if instance.chapter and instance.chapter != member.user.chapter:
+                    raise CustomError({'chapter': f'Member does not belong to {instance.chapter.name} chapter for this role.'})
 
                 member.is_exco = True
                 member.save()
