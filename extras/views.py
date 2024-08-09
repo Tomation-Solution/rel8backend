@@ -147,7 +147,7 @@ class AdminManagesProjectViewset(viewsets.ModelViewSet):
 
 
 class MemeberProjectSupportKindViewset(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, custom_permission.IsMember]
 
     def retrieve(self, request, *args, **kwargs):
         cash_support_project_instance = get_object_or_404( models.SupportProjectInCash,id=kwargs.get('pk',-1))
@@ -168,7 +168,7 @@ class MemeberProjectSupportKindViewset(viewsets.ViewSet):
 
 
 class MemeberProjectSupportCashViewset(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]
 
     def retrieve(self, request, *args, **kwargs):
         kind_support_project_instance = get_object_or_404( models.SupportProjectInKind,id=kwargs.get('pk',-1))
@@ -258,3 +258,20 @@ class FundAProjectPayment(APIView):
             return Success_response(msg='Payment processing in progress!',data=response.json())
 
         raise CustomError(message={"error":'Some error occured please try again'},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+
+class AdminProjectSupportByCashView(APIView):
+    permission_classes = [custom_permission.IsAdminOrSuperAdmin]
+    def get(self, request, *args, **kwargs):
+        cash_support_projects_instances = models.SupportProjectInCash.objects.all()
+        serializer = serializers.MemberSupportProjectInCashSerializer(instance=cash_support_projects_instances,many=True)
+        return Success_response(msg='Success',data=serializer.data,status_code=status.HTTP_200_OK)
+
+
+
+class AdminProjectSupportInKindView(APIView):
+    permission_classes = [custom_permission.IsAdminOrSuperAdmin]
+    def get(self, request, *args, **kwargs):
+        kind_support_projects_instances = models.SupportProjectInKind.objects.all()
+        serializer = serializers.MemberSupportProjectInKindSerializer(instance=kind_support_projects_instances,many=True)
+        return Success_response(msg='Success',data=serializer.data,status_code=status.HTTP_200_OK)
