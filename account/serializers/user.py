@@ -119,6 +119,11 @@ class ExcoRoleSerializer(serializers.ModelSerializer):
     def get_member(self, obj):
         return [member.name for member in obj.member.all()]
 
+    chapter = serializers.SerializerMethodField()
+
+    def get_chapter(self, obj):
+        return obj.chapter.name
+
     class Meta:
         model = user_models.ExcoRole
         fields = '__all__'
