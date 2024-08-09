@@ -189,7 +189,7 @@ class ManageAssigningExcos(viewsets.ViewSet):
         """
         Create a new ExcoRole instance.
         """
-        chapter = get_object_or_404(auth_related_models.Chapters, id=request.data.get('chapter_id'))
+        chapter = get_object_or_404(auth_models.Chapters, id=request.data.get('chapter_id'))
         serializer = user_serializer.CreateExcoRoleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         exco_role = serializer.save(chapter=chapter)
