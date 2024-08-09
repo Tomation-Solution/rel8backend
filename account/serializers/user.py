@@ -133,7 +133,7 @@ class CreateExcoRoleSerializer(serializers.ModelSerializer):
     member_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=user_models.Memeber.objects.all(), source='member')
 
     class Meta:
-        model = ExcoRole
+        model = user_models.ExcoRole
         fields = ['id', 'name', 'about', 'can_upload_min', 'chapter', 'member_ids']
 
 
