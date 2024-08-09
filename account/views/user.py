@@ -151,7 +151,7 @@ class ManageAssigningExcos(viewsets.ViewSet):
             member = get_object_or_404(user_models.Memeber, id=member_id)
             exco_role.member.add(member)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'message': 'Success'}, status=status.HTTP_200_OK)
 
     def destroy(self, request, pk=None):
         """
