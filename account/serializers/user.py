@@ -168,6 +168,7 @@ class CreateExcoRole(serializers.Serializer):
     def update(self, instance, validated_data):
         member_ids = validated_data.get('member_ids', [])
         is_remove_member = validated_data.get('is_remove_member', False)
+        new_chapter_instance = self.context.get('chapter')
 
         if is_remove_member:
             for member_id in member_ids:
@@ -190,6 +191,7 @@ class CreateExcoRole(serializers.Serializer):
                 instance.member.add(member)
 
         instance.name = validated_data.get('name', instance.name)
+        instance.chapter = new_chapter_instance if new_chapter_instance else instance.chapter
         instance.about = validated_data.get('about', instance.about)
         instance.can_upload_min = validated_data.get('can_upload_min', instance.can_upload_min)
 

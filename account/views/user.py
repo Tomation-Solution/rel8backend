@@ -118,8 +118,16 @@ class ManageAssigningExcos(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         if not user_models.ExcoRole.objects.filter(id=pk).exists():
             raise CustomError({"error":"ExcoRole Does not exist"})
-        exco_role =user_models.ExcoRole.objects.get(id=pk)
-        serialized = user_serializer.CreateExcoRole(instance=exco_role,data=request.data,context={"request":request})
+        chapter_id = request.data.get('chapter_id', None)
+        new_chapter_instance = None
+        if chapter_id is not None:
+            try:
+                new_chapter_instance = auth_models.Chapters.objects.get(id=chapter_id)
+            except auth_models.Chapters.DoesNotExist:
+                raise CustomError(msg="Chapter is not found!", status_code=404)
+
+        exco_role = user_models.ExcoRole.objects.get(id=pk)
+        serialized = user_serializer.CreateExcoRole(instance=exco_role,data=request.data,context={"request":request, "chapter": new_chapter_instance})
         serialized.is_valid(raise_exception=True)
         updated_instance =serialized.save()
         clean_data = user_serializer.CreateExcoRole(updated_instance,many=False)
