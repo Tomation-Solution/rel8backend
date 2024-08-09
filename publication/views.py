@@ -12,44 +12,108 @@ from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+
 class AdminManagePublication(viewsets.ModelViewSet):
     queryset = models.Publication.objects.all()
-    permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin,custom_permission.Normal_Admin_Must_BelongToACHapter]
+    permission_classes = [permissions.IsAuthenticated, custom_permission.IsAdminOrSuperAdmin, custom_permission.Normal_Admin_Must_BelongToACHapter]
     serializer_class = serializers.AdminManagePublicationSerializer
-    parser_classes =(custom_parsers.NestedMultipartParser,FormParser,)
+    parser_classes = (custom_parsers.NestedMultipartParser, FormParser,)
 
-    def create(self,request,format=None):
+    def create(self, request, format=None):
         'create Publication'
-        serialize =  self.serializer_class(data=request.data,context={"request":request})
+        serialize = self.serializer_class(data=request.data, context={"request": request})
         serialize.is_valid(raise_exception=True)
         instance = serialize.save()
-        if self.request.user.user_type in ['admin']:
-            # this means this is a admin of this chapter we force him to create the news only for his chapter
+        if self.request.user.user_type == 'admin':
+            # Admin of this chapter can create publication only for their chapter
             instance.chapters = request.user.chapter
-        if self.request.user.user_type in ['super_admin']:
-            # this means this person is a super_amin this means this news would be National
-            instance.chapters= None#chapters are none for national
-        exco =None
-        exco_id = request.data.get('exco_id',None)
+        elif self.request.user.user_type == 'super_admin':
+            # Super admin creates national publication (no specific chapter)
+            instance.chapters = None  # Chapters are None for national
+        exco = None
+        exco_id = request.data.get('exco_id', None)
         if exco_id:
-            "this means the user want to make this event for this type of exco"
-            try:
-                exco =get_object_or_404(user_related_models.ExcoRole,id=exco_id)
-            except:
-                raise CustomError({'error':'Exco Does not exist'})
-        instance.exco=exco
+            # If exco_id is provided, associate this publication with the specified ExcoRole
+            exco = get_object_or_404(user_related_models.ExcoRole, id=exco_id)
+        instance.exco = exco
         instance.save()
-        # duesObject = models.Event.objects.all().filter(id=instance.id).values()
-        clean_data = self.serializer_class(instance,many=False)
-        return custom_response.Success_response(msg='Publication created successfully',data=[clean_data.data],status_code=status.HTTP_201_CREATED) 
+        clean_data = self.serializer_class(instance, many=False)
+        return custom_response.Success_response(msg='Publication created successfully', data=[clean_data.data], status_code=status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
         queryset = models.Publication.objects.all()
-        clean_data = self.serializer_class(queryset,many=True)
-        return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK) 
+        clean_data = self.serializer_class(queryset, many=True)
+        return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        'Partially update a Publication'
+        instance = self.get_object()
+        serializer = self.serializer_class(instance, data=request.data, partial=True, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        updated_instance = serializer.save()
+        
+        if self.request.user.user_type == 'admin' and 'chapters' in request.data:
+            updated_instance.chapters = request.user.chapter
+        elif self.request.user.user_type == 'super_admin' and 'chapters' in request.data:
+            updated_instance.chapters = None
+        
+        exco_id = request.data.get('exco_id', None)
+        if exco_id:
+            exco = get_object_or_404(user_related_models.ExcoRole, id=exco_id)
+            updated_instance.exco = exco
+        
+        updated_instance.save()
+        clean_data = self.serializer_class(updated_instance, many=False)
+        return custom_response.Success_response(msg='Publication updated successfully', data=[clean_data.data], status_code=status.HTTP_200_OK)
+
+
+
+# class AdminManagePublication(viewsets.ModelViewSet):
+#     queryset = models.Publication.objects.all()
+#     permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin,custom_permission.Normal_Admin_Must_BelongToACHapter]
+#     serializer_class = serializers.AdminManagePublicationSerializer
+#     parser_classes =(custom_parsers.NestedMultipartParser,FormParser,)
+
+#     def create(self,request,format=None):
+#         'create Publication'
+#         serialize =  self.serializer_class(data=request.data,context={"request":request})
+#         serialize.is_valid(raise_exception=True)
+#         instance = serialize.save()
+#         if self.request.user.user_type in ['admin']:
+#             # this means this is a admin of this chapter we force him to create the news only for his chapter
+#             instance.chapters = request.user.chapter
+#         if self.request.user.user_type in ['super_admin']:
+#             # this means this person is a super_amin this means this news would be National
+#             instance.chapters= None#chapters are none for national
+#         exco =None
+#         exco_id = request.data.get('exco_id',None)
+#         if exco_id:
+#             "this means the user want to make this event for this type of exco"
+#             try:
+#                 exco =get_object_or_404(user_related_models.ExcoRole,id=exco_id)
+#             except:
+#                 raise CustomError({'error':'Exco Does not exist'})
+#         instance.exco=exco
+#         instance.save()
+#         # duesObject = models.Event.objects.all().filter(id=instance.id).values()
+#         clean_data = self.serializer_class(instance,many=False)
+#         return custom_response.Success_response(msg='Publication created successfully',data=[clean_data.data],status_code=status.HTTP_201_CREATED) 
+
+#     def list(self, request, *args, **kwargs):
+#         queryset = models.Publication.objects.all()
+#         clean_data = self.serializer_class(queryset,many=True)
+#         return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK) 
+
+#     def destroy(self, request, *args, **kwargs):
+#         return super().destroy(request, *args, **kwargs)
+
+
 
 class GetUnauthorizedPublications(views.APIView):
     permission_classes =[permissions.AllowAny]
