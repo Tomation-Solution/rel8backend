@@ -11,11 +11,6 @@ from utils import custom_response,custom_parsers
 from django.shortcuts import get_object_or_404
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
-
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.decorators import action
-
 class AdminManagePublication(viewsets.ModelViewSet):
     queryset = models.Publication.objects.all()
     permission_classes = [permissions.IsAuthenticated, custom_permission.IsAdminOrSuperAdmin, custom_permission.Normal_Admin_Must_BelongToACHapter]
