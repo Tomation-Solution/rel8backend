@@ -265,7 +265,7 @@ class AdminProjectSupportByCashView(APIView):
     def get(self, request, *args, **kwargs):
         project_id = request.query_params.get('project_id', None)
 
-        if project_id:
+        if not project_id:
             raise CustomError(message="Provide the project id to query for", status_code=400)
 
         cash_support_projects_instances = models.SupportProjectInCash.objects.filter(project__id=project_id)
@@ -279,7 +279,7 @@ class AdminProjectSupportInKindView(APIView):
     def get(self, request, *args, **kwargs):
         project_id = request.query_params.get('project_id', None)
 
-        if project_id:
+        if not project_id:
             raise CustomError(message="Provide the project id to query for", status_code=400)
 
         kind_support_projects_instances = models.SupportProjectInKind.objects.filter(project__id=project_id)
