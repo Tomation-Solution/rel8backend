@@ -263,7 +263,12 @@ class FundAProjectPayment(APIView):
 class AdminProjectSupportByCashView(APIView):
     permission_classes = [custom_permission.IsAdminOrSuperAdmin]
     def get(self, request, *args, **kwargs):
-        cash_support_projects_instances = models.SupportProjectInCash.objects.all()
+        project_id = request.query_params.get('project_id', None)
+
+        if project_id:
+            raise CustomError(message="Provide the project id to query for", status_code=400)
+
+        cash_support_projects_instances = models.SupportProjectInCash.objects.filter(project__id=project_id)
         serializer = serializers.MemberSupportProjectInCashSerializer(instance=cash_support_projects_instances,many=True)
         return Success_response(msg='Success',data=serializer.data,status_code=status.HTTP_200_OK)
 
@@ -272,6 +277,11 @@ class AdminProjectSupportByCashView(APIView):
 class AdminProjectSupportInKindView(APIView):
     permission_classes = [custom_permission.IsAdminOrSuperAdmin]
     def get(self, request, *args, **kwargs):
-        kind_support_projects_instances = models.SupportProjectInKind.objects.all()
+        project_id = request.query_params.get('project_id', None)
+
+        if project_id:
+            raise CustomError(message="Provide the project id to query for", status_code=400)
+
+        kind_support_projects_instances = models.SupportProjectInKind.objects.filter(project__id=project_id)
         serializer = serializers.MemberSupportProjectInKindSerializer(instance=kind_support_projects_instances,many=True)
         return Success_response(msg='Success',data=serializer.data,status_code=status.HTTP_200_OK)
