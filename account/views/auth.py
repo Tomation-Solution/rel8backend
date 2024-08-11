@@ -421,7 +421,7 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
 
 
 class MemberCommiteeView(APIView):
-    permission_classes = [custom_permission.IsMember, permissions.IsAuthenticated]
+    permission_classes = [custom_permission.IsMember, IsAuthenticated]
     serializer_class = auth_serializers.AdminManageCommiteeGroupSerializer
     queryset = user_models.CommiteeGroup.objects.all()
 
