@@ -112,8 +112,9 @@ TENANT_APPS = (
      'interswitchapp',
      'LatestUpdate',
      'services',
-'prospectivemember',
-'customservices'
+    'prospectivemember',
+    'customservices',
+    'contactus'
     # my apps
 
 )

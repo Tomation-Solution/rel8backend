@@ -29,6 +29,7 @@ class  AdminRel8CustomServicesViewset(ModelViewSet):
         serializer_class = serializers.MembersRel8CustomerServiceSerializer(instance=queryset,many=True)
 
         return Success_response('Success',data=serializer_class.data)
+        
 class MembersRel8CustomerServiceViewset(ViewSet):
     serializer_class = serializers.HandleMemberServiceSubmissions
     permission_classes = [IsAuthenticated,custom_permission.IsMember]
