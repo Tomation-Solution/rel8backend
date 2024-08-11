@@ -391,11 +391,11 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
                     commitee.members.add(curentmember)
 
         clean_data = self.serializer_class(commitee)
-        return Success_response(msg='added members successfully',data=[clean_data.data,{'errors':errors}])
+        return Success_response(msg='Added members successfully',data=[clean_data.data,{'errors':errors}])
     def partial_update(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         print({'pk':pk})
-        if not self.queryset.filter(id=pk).exists():raise CustomError('Commitee does not exits')
+        if not self.queryset.filter(id=pk).exists():raise CustomError('Commitee does not exist')
         serialzed_data = self.serializer_class(instance=self.queryset.get(id=pk),data=request.data)
         serialzed_data.is_valid(raise_exception=True)
         updatedInstance = serialzed_data.save()
@@ -408,6 +408,12 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
         clead_data = self.serializer_class(commitee)
         return Success_response(msg='Success', data=[clead_data.data])
 
+    def destroy(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        commitee = get_object_or_404(self.queryset, id=pk)
+        commitee.delete()
+        return Success_response(msg='Success', status_code=status.HTTP_204_NO_CONTENT)
+
 
 class AdminManageCommiteeGroupPostionsViewSet(viewsets.ModelViewSet):
     serializer_class = auth_serializers.AdminManageCommiteePostion
@@ -418,8 +424,19 @@ class AdminManageCommiteeGroupPostionsViewSet(viewsets.ModelViewSet):
         serialized.is_valid(raise_exception=True)
         updated_instance = serialized.save()
         clean_data = self.serializer_class(updated_instance)
-        return Success_response('created successfull',data=[clean_data.data],status_code=status.HTTP_201_CREATED)
+        return Success_response('Success',data=[clean_data.data],status_code=status.HTTP_201_CREATED)
 
+    def retrieve(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        commitee_position = get_object_or_404(self.queryset, id=pk)
+        clead_data = self.serializer_class(commitee_position)
+        return Success_response(msg='Success', data=[clead_data.data])
+
+    def destroy(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        commitee_position = get_object_or_404(self.queryset, id=pk)
+        commitee_position.delete()
+        return Success_response(msg='Success', status_code=status.HTTP_204_NO_CONTENT)
 
 class SuperAdminMangeChapters(viewsets.ModelViewSet):
     "the super admin can create update the chapters"
