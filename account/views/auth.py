@@ -390,10 +390,6 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
                     curentmember  =  user_models.Memeber.objects.get(id=member_id)
                     commitee.members.add(curentmember)
 
-
-        
-
-
         clean_data = self.serializer_class(commitee)
         return Success_response(msg='added members successfully',data=[clean_data.data,{'errors':errors}])
     def partial_update(self, request, *args, **kwargs):
@@ -405,6 +401,12 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
         updatedInstance = serialzed_data.save()
         clead_data = self.serializer_class(updatedInstance)
         return Success_response(msg='Updated',data=[clead_data.data])
+
+    def retrieve(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        commitee = get_object_or_404(self.queryset, id=pk)
+        clead_data = self.serializer_class(commitee)
+        return Success_response(msg='Success', data=[clead_data.data])
 
 
 class AdminManageCommiteeGroupPostionsViewSet(viewsets.ModelViewSet):
