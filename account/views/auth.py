@@ -392,15 +392,18 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
 
         clean_data = self.serializer_class(commitee)
         return Success_response(msg='Added members successfully',data=[clean_data.data,{'errors':errors}])
-    def partial_update(self, request, *args, **kwargs):
+   
+    def update(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
-        print({'pk':pk})
-        if not self.queryset.filter(id=pk).exists():raise CustomError('Commitee does not exist')
-        serialzed_data = self.serializer_class(instance=self.queryset.get(id=pk),data=request.data)
-        serialzed_data.is_valid(raise_exception=True)
-        updatedInstance = serialzed_data.save()
-        clead_data = self.serializer_class(updatedInstance)
-        return Success_response(msg='Updated',data=[clead_data.data])
+        commitee_instance = get_object_or_404(self.queryset, id=pk)
+        
+        serialized_data = self.serializer_class(instance=commitee_instance, data=request.data)
+        serialized_data.is_valid(raise_exception=True)
+        
+        updated_instance = serialized_data.save()
+        clean_data = self.serializer_class(updated_instance)
+        
+        return Success_response(msg='Success', data=[clean_data.data])
 
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
@@ -437,6 +440,15 @@ class AdminManageCommiteeGroupPostionsViewSet(viewsets.ModelViewSet):
         commitee_position = get_object_or_404(self.queryset, id=pk)
         commitee_position.delete()
         return Success_response(msg='Success', status_code=status.HTTP_204_NO_CONTENT)
+
+    def update(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        commitee_position = get_object_or_404(self.queryset, id=pk)
+        serialized = self.serializer_class(commitee_position, data=request.data)
+        serialized.is_valid(raise_exception=True)
+        updated_instance = serialized.save()
+        clean_data = self.serializer_class(updated_instance)
+        return Success_response('Success', data=[clean_data.data], status_code=status.HTTP_200_OK)
 
 class SuperAdminMangeChapters(viewsets.ModelViewSet):
     "the super admin can create update the chapters"
