@@ -29,6 +29,8 @@ from mymailing.EmailConfirmation import activateEmail
 from utils.notification import NovuProvider
 # create Super user of the Alumni which is the owner
 from pusher_push_notifications import PushNotifications
+from rest_framework.views import APIView
+
 
 
 # beams_client = PushNotifications(
@@ -334,7 +336,6 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
     parser_classes = (custom_parsers.NestedMultipartParser,FormParser,)
     queryset = user_models.CommiteeGroup.objects.all()
 
-    # @permission_classes([IsAuthenticated])
 
     @action(['get','post'],detail=False,permission_classes=[IsAuthenticated])
     def get_commitee(self,request,format=None):
@@ -416,6 +417,30 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
         commitee = get_object_or_404(self.queryset, id=pk)
         commitee.delete()
         return Success_response(msg='Success', status_code=status.HTTP_204_NO_CONTENT)
+
+
+
+class MemberCommiteeView(APIView):
+    permission_classes = [custom_permission.IsMember, permissions.IsAuthenticated]
+    serializer_class = auth_serializers.AdminManageCommiteeGroupSerializer
+    queryset = user_models.CommiteeGroup.objects.all()
+
+    def get(self, request, format=None):
+        # Get the commitee ID from the query parameters
+        commitee_id = request.query_params.get('commitee_id', None)
+        
+        if commitee_id:
+            # Retrieve a specific committee by its ID
+            commitee = get_object_or_404(self.queryset, id=commitee_id, members__in=[request.user.memeber.id])
+            clead_data = self.serializer_class(commitee, many=False, context={'detail': True})
+        else:
+            # List all committees that the user is a member of
+            user_committees = self.queryset.filter(members__in=[request.user.memeber.id])
+            clead_data = self.serializer_class(user_committees, many=True)
+        
+        return Success_response(msg="Success", data=clead_data.data)
+
+
 
 
 class AdminManageCommiteeGroupPostionsViewSet(viewsets.ModelViewSet):
