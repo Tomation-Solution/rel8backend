@@ -151,7 +151,7 @@ class Memeber(models.Model):
     department = models.CharField(max_length=255, blank=True)
     name = models.CharField(max_length=100, blank=True)
     yog = models.CharField(max_length=255, blank=True)
-    state_of_origin = models.CharField(max_length=50, blank=True)
+    origin_state = models.CharField(max_length=50, blank=True)
     residential_country = models.CharField(max_length=100, blank=True)
     residential_state = models.CharField(max_length=100, blank=True)
     physical_address = models.CharField(max_length=250, blank=True)
