@@ -291,8 +291,6 @@ class ManageMemberValidation(viewsets.ViewSet):
             title = request.data.get('title', '')
         )
     
-    
-
         for key in request.data.keys():
             if not key =='password' and  not key == 'alumni_year':
                 user_models.UserMemberInfo.objects.create(
