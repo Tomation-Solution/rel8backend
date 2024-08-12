@@ -284,6 +284,10 @@ class ManageMemberValidation(viewsets.ViewSet):
                 name=request.data.get('name', ''),
                 department=request.data.get('department', ''),
                 yog=request.data.get('yog', '')
+                # state_of_origin = request.data.get('state_of_origin', ''),
+                # residential_country = request.data.get('residential_country', ''),
+                # residential_state = request.data.get('residential_state', ''),
+                # physical_address = request.data.get('physical_address', ''),
             )
         
       
