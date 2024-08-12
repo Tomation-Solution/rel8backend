@@ -52,7 +52,6 @@ def send_admin_contact_us_mail(data):
         html_content=html_content,
         to=[
             {"email": 'dbadebayo@gmail.com',"name": 'Adebayo'},
-            {"email": 'info@bukaa.org',"name": 'Bukaa Admin'},
             {"email": 'msismail.reg@buk.edu.ng',"name": 'Ismail'}
         ],
         sender={"name":sender_name,"email":sender_email}
