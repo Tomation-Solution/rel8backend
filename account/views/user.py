@@ -29,7 +29,7 @@ from django.db import transaction
 
 
 class GetExistingChapters(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get(self,request):
         chapters_instances = auth_models.Chapters.objects.all()
