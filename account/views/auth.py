@@ -261,74 +261,74 @@ class ManageMemberValidation(viewsets.ViewSet):
                 break
         # if chapter is None:
         #     raise CustomError({'error':'Chapter not found please reach out to admin'})
-        if(len(alum_db['usersInfo'][0].keys())==len(request.data.keys())):
-            if get_user_model().objects.filter(email=email).exists():raise CustomError({'error':'email already exists'})
-            if chapter:
-                if  auth_models.Chapters.objects.filter(name__icontains=chapter):
-                    chapter_instance = auth_models.Chapters.objects.filter(name__icontains=chapter).first()
-                # raise CustomError({'error':'chapter not found'})
-            user = get_user_model().objects.create_user(
-                email=email,
-                user_type='members',
-                password = password
-                
-            )
-            if chapter_instance:
-                "we going to add chapters if there is"
-                user.chapter  = chapter_instance
-                user.save()
+        # if(len(alum_db['usersInfo'][0].keys())==len(request.data.keys())):
+        if get_user_model().objects.filter(email=email).exists():raise CustomError({'error':'email already exists'})
+        if chapter:
+            if  auth_models.Chapters.objects.filter(name__icontains=chapter):
+                chapter_instance = auth_models.Chapters.objects.filter(name__icontains=chapter).first()
+            # raise CustomError({'error':'chapter not found'})
+        user = get_user_model().objects.create_user(
+            email=email,
+            user_type='members',
+            password = password
+            
+        )
+        if chapter_instance:
+            "we going to add chapters if there is"
+            user.chapter  = chapter_instance
+            user.save()
 
-            member = user_models.Memeber.objects.create(
-                user =user,
-                alumni_year=alumni_year,
-                name=request.data.get('name', ''),
-                department=request.data.get('department', ''),
-                yog=request.data.get('yog', '')
-                # state_of_origin = request.data.get('state_of_origin', ''),
-                # residential_country = request.data.get('residential_country', ''),
-                # residential_state = request.data.get('residential_state', ''),
-                # physical_address = request.data.get('physical_address', ''),
-            )
-        
-      
+        member = user_models.Memeber.objects.create(
+            user =user,
+            alumni_year=alumni_year,
+            name=request.data.get('name', ''),
+            department=request.data.get('department', ''),
+            yog=request.data.get('yog', '')
+            # state_of_origin = request.data.get('state_of_origin', ''),
+            # residential_country = request.data.get('residential_country', ''),
+            # residential_state = request.data.get('residential_state', ''),
+            # physical_address = request.data.get('physical_address', ''),
+        )
+    
+    
 
-            for key in request.data.keys():
-                if not key =='password' and  not key == 'alumni_year':
-                    user_models.UserMemberInfo.objects.create(
-                        name=key,
-                        value=request.data[key],
-                        member=member
-                    )
-            thread= threading.Thread(target=activateEmail,args=[user,user.email,connection.schema_name])
-            thread.start()
-            thread.join()
-
-            # regiter_user_to_chat.delay(member.id)
-            # if connection.schema_name == 'nimn':
-            "this is not for nimn specific any more view the function for more info"
-            print({'user_id':user.id})
-            thread= threading.Thread(target=charge_new_member_dues__fornimn,args=[user.id,connection.schema_name])
-            thread.start()
-            thread.join()
-            # if connection.schema_name == 'man':
-            #     for key in request.data.keys():
-            #         if key == 'SECTOR':
-            #             exco_name = request.data[key]
-            #             thread= threading.Thread(target=acct_task.group_MAN_subSector_and_sector,args=(exco_name,member.id,'sector'))
-            #         if key == 'SUB-SECTOR':
-            #             exco_name = request.data[key]
-            #             acct_task.group_MAN_subSector_and_sector.delay(
-            #                 exco_name,member.id,type='sub-sector'
-            #             )
-            try:
-                novu = NovuProvider()
-                novu.subscribe(
-                userID=user.id,
-                email=user.email
+        for key in request.data.keys():
+            if not key =='password' and  not key == 'alumni_year':
+                user_models.UserMemberInfo.objects.create(
+                    name=key,
+                    value=request.data[key],
+                    member=member
                 )
-            except:pass  
-            return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
-        raise CustomError({"error":"Data is not complete"})
+        thread= threading.Thread(target=activateEmail,args=[user,user.email,connection.schema_name])
+        thread.start()
+        thread.join()
+
+        # regiter_user_to_chat.delay(member.id)
+        # if connection.schema_name == 'nimn':
+        "this is not for nimn specific any more view the function for more info"
+        print({'user_id':user.id})
+        thread= threading.Thread(target=charge_new_member_dues__fornimn,args=[user.id,connection.schema_name])
+        thread.start()
+        thread.join()
+        # if connection.schema_name == 'man':
+        #     for key in request.data.keys():
+        #         if key == 'SECTOR':
+        #             exco_name = request.data[key]
+        #             thread= threading.Thread(target=acct_task.group_MAN_subSector_and_sector,args=(exco_name,member.id,'sector'))
+        #         if key == 'SUB-SECTOR':
+        #             exco_name = request.data[key]
+        #             acct_task.group_MAN_subSector_and_sector.delay(
+        #                 exco_name,member.id,type='sub-sector'
+        #             )
+        try:
+            novu = NovuProvider()
+            novu.subscribe(
+            userID=user.id,
+            email=user.email
+            )
+        except:pass  
+        return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
+        # raise CustomError({"error":"Data is not complete"})
         
 
 class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
