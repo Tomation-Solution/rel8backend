@@ -281,8 +281,8 @@ class ManageMemberValidation(viewsets.ViewSet):
         member = user_models.Memeber.objects.create(
             user =user,
             alumni_year=alumni_year,
-            name=request.data.get('name', ''),
-            department=request.data.get('department', ''),
+            name=request.data.get('fullname', ''),
+            department=request.data.get('programme', ''),
             yog=request.data.get('yog', '')
             # state_of_origin = request.data.get('state_of_origin', ''),
             # residential_country = request.data.get('residential_country', ''),
