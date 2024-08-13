@@ -6,7 +6,7 @@ router = DefaultRouter()
 
 
 router.register("manageminute",views.ManageMinute,basename='manageminute')
-router.register("excos_view_minutes",views.ViewMinute,basename='manageminute')
+router.register("excos_view_minutes",views.ViewMinute,basename='manageminute_exco')
 
 urlpatterns = [
    
