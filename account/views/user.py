@@ -101,7 +101,7 @@ class CreateAnyAdminType(viewsets.ViewSet):
         thread= threading.Thread(target=activateEmail,args=[user,user.email,connection.schema_name])
         thread.start()
 
-        return custom_response.Success_response(msg='Admin created successfully',data=[{
+        return custom_response.Success_response(msg='Admin created successfully. Check your mail for verification!',data=[{
             "user_id":user.id,
              "email":user.email,
             "user_type":user.user_type
