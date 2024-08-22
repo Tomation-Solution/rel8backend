@@ -1,5 +1,6 @@
 from django import views
 from rest_framework import viewsets,generics
+import threading
 
 from rest_framework import permissions
 from rest_framework.decorators import action,api_view,permission_classes
@@ -24,6 +25,9 @@ from rest_framework.permissions import AllowAny
 from ..serializers import auth as auth_serializer
 from rest_framework.response import Response
 from django.db import transaction
+from mymailing.EmailConfirmation import activateEmail
+from django.db import connection
+
 
 # from
 
@@ -92,6 +96,11 @@ class CreateAnyAdminType(viewsets.ViewSet):
         serialize = self.serializer_class(data=request.data,context={"adminType":"admin"})
         serialize.is_valid(raise_exception=True)
         user = serialize.save()
+
+        #Send Activation Email
+        thread= threading.Thread(target=activateEmail,args=[user,user.email,connection.schema_name])
+        thread.start()
+
         return custom_response.Success_response(msg='Admin created successfully',data=[{
             "user_id":user.id,
              "email":user.email,
