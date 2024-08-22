@@ -30,7 +30,7 @@ jobs:
           pip install -r requirements.txt
           export $(cat rel8/.env | xargs)
           python manage.py makemigrations
-          # python manage.py makemigrations --merge
+          python manage.py migrate_schemas --shared
           python manage.py migrate
           deactivate
           sudo systemctl restart rel8
