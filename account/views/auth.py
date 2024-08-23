@@ -189,7 +189,10 @@ class ManageMemberValidation(viewsets.ViewSet):
         valid_user = self._validateData(request)
         tenant_schema = connection.schema_name
 
-        if tenant_schema in ['aani', 'AANI']:
+        if tenant_schema.lower() == 'aani':
+            if not request.data.get('email'):
+                raise CustomError('Email is required.')
+
             valid_user = self._validateData_for_aani(request)
 
             if valid_user.get('isValid'):
