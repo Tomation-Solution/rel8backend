@@ -229,9 +229,8 @@ class ManageMemberValidation(viewsets.ViewSet):
                         count+=1#we add pluss one
                         if(count ==  len(validation_list)):#if the count matches the number of keys in validation_list then yes we have our self a valid_user
                             # print(user)
-                            if user.get('email') == email:
-                                valid_user = user
-                                break 
+                            valid_user = user
+                            break 
 
                 count=0
             if valid_user:
