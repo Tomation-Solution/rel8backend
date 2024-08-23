@@ -187,13 +187,57 @@ class ManageMemberValidation(viewsets.ViewSet):
     def create(self,request):
 
         valid_user = self._validateData(request)
+        tenant_schema = connection.schema_name
 
-        if valid_user:
-            if valid_user.get('isValid')==True:
+        if tenant_schema in ['aani', 'AANI']:
+            valid_user = self._validateData_for_aani(request)
+
+            if valid_user.get('isValid'):
                 return Success_response(msg="Success",data=[valid_user],status_code=status.HTTP_200_OK)
-            else:return Success_response(msg="error",data=[valid_user],status_code=status.HTTP_400_BAD_REQUEST)
+            return Success_response(msg="error",data=[valid_user],status_code=status.HTTP_400_BAD_REQUEST)
 
-        raise CustomError({"error":"Validation UnSuccessfull"})
+        #use only membership validator for others
+        if valid_user.get('isValid')==True:
+            return Success_response(msg="Success",data=[valid_user],status_code=status.HTTP_200_OK)
+        return Success_response(msg="error",data=[valid_user],status_code=status.HTTP_400_BAD_REQUEST)
+
+
+
+    def _validateData_for_aani(self,request):
+        """
+        We would pass the request to this function that has data that contains same data we have in database
+        e.g
+        let say we have {'firstname':'matthew'} in reqquest.data and validation_list variable contains 'firstname' the fucntion will jsut check if we have the correct 
+        value in data baseif yes  we return {'isValid':True,"user":valid_user}
+        """
+        # we return {isvalid:true,data:[]}
+        alum_db = auth_models.SecondLevelDatabase.objects.first()
+        data = json.loads(alum_db.data)
+        users = data['usersInfo']
+        validation_list = data['useValidation']
+        frontEndData = request.data
+        email = request.data.get('email')
+        count=0
+        valid_user =None
+        try:
+            for user in users:#we loop throug all the users
+                for key in validation_list:#we get all the key we marked as --valid in the excel sheet
+                    if frontEndData[key] == user[key]:#if the frontEndData is same with the database user 
+                        count+=1#we add pluss one
+                        if(count ==  len(validation_list)):#if the count matches the number of keys in validation_list then yes we have our self a valid_user
+                            # print(user)
+                            if user.get('email') == email:
+                                valid_user=user
+                                break 
+
+                count=0
+            if valid_user:
+                return {'isValid':True,"user":valid_user}
+            else:
+                return {'isValid':False,"user":None}
+        except:
+            raise CustomError('Wrong Validation Key')
+
 
     def _validateData(self,request):
         """
