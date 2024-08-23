@@ -189,15 +189,15 @@ class ManageMemberValidation(viewsets.ViewSet):
         valid_user = self._validateData(request)
         tenant_schema = connection.schema_name
 
-        if tenant_schema.lower() == 'aani':
-            # if not request.data.get('email'):
-            #     raise CustomError('Email is required.')
+        # if tenant_schema.lower() == 'aani':
+        #     # if not request.data.get('email'):
+        #     #     raise CustomError('Email is required.')
 
-            valid_user = self._validateData_for_aani(request)
+        #     valid_user = self._validateData_for_aani(request)
 
-            if valid_user.get('isValid'):
-                return Success_response(msg="Success",data=[valid_user],status_code=status.HTTP_200_OK)
-            return Success_response(msg="error",data=[valid_user],status_code=status.HTTP_400_BAD_REQUEST)
+        #     if valid_user.get('isValid'):
+        #         return Success_response(msg="Success",data=[valid_user],status_code=status.HTTP_200_OK)
+        #     return Success_response(msg="error",data=[valid_user],status_code=status.HTTP_400_BAD_REQUEST)
 
         #use only membership validator for others
         if valid_user.get('isValid')==True:
