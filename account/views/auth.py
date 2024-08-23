@@ -190,8 +190,8 @@ class ManageMemberValidation(viewsets.ViewSet):
         tenant_schema = connection.schema_name
 
         if tenant_schema.lower() == 'aani':
-            if not request.data.get('email'):
-                raise CustomError('Email is required.')
+            # if not request.data.get('email'):
+            #     raise CustomError('Email is required.')
 
             valid_user = self._validateData_for_aani(request)
 
@@ -230,7 +230,7 @@ class ManageMemberValidation(viewsets.ViewSet):
                         if(count ==  len(validation_list)):#if the count matches the number of keys in validation_list then yes we have our self a valid_user
                             # print(user)
                             if user.get('email') == email:
-                                valid_user=user
+                                valid_user = user
                                 break 
 
                 count=0
