@@ -178,15 +178,14 @@ class RescheduleEventRequestViewSet( mixins.ListModelMixin,mixins.CreateModelMix
         return custom_response.Success_response('Success',data=clean_data.data)
 
 
-class EventPaidViewset(viewsets.ViewSet):
+class EventSavePaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
-    @action(detail=False,methods=['post'],)
-    def save_payment(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serialzed = serializers.EventPaymentSerializer(data=request.data)
         serialzed.is_valid(raise_exception=True)
         data = serialzed.save(user=request.user)
-        return Success_response(msg='Saved event payment details',data=[],status_code=status.HTTP_201_CREATED)
+        return Success_response(msg='Saved event due details',data=[],status_code=status.HTTP_201_CREATED)
 
 class EventPaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
