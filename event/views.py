@@ -223,6 +223,6 @@ class EventPaymentView(APIView):
             raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
   
         if  response.status_code in  [200, 201]:
-            return Success_response(msg='Event payment processing in progress!',data=response.json())
+            return custom_response.Success_response(msg='Event payment processing in progress!',data=response.json())
 
         raise CustomError(message={"error":'Some error occured please try again'},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
