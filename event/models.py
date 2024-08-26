@@ -12,6 +12,7 @@ from utils.custom_exceptions import CustomError
 from utils.usefulFunc import get_localized_time
 from cloudinary_storage.storage import RawMediaCloudinaryStorage
 from pytz import timezone
+from django.conf import settings
 # Create your models here.
 
 """
