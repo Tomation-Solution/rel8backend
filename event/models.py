@@ -206,7 +206,7 @@ class EventDue_User(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
     amount= models.DecimalField(decimal_places=2,max_digits=10)
     # payed_for_how_many_people= models.IntegerField(default=1,blank=True)
-    paystack_key = models.TextField(default='')
+    paystack_key = models.TextField(default='', unique=True)
     is_paid = models.BooleanField(default=False)
 
 
