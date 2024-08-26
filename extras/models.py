@@ -49,10 +49,11 @@ class FundAProject(models.Model):
 class SupportProjectInCash(models.Model):
     member = models.ForeignKey(user_realted_models.Memeber,null=True,default=True,on_delete=models.CASCADE)
     amount= models.DecimalField(decimal_places=2,max_digits=10,default=0)
-    paystack_key = models.TextField(default='')
+    paystack_key = models.TextField(default='', unique=True)
     is_paid = models.BooleanField(default=False)
     project = models.ForeignKey(FundAProject,null=True,default=True,on_delete=models.CASCADE)
     member_remark = models.TextField(default='Will donate')
+
 
 class SupportProjectInKind(models.Model):
     member = models.ForeignKey(user_realted_models.Memeber,null=True,default=True,on_delete=models.CASCADE)
