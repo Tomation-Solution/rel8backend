@@ -185,7 +185,7 @@ class EventSavePaymentView(APIView):
         serialzed = serializers.EventPaymentSerializer(data=request.data)
         serialzed.is_valid(raise_exception=True)
         data = serialzed.save(user=request.user)
-        return Success_response(msg='Saved event due details',data=[],status_code=status.HTTP_201_CREATED)
+        return custom_response.Success_response(msg='Saved event due details',data=[],status_code=status.HTTP_201_CREATED)
 
 class EventPaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
