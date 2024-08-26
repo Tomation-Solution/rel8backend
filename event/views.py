@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets,permissions,status,mixins
-
+import requests
 from utils.custom_exceptions import CustomError
 from . import models,serializers,filter as custom_filter
 from utils import permissions as custom_permission
@@ -17,6 +17,8 @@ from django.db import transaction
 # pagination.py
 from rest_framework.pagination import PageNumberPagination
 from django.conf import settings
+from utils.usefulFunc import convert_naira_to_kobo
+
 class EventsResultPagination(PageNumberPagination):
     page_size = 10  # Number of items per page
     page_size_query_param = 'page'
