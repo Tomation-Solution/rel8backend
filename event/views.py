@@ -16,7 +16,7 @@ from rest_framework import status
 from django.db import transaction
 # pagination.py
 from rest_framework.pagination import PageNumberPagination
-
+from django.conf import settings
 class EventsResultPagination(PageNumberPagination):
     page_size = 10  # Number of items per page
     page_size_query_param = 'page'
