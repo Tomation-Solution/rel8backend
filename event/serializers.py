@@ -296,3 +296,14 @@ class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
     class Meta:
         model =models.EventDue_User
         fields = "__all__"
+
+
+class EventPaymentSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField(read_only=True)
+
+    def get_user(self, obj):
+        return obj.user.name or obj.user.email
+
+    class Meta:
+        model = models.EventDue_User
+        fields = ['user', 'amount','event','is_paid', 'paystack_key']

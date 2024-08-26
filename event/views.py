@@ -176,3 +176,51 @@ class RescheduleEventRequestViewSet( mixins.ListModelMixin,mixins.CreateModelMix
         data =  models.RescheduleEventRequest.objects.filter(event__id=param)
         clean_data = self.serializer_class(data,many=True)
         return custom_response.Success_response('Success',data=clean_data.data)
+
+
+class EventPaidViewset(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    @action(detail=False,methods=['post'],)
+    def save_payment(self, request, *args, **kwargs):
+        serialzed = serializers.EventPaymentSerializer(data=request.data)
+        serialzed.is_valid(raise_exception=True)
+        data = serialzed.save(user=request.user)
+        return Success_response(msg='Saved event payment details',data=[],status_code=status.HTTP_201_CREATED)
+
+class EventPaymentView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self,request,*args, **kwargs):
+        """ request data
+            {
+                "amount": 0,
+                "event_id": 1,
+            }
+        """
+        
+        url = 'https://api.paystack.co/transaction/initialize/' #later be added to env
+        headers = {
+            'Authorization': f'Bearer {settings.PAYSTACK_SECRET}',
+            'Content-Type' : 'application/json',
+            'Accept': 'application/json'
+        }
+        body = {
+            "email": request.user.email,
+            "amount": convert_naira_to_kobo(request.data.get('amount')),
+            "metadata":{
+                'event_id': request.data.get('event_id'),
+                "user_id":request.user.id,
+                "is_paid": True
+            },
+            "callback_url": settings.PAYMENT_FOR_EVENT_CALLBACK,
+            }
+        try:
+            response = requests.post(url,headers=headers,data=json.dumps(body))
+        except requests.ConnectionError:
+            raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+  
+        if  response.status_code in  [200, 201]:
+            return Success_response(msg='Event payment processing in progress!',data=response.json())
+
+        raise CustomError(message={"error":'Some error occured please try again'},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
