@@ -215,8 +215,8 @@ class EventPaymentView(APIView):
                 "user_id":request.user.id,
                 "is_paid": True
             },
-            "callback_url": settings.PAYMENT_FOR_EVENT_CALLBACK,
-            }
+            "callback_url": request.data.get('callback_url'),
+        }
         try:
             response = requests.post(url,headers=headers,data=json.dumps(body))
         except requests.ConnectionError:

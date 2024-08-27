@@ -228,7 +228,8 @@ class FundAProjectPayment(APIView):
             {
                 "amount": 0,
                 "project_id": 1,
-                "member_remark": ""
+                "member_remark": "",
+                'callback_url': ''
             }
         """
         
@@ -247,7 +248,7 @@ class FundAProjectPayment(APIView):
                 "member_remark": request.data.get('member_remark'),
                 "is_paid": True
             },
-            "callback_url": settings.PAYMENT_FOR_PROJECT_CALLBACK,
+            "callback_url": request.data.get('callback_url')
             }
         try:
             response = requests.post(url,headers=headers,data=json.dumps(body))
