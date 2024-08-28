@@ -222,14 +222,14 @@ class PublicEventRegisterationSerializer(serializers.Serializer):
         except models.Event.DoesNotExist:
             raise  CustomError({'error':'Event Does Not Exists'})
 
-        if event.is_paid_event == True: 
-            raise CustomError({'error':'You need to pay for this event!'})
-        
+        if event.is_paid_event == True and validated_data.get('paystack_key') == '':
+             raise CustomError({'error':'Not a free event anymore.'})
+    
         public_registration = models.PublicEvent.objects.get_or_create(
             event=event,
             full_name=validated_data['full_name'],
             email=validated_data['email'],
-            paystack_key=validated_data.get('paystack_key', '')
+            paystack_key=validated_data.get('paystack_key')
         )
         
         data = {
@@ -262,7 +262,8 @@ class RegiterForFreeEvent(serializers.Serializer):
         except models.Event.DoesNotExist:
             raise  CustomError({'error':'Event Does Not Exists'})
                   
-        if event.is_paid_event == True: raise CustomError({'error':'Not a free event anymore.'})
+        if event.is_paid_event == True:
+             raise CustomError({'error':'Not a free event anymore.'})
 
         if models.EventDue_User.objects.filter(event=event, user = self.context.get('request').user,).exists():
             raise CustomError({'error':'You have registered already'})
