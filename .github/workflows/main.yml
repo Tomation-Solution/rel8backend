@@ -29,7 +29,7 @@ jobs:
           source rel8-venv/bin/activate
           pip install -r requirements.txt
           export $(cat rel8/.env | xargs)
-          python manage.py makemigrations --merge=true
+          python manage.py makemigrations --merge
           python manage.py migrate_schemas --shared
           python manage.py migrate         
           deactivate
