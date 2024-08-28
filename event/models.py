@@ -227,13 +227,13 @@ class PublicEvent(models.Model):
     def __str__(self):
         return self.event.name
 
-class PublicEventPayment(models.Model):
-    paystack_key = models.CharField(max_length=250, default="")
-    event = models.ForeignKey(PublicEvent, on_delete=models.CASCADE)
-    paid_at = models.DateTimeField(auto_now_add=True)
+# class PublicEventPayment(models.Model):
+#     paystack_key = models.CharField(max_length=250, default="")
+#     event = models.ForeignKey(PublicEvent, on_delete=models.CASCADE)
+#     paid_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.paystack_key
+#     def __str__(self):
+#         return self.paystack_key
 
 class RescheduleEventRequest(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
