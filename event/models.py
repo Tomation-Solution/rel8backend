@@ -222,9 +222,11 @@ class PublicEvent(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100)
     email = models.EmailField()
+    paystack_key = models.CharField(max_length=250, default="")
+    registered_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.email
+        return self.event.name
 
 class RescheduleEventRequest(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)

@@ -205,6 +205,7 @@ class PublicEventRegisterationSerializer(serializers.Serializer):
     event_id =serializers.IntegerField()
     full_name = serializers.CharField()
     email = serializers.EmailField()
+    paystack_key = serializers.CharField(required=False)
 
     def validate_email(self, value):
         """
@@ -221,12 +222,14 @@ class PublicEventRegisterationSerializer(serializers.Serializer):
         except models.Event.DoesNotExist:
             raise  CustomError({'error':'Event Does Not Exists'})
 
-        if event.is_paid_event == True: raise CustomError({'error':'You need to pay for this event!'})
+        if event.is_paid_event == True: 
+            raise CustomError({'error':'You need to pay for this event!'})
         
         public_registration = models.PublicEvent.objects.get_or_create(
             event=event,
             full_name=validated_data['full_name'],
-            email=validated_data['email']
+            email=validated_data['email'],
+            paystack_key=validated_data.get('paystack_key', '')
         )
         
         data = {
