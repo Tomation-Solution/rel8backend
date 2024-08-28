@@ -225,7 +225,7 @@ class PublicEventRegisterationSerializer(serializers.Serializer):
         if event.is_paid_event == True and validated_data.get('paystack_key') == '':
              raise CustomError({'error':'Not a free event anymore.'})
 
-        public_registration = models.PublicEvent.objects.get_or_create(
+        public_registration, created = models.PublicEvent.objects.get_or_create(
             event=event,
             full_name=validated_data['full_name'],
             email=validated_data['email']
