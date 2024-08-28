@@ -265,7 +265,7 @@ class EventPaymentForPublicView(APIView):
             'Accept': 'application/json'
         }
         body = {
-            "email": request.user.email,
+            "email": request.data.get('email'),
             "amount": convert_naira_to_kobo(request.data.get('amount')),
             "metadata":{
                 'event_id': request.data.get('event_id'),
