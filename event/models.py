@@ -99,6 +99,9 @@ class Event(models.Model):
         }
     """
 
+    def __str__(self):
+        return self.name
+
 
     def create_event_job(self):
         """
