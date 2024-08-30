@@ -128,8 +128,7 @@ class DuesPaymentView(APIView):
                 "user_id":request.user.id,
                 "forWhat":forWhat,
                 'schema_name':request.tenant.schema_name,
-                'user_type':request.user.user_type,
-                'amount_to_be_paid': amount_to_be_paid
+                'user_type':request.user.user_type
             }
         }
 
