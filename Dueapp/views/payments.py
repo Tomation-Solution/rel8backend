@@ -174,19 +174,18 @@ class SaveDuesPayment(APIView):
         serialzed = serializers.DueUserSerializer(data=request.data)
         serialzed.is_valid(raise_exception=True)
         data = serialzed.save(user=request.user, is_paid=True)
-
         return custom_response.Success_response(msg='Saved due payment details', data=[], status_code=status.HTTP_201_CREATED)
 
     def get(self, request, *args, **kwargs):
         due_id = request.query_params.get('id')
         if due_id:
             # Retrieve the specific due payment by ID
-            due_payment = get_object_or_404(models.DueUser, id=due_id)
+            due_payment = get_object_or_404(models.Due_User, id=due_id)
             clean_data = serializers.DueUserSerializer(due_payment)
             return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
         else:
             # Return all due payments
-            due_payments = models.DueUser.objects.all()
+            due_payments = models.Due_User.objects.filter(user=request.user)
             clean_data = serializers.DueUserSerializer(due_payments, many=True)
             return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
 
@@ -204,12 +203,12 @@ class SaveDeactivatingDuesPayment(APIView):
         due_id = request.query_params.get('id')
         if due_id:
             # Retrieve the specific deactivating due payment by ID
-            deactivating_due_payment = get_object_or_404(models.DeactivatingDueUser, id=due_id)
+            deactivating_due_payment = get_object_or_404(models.DeactivatingDue_User, id=due_id)
             clean_data = serializers.DeactivatingDueUserSerializer(deactivating_due_payment)
             return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
         else:
             # Return all deactivating due payments
-            deactivating_due_payments = models.DeactivatingDueUser.objects.all()
+            deactivating_due_payments = models.DeactivatingDue_User.objects.filter(user=request.user)
             clean_data = serializers.DeactivatingDueUserSerializer(deactivating_due_payments, many=True)
             return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
 
