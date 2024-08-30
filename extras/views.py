@@ -179,7 +179,7 @@ class MemeberProjectSupportCashViewset(viewsets.ViewSet):
     def support_in_cash(self, request, *args, **kwargs):
         serialzed = serializers.MemberSupportProjectInCashSerializer(data=request.data)
         serialzed.is_valid(raise_exception=True)
-        data = serialzed.save(member=request.user.memeber)
+        data = serialzed.save(member=request.user.memeber, is_paid=True)
         return Success_response(msg='Created',data=[],status_code=status.HTTP_201_CREATED)
 
     def list(self,request,*args,**kwargs):

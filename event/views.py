@@ -201,7 +201,7 @@ class EventSavePaymentView(APIView):
     def post(self, request, *args, **kwargs):
         serialzed = serializers.EventPaymentSerializer(data=request.data)
         serialzed.is_valid(raise_exception=True)
-        data = serialzed.save(user=request.user)
+        data = serialzed.save(user=request.user, is_paid=True)
         return custom_response.Success_response(msg='Saved event due details',data=[],status_code=status.HTTP_201_CREATED)
 
 
