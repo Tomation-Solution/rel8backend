@@ -22,6 +22,13 @@ class UnauthorizedEventSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class EventDataSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Event
+        fields = "__all__"
+
+
 class EventSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     image =  serializers.ImageField(required=False)

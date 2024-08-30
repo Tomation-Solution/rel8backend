@@ -174,7 +174,7 @@ class EventViewSet(viewsets.ViewSet):
         else:
             'get global event'
             all_events=all_events.filter(chapters=request.user.chapter)
-        clean_data = self.serializer_class(all_events,many=True,context={'request':request})
+        clean_data = serializers.EventDataSerializer(all_events, many=True)
         return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
         
         # filter_set = custom_filter.EventLookUp(request.query_params,queryset=self.get_queryset().order_by('-startDate'))
