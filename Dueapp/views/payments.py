@@ -39,11 +39,12 @@ def very_payment(request,reference=None):
     # this is checking if the user has pluged his paystack account 
     if client_tenant.paystack_secret == 'null' or client_tenant.paystack_publickey == 'null':
         raise CustomError({'error':'Paystack not active please reach out to the developer'})
+
     PAYSTACK_SECRET = client_tenant.paystack_secret
 
     url = f'https://api.paystack.co/transaction/verify/{reference}'
     headers = {
-    'Authorization': 'Bearer '+PAYSTACK_SECRET,
+    'Authorization': f'Bearer {PAYSTACK_SECRET}',
     'Content-Type' : 'application/json',
     'Accept': 'application/json',
     }
@@ -53,8 +54,9 @@ def very_payment(request,reference=None):
         raise CustomError({"error":"Nework Error"}) 
 
     if resp.json()['data']['status'] == 'success':
-        return Success_response(msg="Recived the Request Succefully",)
-    raise CustomError({"error":"Something Went Wrong Try Again"})
+        return Success_response(msg="Verified the payment Successfully",)
+
+    raise CustomError({"error":"Something went wrong, try Again"})
 
  
 class InitPaymentTran(APIView):
@@ -88,13 +90,13 @@ class InitPaymentTran(APIView):
                 amount_to_be_paid = rule.amount
                 pk= instance.id
                 if instance.has_paid:
-                    raise CustomError({'error':'Please hold for admin to process your info you have paid already'})
+                    raise CustomError({'error':'Please hold for admin to proces your info because you have paid already'})
 
         if forWhat=="due":
             # let get the id of due_user
             # let check if this user actually have due_user
             due_users = models.Due_User.objects.all()
-            if not due_users.filter(user=request.user,id=pk,).exists():raise CustomError({"error":"Due Doesnt Exist"})
+            if not due_users.filter(user=request.user,id=pk).exists():raise CustomError({"error":"Due Doesnt Exist"})
             if  due_users.filter(user=request.user,id=pk,is_paid=True).exists():raise CustomError({"error":"you have paid for this due already"})
             instance = models.Due_User.objects.get(user=request.user,id=pk)
             amount_to_be_paid = instance.amount
@@ -187,80 +189,80 @@ class InitPaymentTran(APIView):
 
 
         schema_name = request.tenant.schema_name
-        payment_type = request.query_params.get('payment_type','paystack')
+        # payment_type = request.data.get('payment_type','paystack')
         client_tenant = rel8tenant_related_models.Client.objects.get(schema_name=schema_name)
-        if payment_type == 'paystack':
+        # if payment_type == 'paystack':
             # this is checking if the user has pluged his paystack account 
-            if client_tenant.paystack_secret == 'null' or client_tenant.paystack_publickey == 'null':
-                raise CustomError({'error':'Paystack Key not active please reach out to the developer'})
-            PAYSTACK_SECRET = client_tenant.paystack_secret
-            instance =None
+        if client_tenant.paystack_secret == 'null' or client_tenant.paystack_publickey == 'null':
+            raise CustomError({'error':'Paystack Key not active please reach out to the developer'})
+        PAYSTACK_SECRET = client_tenant.paystack_secret
+        instance =None
 
-            generateInfo = self.generateMetaData(request,forWhat,pk)
-            instance = generateInfo.get('instance')
-            # Paystack intialization Url
-            url = 'https://api.paystack.co/transaction/initialize/'
-            headers = {
-                'Authorization': f'Bearer {PAYSTACK_SECRET}',
-                'Content-Type' : 'application/json',
-                'Accept': 'application/json',}
-            body = {
-                "email": request.user.email,
-                "amount": convert_naira_to_kobo(generateInfo.get('amount')),
-                "metadata":generateInfo.get('metadata'),
-                # "callback_url":settings.PAYMENT_FOR_MEMBERSHIP_CALLBACK,
-                }
-            try:
-                resp = requests.post(url,headers=headers,data=json.dumps(body))
-            except requests.ConnectionError:
-                raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
-            if resp.status_code ==200:
-                data = resp.json()
-            
-                # we create a transaction history upload nessary data by this time is_successfull will always be false
-                # we put in paystack refrence in the current due the user wants to pay  data['data']['reference']
-                # we use wehook to confirm the payment
-                instance.paystack_key= data['data']['reference']
-                instance.save()
-
-                return Success_response(msg='Success',data=data)
-        
-        if payment_type == 'flutterwave':
-            if client_tenant.flutterwave_publickey =='null' or client_tenant.flutterwave_secret =='null':
-                raise CustomError({'error':'Flutterwave Key not active please reach out to the developer'})
-            generateInfo = self.generateMetaData(request,forWhat,pk)
-            instance = generateInfo.get('instance')
-            url ='https://api.flutterwave.com/v3/payments'
-            headers = {
-                'Authorization': f'Bearer {client_tenant.flutterwave_secret}',
-                'Content-Type' : 'application/json',
-                'Accept': 'application/json',}
-            body = {
-            'tx_ref': f'{generate_n(5)}---{forWhat}--{request.user.id}--{instance.id}--{schema_name}',
-            'amount': f'{generateInfo.get("amount")}',
-            'currency': "NGN",
-            'redirect_url': "https://www.google.com/",
-            'meta':generateInfo.get('metadata'),
-            'customer': {
-                'email':'test@gmail.com',
-                'phonenumber': "08162047348",
-                'name': "Markothedev"
-            },
+        generateInfo = self.generateMetaData(request,forWhat,pk)
+        instance = generateInfo.get('instance')
+        # Paystack intialization Url
+        url = 'https://api.paystack.co/transaction/initialize/'
+        headers = {
+            'Authorization': f'Bearer {PAYSTACK_SECRET}',
+            'Content-Type' : 'application/json',
+            'Accept': 'application/json',}
+        body = {
+            "email": request.user.email,
+            "amount": convert_naira_to_kobo(generateInfo.get('amount')),
+            "metadata":generateInfo.get('metadata'),
+            "callback_url": request.data.get('callback_url')
             }
-
-            try:
-                resp = requests.post(url,headers=headers,data=json.dumps(body))
-            except requests.ConnectionError:
-                raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
-            if resp.status_code ==200:
-                data = resp.json()
-            
-            #     # instance.paystack_key= data['data']['reference']
-            #     # instance.save()
-
-                return Success_response(msg='Success',data=data)
+        try:
+            resp = requests.post(url,headers=headers,data=json.dumps(body))
+        except requests.ConnectionError:
+            raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        if resp.status_code ==200:
+            data = resp.json()
         
-        raise CustomError(message=resp.json(),status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+            # we create a transaction history upload nessary data by this time is_successfull will always be false
+            # we put in paystack refrence in the current due the user wants to pay  data['data']['reference']
+            # we use wehook to confirm the payment
+            # instance.paystack_key= data['data']['reference']
+            # instance.save()
+
+            return Success_response(msg='Success',data=data)
+        
+        # if payment_type == 'flutterwave':
+        #     if client_tenant.flutterwave_publickey =='null' or client_tenant.flutterwave_secret =='null':
+        #         raise CustomError({'error':'Flutterwave Key not active please reach out to the developer'})
+        #     generateInfo = self.generateMetaData(request,forWhat,pk)
+        #     instance = generateInfo.get('instance')
+        #     url ='https://api.flutterwave.com/v3/payments'
+        #     headers = {
+        #         'Authorization': f'Bearer {client_tenant.flutterwave_secret}',
+        #         'Content-Type' : 'application/json',
+        #         'Accept': 'application/json',}
+        #     body = {
+        #     'tx_ref': f'{generate_n(5)}---{forWhat}--{request.user.id}--{instance.id}--{schema_name}',
+        #     'amount': f'{generateInfo.get("amount")}',
+        #     'currency': "NGN",
+        #     'redirect_url': "https://www.google.com/",
+        #     'meta':generateInfo.get('metadata'),
+        #     'customer': {
+        #         'email':'test@gmail.com',
+        #         'phonenumber': "08162047348",
+        #         'name': "Markothedev"
+        #     },
+        #     }
+
+        #     try:
+        #         resp = requests.post(url,headers=headers,data=json.dumps(body))
+        #     except requests.ConnectionError:
+        #         raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        #     if resp.status_code ==200:
+        #         data = resp.json()
+            
+        #     #     # instance.paystack_key= data['data']['reference']
+        #     #     # instance.save()
+
+        #         return Success_response(msg='Success',data=data)
+        
+        # raise CustomError(message=resp.json(),status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
 

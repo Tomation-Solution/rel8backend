@@ -20,6 +20,8 @@ from rest_framework.views import APIView
 from rest_framework.parsers import  FormParser
 from utils.usefulFunc import convert_naira_to_kobo
 from utils.custom_exceptions import CustomError
+from Rel8Tenant import models as rel8tenant_related_models
+
 # from notifications.signals import notify
 
 
@@ -245,10 +247,16 @@ class FundAProjectPayment(APIView):
                 'callback_url': ''
             }
         """
+        schema_name = request.tenant.schema_name
+        client_tenant = rel8tenant_related_models.Client.objects.get(schema_name=schema_name)
+        if client_tenant.paystack_secret == 'null' or client_tenant.paystack_publickey == 'null':
+            raise CustomError({'error':'Paystack Key not active please reach out to the developer'})
+
+        TENANT_PAYSTACK_SECRET = client_tenant.paystack_secret
         
         url = 'https://api.paystack.co/transaction/initialize/'
         headers = {
-            'Authorization': f'Bearer {settings.PAYSTACK_SECRET}',
+            'Authorization': f'Bearer {TENANT_PAYSTACK_SECRET}',
             'Content-Type' : 'application/json',
             'Accept': 'application/json'
         }

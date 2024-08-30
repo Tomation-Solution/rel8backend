@@ -181,11 +181,7 @@ class Due_User(models.Model):
     is_paid = models.BooleanField(default=False)
     amount= models.DecimalField(decimal_places=2,max_digits=10)
     paystack_key = models.TextField(default='')
-    item_code = models.TextField(default='',)
-
-
-
-
+    item_code = models.TextField(default='')
 
     def __str__(self) -> str:
         try:
