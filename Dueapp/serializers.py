@@ -405,3 +405,27 @@ class DeactivatingDueSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.DeactivatingDue
         fields = "__all__"
+
+
+
+class DueUserSerializer(serializers.ModelSerializer):
+
+    user = serializers.SerializerMethodField(read_only=True)
+
+    def get_user(self, obj):
+        return obj.user.memeber.name or obj.user.email
+
+    class Meta:
+        model = models.Due_User
+        fields = "__all__"
+
+
+class DeactivatingDueUserSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField(read_only=True)
+
+    def get_user(self, obj):
+        return obj.user.memeber.name or obj.user.email
+        
+    class Meta:
+        model = models.DeactivatingDue_User
+        fields = "__all__"

@@ -27,6 +27,7 @@ from event.models import EventProxyAttendies
 from mymailing import tasks as mailing_tasks
 import threading
 from utils.extraFunc import generate_n
+from .. import serializers
 
 
 def very_payment(request,reference=None):
@@ -162,57 +163,52 @@ class DuesPaymentView(APIView):
             data = resp.json()
             return Success_response(msg='Success. Payment in progress...', data=data)
         
-        # if payment_type == 'flutterwave':
-        #     if client_tenant.flutterwave_publickey =='null' or client_tenant.flutterwave_secret =='null':
-        #         raise CustomError({'error':'Flutterwave Key not active please reach out to the developer'})
-        #     generateInfo = self.generateMetaData(request,forWhat,pk)
-        #     instance = generateInfo.get('instance')
-        #     url ='https://api.flutterwave.com/v3/payments'
-        #     headers = {
-        #         'Authorization': f'Bearer {client_tenant.flutterwave_secret}',
-        #         'Content-Type' : 'application/json',
-        #         'Accept': 'application/json',}
-        #     body = {
-        #     'tx_ref': f'{generate_n(5)}---{forWhat}--{request.user.id}--{instance.id}--{schema_name}',
-        #     'amount': f'{generateInfo.get("amount")}',
-        #     'currency': "NGN",
-        #     'redirect_url': "https://www.google.com/",
-        #     'meta':generateInfo.get('metadata'),
-        #     'customer': {
-        #         'email':'test@gmail.com',
-        #         'phonenumber': "08162047348",
-        #         'name': "Markothedev"
-        #     },
-        #     }
+class SaveDuesPayment(APIView):
 
-        #     try:
-        #         resp = requests.post(url,headers=headers,data=json.dumps(body))
-        #     except requests.ConnectionError:
-        #         raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
-        #     if resp.status_code ==200:
-        #         data = resp.json()
-            
-        #     #     # instance.paystack_key= data['data']['reference']
-        #     #     # instance.save()
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, *args, **kwargs):
+        serialzed = serializers.DueUserSerializer(data=request.data)
+        serialzed.is_valid(raise_exception=True)
+        data = serialzed.save(user=request.user, is_paid=True)
 
-        #         return Success_response(msg='Success',data=data)
-        
-        # raise CustomError(message=resp.json(),status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+        # data = {
+        #     "event_name": data.event.name,
+        #     "event_address": data.event.address,
+        #     "member_email": data.user.email,
+        #     "short_name": f"{connection.schema_name.upper()} Association"
+        # }
+        # thread= threading.Thread(target=send_members_event_confirmation_mail,args=[data])
+        # thread.start()
+        # thread.join()
 
+        return custom_response.Success_response(msg='Saved due payment details',data=[],status_code=status.HTTP_201_CREATED)
 
+class SaveDeactivatingDuesPayment(APIView):
 
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request, *args, **kwargs):
+        serialzed = serializers.DeactivatingDueUserSerializer(data=request.data)
+        serialzed.is_valid(raise_exception=True)
+        data = serialzed.save(user=request.user, is_paid=True)
 
+        # data = {
+        #     "event_name": data.event.name,
+        #     "event_address": data.event.address,
+        #     "member_email": data.user.email,
+        #     "short_name": f"{connection.schema_name.upper()} Association"
+        # }
+        # thread= threading.Thread(target=send_members_event_confirmation_mail,args=[data])
+        # thread.start()
+        # thread.join()
 
+        return custom_response.Success_response(msg='Saved deactivating due payment details',data=[],status_code=status.HTTP_201_CREATED)
 
-
-
-
-
-
-
-
-
-
+        # # since the payment was a success then we reduce the amount owing in memeber profile
+        # member_profile = Memeber.objects.get(user=user)
+        # member_profile.amount_owing = member_profile.amount_owing + due.amount
+        # member_profile.save()
 
 def webhookPayloadhandler(meta_data,user,):
         

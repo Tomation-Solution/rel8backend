@@ -13,5 +13,7 @@ router.register("memberdue",detail_views.MemberDues,basename='MemberDues')
 urlpatterns = [
     path('process_payment/<str:forWhat>/<int:pk>/',payments_views.DuesPaymentView.as_view(),name='process_payment'),
     path('', detail_views.DuesView.as_view(), name="dues"),
-    path('deactivating', detail_views.DuesView.as_view(), name="dues")
+    path('deactivating', detail_views.DuesView.as_view(), name="dues"),
+    path('save/payments/',payments_views.SaveDuesPayment.as_view(), name="save_dues_payment"),
+    path('deactivativng/save/payments/',payments_views.SaveDeactivatingDuesPayment.as_view(), name="save_deactivatingdues_payment"),
 ] +router.urls

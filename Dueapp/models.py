@@ -179,7 +179,7 @@ class Due_User(models.Model):
     due = models.ForeignKey(Due,on_delete=models.CASCADE)
     is_overdue = models.BooleanField(default=False)
     is_paid = models.BooleanField(default=False)
-    amount= models.DecimalField(decimal_places=2,max_digits=10)
+    amount = models.DecimalField(decimal_places=2,max_digits=10)
     paystack_key = models.TextField(default='', unique=True)
     item_code = models.TextField(default='')
 
