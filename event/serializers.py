@@ -315,13 +315,13 @@ class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
 
 class EventPaymentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField(read_only=True)
-    event = serializers.SerializerMethodField(read_only=True)
+    event_name = serializers.SerializerMethodField(read_only=True)
     event_payment_id = serializers.SerializerMethodField(read_only=True)
 
     def get_event_payment_id(self, obj):
         return obj.id
 
-    def get_event(self, obj):
+    def get_event_name(self, obj):
         return obj.event.name 
 
     def get_user(self, obj):
@@ -329,4 +329,4 @@ class EventPaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.EventDue_User
-        fields = ['event_payment_id', 'user', 'amount','event','is_paid', 'paystack_key']
+        fields = ['event_payment_id', 'user', 'amount', 'event', 'event_name', 'is_paid', 'paystack_key']
