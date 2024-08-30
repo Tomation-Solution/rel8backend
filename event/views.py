@@ -22,7 +22,7 @@ from django.conf import settings
 from utils.usefulFunc import convert_naira_to_kobo
 from django.db import connection
 from mymailing.EmailConfirmation import send_members_event_confirmation_mail
-        from Rel8Tenant import models as rel8tenant_related_models
+from Rel8Tenant import models as rel8tenant_related_models
 
 
 
