@@ -17,7 +17,7 @@ class DuesView(APIView):
     permission_classes = [permissions.IsAuthenticated, custom_permissions.IsMemberOrProspectiveMember]
     
     def get(self, request, *args, **kwargs):
-        due_id = kwargs.get('id', None)
+        due_id = request.query_params.get('id', None)
         if due_id:
             # Retrieve the specific due by ID
             due = get_object_or_404(models.Due, id=due_id)
@@ -33,7 +33,7 @@ class DeactivatingDuesView(APIView):
     permission_classes = [permissions.IsAuthenticated, custom_permissions.IsMemberOrProspectiveMember]
     
     def get(self, request, *args, **kwargs):
-        due_id = kwargs.get('id', None)
+        due_id = request.query_params.get('id', None)
         if due_id:
             # Retrieve the specific deactivating due by ID
             due = get_object_or_404(models.DeactivatingDue, id=due_id)
