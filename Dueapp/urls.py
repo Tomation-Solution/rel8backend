@@ -15,5 +15,5 @@ urlpatterns = [
     path('', detail_views.DuesView.as_view(), name="dues"),
     path('deactivating/', detail_views.DeactivatingDuesView.as_view(), name="dues"),
     path('save/payments/',payments_views.SaveDuesPayment.as_view(), name="save_dues_payment"),
-    path('deactivativng/save/payments/',payments_views.SaveDeactivatingDuesPayment.as_view(), name="save_deactivatingdues_payment"),
+    path('deactivating/save/payments/',payments_views.SaveDeactivatingDuesPayment.as_view(), name="save_deactivatingdues_payment"),
 ] +router.urls
