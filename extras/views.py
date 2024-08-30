@@ -1,5 +1,8 @@
 import requests
 import json
+import threading
+from django.db import connection
+from mymailing.EmailConfirmation import send_members_fund_project_confirmation_mail
 from django.shortcuts import render
 from rest_framework import viewsets,permissions
 from utils import permissions as custom_permission
@@ -180,6 +183,16 @@ class MemeberProjectSupportCashViewset(viewsets.ViewSet):
         serialzed = serializers.MemberSupportProjectInCashSerializer(data=request.data)
         serialzed.is_valid(raise_exception=True)
         data = serialzed.save(member=request.user.memeber, is_paid=True)
+
+        data = {
+            "project_heading": data.project.heading,
+            "member_email": data.member.email,
+            "short_name": f"{connection.schema_name.upper()} Association"
+        }
+        thread= threading.Thread(target=send_members_fund_project_confirmation_mail,args=[data])
+        thread.start()
+        thread.join()
+
         return Success_response(msg='Created',data=[],status_code=status.HTTP_201_CREATED)
 
     def list(self,request,*args,**kwargs):

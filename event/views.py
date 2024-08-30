@@ -2,6 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets,permissions,status,mixins
 import requests
 import json
+import threading
 from utils.custom_exceptions import CustomError
 from . import models,serializers,filter as custom_filter
 from utils import permissions as custom_permission
@@ -20,6 +21,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.conf import settings
 from utils.usefulFunc import convert_naira_to_kobo
 from django.db import connection
+from mymailing.EmailConfirmation import send_members_event_confirmation_mail
 
 
 class EventsResultPagination(PageNumberPagination):
@@ -202,6 +204,17 @@ class EventSavePaymentView(APIView):
         serialzed = serializers.EventPaymentSerializer(data=request.data)
         serialzed.is_valid(raise_exception=True)
         data = serialzed.save(user=request.user, is_paid=True)
+
+        data = {
+            "event_name": data.event.name,
+            "event_address": data.event.address,
+            "member_email": data.user.email,
+            "short_name": f"{connection.schema_name.upper()} Association"
+        }
+        thread= threading.Thread(target=send_members_event_confirmation_mail,args=[data])
+        thread.start()
+        thread.join()
+
         return custom_response.Success_response(msg='Saved event due details',data=[],status_code=status.HTTP_201_CREATED)
 
 

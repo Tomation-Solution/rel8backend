@@ -59,6 +59,39 @@ def send_event_confirmation(data):
         sender={"name":sender_name,"email":sender_email})
 
 
+
+def send_members_event_confirmation_mail(data):
+    domain_mail = os.environ['domain_mail']
+    domain = connection.schema_name+'.'+os.environ['domain']
+    sender_email =domain_mail
+    sender_name=f'{connection.schema_name.upper()} Membership'
+
+    html_content = render_to_string('member_event.html',context=data)
+
+    send_mail(
+        subject=f"Invitation for {data.get('event_name')} Event",
+        html_content=html_content,
+        to=[{"email":data.get('member_email'),"name":"rel8"}],
+        sender={"name":sender_name,"email":sender_email})
+
+
+def send_members_fund_project_confirmation_mail(data):
+    domain_mail = os.environ['domain_mail']
+    domain = connection.schema_name+'.'+os.environ['domain']
+    sender_email =domain_mail
+    sender_name=f'{connection.schema_name.upper()} Membership'
+
+    html_content = render_to_string('member_fund_project.html',context=data)
+
+    send_mail(
+        subject="Fund Project Payment Confirmation",
+        html_content=html_content,
+        to=[{"email":data.get('member_email'),"name":"rel8"}],
+        sender={"name":sender_name,"email":sender_email})
+
+
+
+
 def sendInvitationMail(user,event:event_models.Event,
                        event_proxy_attendies:event_models.EventProxyAttendies):
 
