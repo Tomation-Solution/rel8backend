@@ -167,12 +167,13 @@ class EventViewSet(viewsets.ViewSet):
 
         'this code let chapter see thier event'
         all_events = self.queryset
-        if self.request.query_params.get('is_chapter',None):
+        chapter = self.request.query_params.get('is_chapter',None)
+        if chapter:
             "get event for only chapters"
-            all_events=all_events.filter(chapters = request.user.chapter)
+            all_events = all_events.filter(chapters=chapter)
         else:
             'get global event'
-            all_events=all_events.filter(chapters =None)
+            all_events=all_events.filter(chapters=request.user.chapter)
         clean_data = self.serializer_class(all_events,many=True,context={'request':request})
         return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
         
