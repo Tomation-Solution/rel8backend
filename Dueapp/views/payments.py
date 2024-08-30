@@ -104,7 +104,7 @@ class DuesPaymentView(APIView):
         if forWhat =='deactivating_due':
             try:
                 due_instance = models.DeactivatingDue.objects.get(id=pk)
-            except models.Due.DoesNotExist:
+            except models.DeactivatingDue.DoesNotExist:
                 raise CustomError({"error":"Deactivating Due does not exist"})
 
             if models.DeactivatingDue_User.objects.filter(deactivatingdue=due_instance, user=request.user).exists(): raise CustomError({"error":"you have paid for this deactivating due already"})
