@@ -180,7 +180,7 @@ class Due_User(models.Model):
     is_overdue = models.BooleanField(default=False)
     is_paid = models.BooleanField(default=False)
     amount= models.DecimalField(decimal_places=2,max_digits=10)
-    paystack_key = models.TextField(default='')
+    paystack_key = models.TextField(default='', unique=True)
     item_code = models.TextField(default='')
 
     def __str__(self) -> str:
@@ -299,9 +299,7 @@ class DeactivatingDue_User(models.Model):
     is_overdue = models.BooleanField(default=False)
     is_paid = models.BooleanField(default=False)
     amount= models.DecimalField(decimal_places=2,max_digits=10)
-    paystack_key = models.TextField(default='')
-
-
+    paystack_key = models.TextField(default='', unique=True)
 
 
     def __str__(self) -> str:

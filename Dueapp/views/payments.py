@@ -59,9 +59,8 @@ def very_payment(request,reference=None):
     raise CustomError({"error":"Something went wrong, try Again"})
 
  
-class InitPaymentTran(APIView):
-    "this is were the members pay for stuff read the code weel to get a hag of it"
-    authentication_classes = [authentication.TokenAuthentication]
+class DuesPaymentView(APIView):
+    # authentication_classes = [authentication.TokenAuthentication]
     permission_classes=[
         permissions.IsAuthenticated,
         custom_permissions.IsMemberOrProspectiveMember]
@@ -93,70 +92,25 @@ class InitPaymentTran(APIView):
                     raise CustomError({'error':'Please hold for admin to proces your info because you have paid already'})
 
         if forWhat=="due":
-            # let get the id of due_user
-            # let check if this user actually have due_user
-            due_users = models.Due_User.objects.all()
-            if not due_users.filter(user=request.user,id=pk).exists():raise CustomError({"error":"Due Doesnt Exist"})
-            if  due_users.filter(user=request.user,id=pk,is_paid=True).exists():raise CustomError({"error":"you have paid for this due already"})
-            instance = models.Due_User.objects.get(user=request.user,id=pk)
-            amount_to_be_paid = instance.amount
+            try:
+                due_instance = models.Due.objects.get(id=pk)
+            except models.Due.DoesNotExist:
+                raise CustomError({"error":"Due does not exist"})
+
+            if models.Due_User.objects.filter(due=due_instance, user=request.user).exists(): raise CustomError({"error":"you have paid for this due already"})
+
+            amount_to_be_paid = due_instance.amount
 
         if forWhat =='deactivating_due':
-            deactivating_due = models.DeactivatingDue_User.objects.all()
-            if not deactivating_due.filter(user=request.user,id=pk,).exists():raise CustomError({"error":"Due Deactivating Due Exist"})
-            if  deactivating_due.filter(user=request.user,id=pk,is_paid=True).exists():raise CustomError({"error":"you have paid for this due already"})
-            
-            instance = models.DeactivatingDue_User.objects.get(user=request.user,id=pk)
-            amount_to_be_paid = instance.amount
-
-        if forWhat =='event_payment':
-            event_users = event_models.EventDue_User.objects.all()
-            events = event_models.Event.objects.all()
-            if not events.filter(id=pk,).exists():raise CustomError({"error":"Event Does Not Exist maybe it was deleted"})
-            event = event_models.Event.objects.get(id=pk )
-            if event_users.filter(user=request.user,event=event,is_paid=True).exists():raise CustomError({"error":"Hello you have paid for this event"})
-            instance,_ = event_models.EventDue_User.objects.get_or_create(
-                user=request.user,event=event,amount=event.amount,)
-            if event.is_special:
-                invited_guest = request.data.get('invited_guest',[])
-                amount_to_be_paid = (instance.amount * len(invited_guest))+instance.amount
-                
-                event_proxy_attendies,created= EventProxyAttendies.objects.get_or_create(
-                    participants= invited_guest,
-                    event_due_user=instance)
-                thread = threading.Thread(target=mailing_tasks.send_event_invitation_mail,args=[instance.user.id,event.id,event_proxy_attendies.id,connection.schema_name])
-                thread.start()
-                thread.join()
-            else:
-
-                amount_to_be_paid = instance.amount
-            pk = instance.id#we did this cause we accessing the eventdue_user
-        if forWhat =='fund_a_project':
-            'since this is a donation there is no fix price we get it from the query param'
-            amount  = request.query_params.get('donated_amount',1000.00)
-            if amount is None:
-                raise CustomError({'error':'Please amount it missing'})
-            "here we check it the"
             try:
-                amount = int(amount)
-            except ValueError:
-                raise CustomError({'error':'amount must be number '})
-            remark = request.data.get('remark',None)
-            if remark is None:raise CustomError({'error':'a note is required'})
+                due_instance = models.DeactivatingDue.objects.get(id=pk)
+            except models.Due.DoesNotExist:
+                raise CustomError({"error":"Deactivating Due does not exist"})
 
-            fundAProject = extras_models.FundAProject.objects.get(id=pk)
-            instance,_ = extras_models.SupportProjectInCash.objects.get_or_create(
-                member = request.user.memeber,
-                project=fundAProject,
-            )
-            instance.member_remark=remark
-            instance.amount=amount
-            instance.save()
-            fundAProject.amount_made =fundAProject.amount_made+ amount
-            fundAProject.save()
-            amount_to_be_paid=instance.amount
-        # if 
-        if(instance==None):raise CustomError({"error":"Something went wrong"})
+            if models.DeactivatingDue_User.objects.filter(deactivatingdue=due_instance, user=request.user).exists(): raise CustomError({"error":"you have paid for this deactivating due already"})
+
+            amount_to_be_paid = due_instance.amount
+
         if request.user.user_type== 'members':
             member = user_model.Memeber.objects.get(user=request.user)
         if request.user.user_type== 'prospective_members':
@@ -168,38 +122,27 @@ class InitPaymentTran(APIView):
 
         return {
             'amount':amount_to_be_paid,
-            'instance':instance,
             'metadata':{
-                "instanceID":pk,
-                'member_id':member.id,
+                "id":pk,
+                'member_id': member.id,
                 "user_id":request.user.id,
                 "forWhat":forWhat,
                 'schema_name':request.tenant.schema_name,
                 'user_type':request.user.user_type,
-                'amount_to_be_paid':str(amount_to_be_paid)}
+                'amount_to_be_paid': amount_to_be_paid
+            }
         }
 
-
-    # def handlePaystackPayment(self,request,forwhat='due',pk=None):
-    #     return
     def post(self, request, forWhat="due",pk=None):
-        if request.user.user_type == 'members':
-            if(not user_model.Memeber.objects.all().filter(user=request.user).exists()):
-                raise CustomError({"error":'member doest not exist'})
-
 
         schema_name = request.tenant.schema_name
-        # payment_type = request.data.get('payment_type','paystack')
         client_tenant = rel8tenant_related_models.Client.objects.get(schema_name=schema_name)
-        # if payment_type == 'paystack':
-            # this is checking if the user has pluged his paystack account 
         if client_tenant.paystack_secret == 'null' or client_tenant.paystack_publickey == 'null':
             raise CustomError({'error':'Paystack Key not active please reach out to the developer'})
+       
         PAYSTACK_SECRET = client_tenant.paystack_secret
-        instance =None
 
         generateInfo = self.generateMetaData(request,forWhat,pk)
-        instance = generateInfo.get('instance')
         # Paystack intialization Url
         url = 'https://api.paystack.co/transaction/initialize/'
         headers = {
@@ -216,16 +159,9 @@ class InitPaymentTran(APIView):
             resp = requests.post(url,headers=headers,data=json.dumps(body))
         except requests.ConnectionError:
             raise CustomError({"error":"Network Error"},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
-        if resp.status_code ==200:
+        if resp.status_code in [200, 201]:
             data = resp.json()
-        
-            # we create a transaction history upload nessary data by this time is_successfull will always be false
-            # we put in paystack refrence in the current due the user wants to pay  data['data']['reference']
-            # we use wehook to confirm the payment
-            # instance.paystack_key= data['data']['reference']
-            # instance.save()
-
-            return Success_response(msg='Success',data=data)
+            return Success_response(msg='Success. Payment in progress...', data=data)
         
         # if payment_type == 'flutterwave':
         #     if client_tenant.flutterwave_publickey =='null' or client_tenant.flutterwave_secret =='null':

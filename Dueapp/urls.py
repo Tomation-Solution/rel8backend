@@ -15,6 +15,6 @@ router.register("memberdue",detail_views.MemberDues,basename='MemberDues')
 
 
 urlpatterns = [
-    path('process_payment/<str:forWhat>/<int:pk>/',payments_views.InitPaymentTran.as_view(),name='process_payment'),
+    path('process_payment/<str:forWhat>/<int:pk>/',payments_views.DuesPaymentView.as_view(),name='process_payment'),
     # path('webhook/',payments_views.useWebhook)
 ] +router.urls
