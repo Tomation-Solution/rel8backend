@@ -30,6 +30,28 @@ class MemberDueUSerSerializer(serializers.ModelSerializer):
         ]
 
 
+class DeactivatingDueCleanSerialier(serializers.ModelSerializer):
+    chapter = serializers.SerializerMethodField()
+    def get_chapter(self,due):
+        if(due.chapters): return {
+            'name':due.chapters.name,
+            'id':due.chapters.id,
+        }
+        return None
+    class Meta:
+        model = models.DeactivatingDue
+        fields = [
+            "name",
+            "amount",
+            "startDate",
+            "startTime",
+            "endDate",
+            "month",
+            'chapter',
+            'id'
+        ]
+
+
 
 class DueCleanSerialier(serializers.ModelSerializer):
     chapter = serializers.SerializerMethodField()
@@ -52,7 +74,8 @@ class DueCleanSerialier(serializers.ModelSerializer):
             "endDate",
             "scheduletype",
             "schedule",
-            'chapter','id',
+            'chapter',
+            'id',
             'is_deactivate_users'
         ]
 
@@ -425,7 +448,7 @@ class DeactivatingDueUserSerializer(serializers.ModelSerializer):
 
     def get_user(self, obj):
         return obj.user.memeber.name or obj.user.email
-        
+
     class Meta:
         model = models.DeactivatingDue_User
         fields = "__all__"

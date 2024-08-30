@@ -107,8 +107,8 @@ class AdminManageDeactivatingDue(viewsets.ViewSet):
 
     def list(self,request):
         deactivating_dues = models.DeactivatingDue.objects.all()
-        clean_data  = self.serializer_class(deactivating_dues,many=True)
-        return custom_response.Success_response(msg='Dues',data =clean_data.data,status_code=status.HTTP_200_OK)
+        clean_data  = serializers.DeactivatingDueCleanSerialier(deactivating_dues,many=True)
+        return custom_response.Success_response(msg='Success',data =clean_data.data,status_code=status.HTTP_200_OK)
 
 
     def create(self,request,format=None):
