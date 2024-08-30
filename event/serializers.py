@@ -57,6 +57,10 @@ class EventSerializer(serializers.Serializer):
     event_docs = serializers.FileField(required=False)
     organiserImage = serializers.ImageField(required=False)
     is_special = serializers.BooleanField(required=False)
+    chapter = serializers.SerializerMethodField(read_only=True)
+
+    def get_chpater(self, obj):
+        return obj.chapters.name
     
     
     def get_event_access(self,event):
