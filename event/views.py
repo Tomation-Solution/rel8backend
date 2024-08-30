@@ -283,3 +283,36 @@ class EventPaymentForPublicView(APIView):
             return custom_response.Success_response(msg='Public Event payment processing in progress!',data=response.json())
 
         raise CustomError(message={"error":'Some error occured please try again'},status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+
+class EventPaymentDataForMembersView(APIView):
+
+    permission_classes = [custom_permission.IsMember]
+
+    def get(self, request, *args, **kwargs):
+        event_due_user_id = request.query_params.get('event_due_user_id', None)
+
+        #use this to get list and by id if provided
+        if event_due_user_id:
+            try:
+                # Fetch the specific EventDue_User instance by ID
+                event_due_user_instance = models.EventDue_User.objects.get(id=event_due_user_id)
+            except models.EventDue_User.DoesNotExist:
+                # Handle case where EventDue_User instance is not found
+                raise CustomError({'error': 'No event payment received  for this!'}, status_code=status.HTTP_404_NOT_FOUND)
+
+            # Serialize the specific instance
+            serializer = serializers.EventPaymentSerializer(event_due_user_instance)
+            return custom_response.Success_response(msg="Success", data=serializer.data, status_code=status.HTTP_200_OK)
+        
+        else:
+            # Fetch all EventDue_User instances
+            event_due_user_instances = models.EventDue_User.objects.filter(user=request.user)
+
+            # Serialize the queryset
+            serializer = serializers.EventPaymentSerializer(event_due_user_instances, many=True)
+            return custom_response.Success_response(msg="Success", data=serializer.data, status_code=status.HTTP_200_OK)
+
+
+
+            

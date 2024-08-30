@@ -15,4 +15,5 @@ urlpatterns = [
     path('payment/', views.EventPaymentView.as_view(), name="event_payment"),
     path('save/payment/', views.EventSavePaymentView.as_view(), name="save_event_payment"),
     path('public/payment/', views.EventPaymentForPublicView.as_view(), name="public_event_payment"),
+    path('/data/payments', views.EventPaymentDataForMembersView.as_view(), name="event_payment_data"),
 ] +router.urls
