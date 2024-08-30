@@ -308,7 +308,11 @@ class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
 
 class EventPaymentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField(read_only=True)
+    event = serializers.SerializerMethodField(read_only=True)
 
+    def get_event(self, obj):
+        return obj.event.name 
+        
     def get_user(self, obj):
         return obj.user.memeber.name or obj.user.email
 
