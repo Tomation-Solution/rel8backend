@@ -75,7 +75,7 @@ class EventSerializer(serializers.Serializer):
             else:
                 'this is a paid event and wee need to do some check'
                 if  models.EventDue_User.objects.filter(user=request.user,event=event,is_paid=True).exists():
-                    event_due_user = models.EventDue_User.objects.get(user=urequest.user,event=event)
+                    event_due_user = models.EventDue_User.objects.get(user=request.user,event=event)
                     has_paid= event_due_user.is_paid
                     link=event.address
 
@@ -312,7 +312,7 @@ class EventPaymentSerializer(serializers.ModelSerializer):
 
     def get_event(self, obj):
         return obj.event.name 
-        
+
     def get_user(self, obj):
         return obj.user.memeber.name or obj.user.email
 
