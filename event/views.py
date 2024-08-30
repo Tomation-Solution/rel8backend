@@ -176,12 +176,6 @@ class EventViewSet(viewsets.ViewSet):
             # all_events=all_events.filter(chapters=request.user.chapter)
         clean_data = serializers.EventDataSerializer(all_events, many=True)
         return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
-        
-        # filter_set = custom_filter.EventLookUp(request.query_params,queryset=self.get_queryset().order_by('-startDate'))
-        # # print({'filter_set':filter_set.qs})
-        # # queryset = filter_set.filter_queryset(self.get_queryset())
-        # clean_data = self.serializer_class(filter_set.qs,many=True,context={'request':request})
-        # return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
 
 class RescheduleEventRequestViewSet( mixins.ListModelMixin,mixins.CreateModelMixin,viewsets.GenericViewSet):
     permission_classes= [permissions.IsAuthenticated,custom_permission.IsMember]
