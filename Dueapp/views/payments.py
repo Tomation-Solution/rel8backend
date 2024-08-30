@@ -28,6 +28,8 @@ from mymailing import tasks as mailing_tasks
 import threading
 from utils.extraFunc import generate_n
 from .. import serializers
+from utils import custom_response
+
 
 
 def very_payment(request,reference=None):
