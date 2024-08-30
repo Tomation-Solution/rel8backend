@@ -165,23 +165,22 @@ class EventViewSet(viewsets.ViewSet):
     @action(detail=False,methods=['get'],permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember])
     def get_events(self,request,format=None):
 
-        if connection.schema_name.lower() == 'aani':
-            'this code let chapter see thier event'
-            all_events = self.queryset
-            if self.request.query_params.get('is_chapter',None):
-                "get event for only chapters"
-                all_events=all_events.filter(chapters = request.user.chapter)
-            else:
-                'get global event'
-                all_events=all_events.filter(chapters =None)
-            clean_data = self.serializer_class(all_events,many=True,context={'request':request})
-            return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
-        
-        filter_set = custom_filter.EventLookUp(request.query_params,queryset=self.get_queryset().order_by('-startDate'))
-        # print({'filter_set':filter_set.qs})
-        # queryset = filter_set.filter_queryset(self.get_queryset())
-        clean_data = self.serializer_class(filter_set.qs,many=True,context={'request':request})
+        'this code let chapter see thier event'
+        all_events = self.queryset
+        if self.request.query_params.get('is_chapter',None):
+            "get event for only chapters"
+            all_events=all_events.filter(chapters = request.user.chapter)
+        else:
+            'get global event'
+            all_events=all_events.filter(chapters =None)
+        clean_data = self.serializer_class(all_events,many=True,context={'request':request})
         return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
+        
+        # filter_set = custom_filter.EventLookUp(request.query_params,queryset=self.get_queryset().order_by('-startDate'))
+        # # print({'filter_set':filter_set.qs})
+        # # queryset = filter_set.filter_queryset(self.get_queryset())
+        # clean_data = self.serializer_class(filter_set.qs,many=True,context={'request':request})
+        # return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
 
 class RescheduleEventRequestViewSet( mixins.ListModelMixin,mixins.CreateModelMixin,viewsets.GenericViewSet):
     permission_classes= [permissions.IsAuthenticated,custom_permission.IsMember]
