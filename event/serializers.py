@@ -314,4 +314,4 @@ class EventPaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.EventDue_User
-        fields = ['user', 'amount','event','is_paid', 'paystack_key']
+        fields = ['id', 'user', 'amount','event','is_paid', 'paystack_key']
