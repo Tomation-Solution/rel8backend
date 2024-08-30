@@ -390,3 +390,18 @@ class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
             chapters=chapters
         )
         return due
+
+
+
+class DueSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Due
+        fields = "__all__"
+
+
+class DeactivatingDueSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.DeactivatingDue
+        fields = "__all__"

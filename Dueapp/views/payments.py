@@ -121,7 +121,7 @@ class DuesPaymentView(APIView):
 
 
         return {
-            'amount':amount_to_be_paid,
+            'amount': str(amount_to_be_paid),
             'metadata':{
                 "id":pk,
                 'member_id': member.id,

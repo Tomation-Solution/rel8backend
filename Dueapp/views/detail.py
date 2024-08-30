@@ -8,8 +8,17 @@ from rest_framework.decorators import action
 from ..models import DeactivatingDue, DeactivatingDue_User, Due_User
 from account.models import user as  user_related_models
 from account.serializers import user as user_serializer
+from rest_framework.views import APIView
 
-# from 
+
+class DuesView(APIView):
+    permission_classes = [permissions.IsAuthenticated, custom_permissions.IsMemberOrProspectiveMember]
+    def get(self, request, *args, **kwargs):
+        # dues = 
+        # serializer = serializers.DueSerializer()
+        pass
+
+
 
 class AdminManageDue(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin,
