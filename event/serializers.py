@@ -310,7 +310,7 @@ class EventPaymentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField(read_only=True)
 
     def get_user(self, obj):
-        return obj.user.name or obj.user.email
+        return obj.user.memeber.name or obj.user.email
 
     class Meta:
         model = models.EventDue_User
