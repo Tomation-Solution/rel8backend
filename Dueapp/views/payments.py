@@ -5,6 +5,8 @@ from rest_framework import status,authentication,permissions
 from rest_framework.decorators import api_view,permission_classes
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+
 from .. import models
 from event import models as event_models
 import requests,json
@@ -166,7 +168,6 @@ class DuesPaymentView(APIView):
             return Success_response(msg='Success. Payment in progress...', data=data)
         
 class SaveDuesPayment(APIView):
-
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, *args, **kwargs):
@@ -174,20 +175,22 @@ class SaveDuesPayment(APIView):
         serialzed.is_valid(raise_exception=True)
         data = serialzed.save(user=request.user, is_paid=True)
 
-        # data = {
-        #     "event_name": data.event.name,
-        #     "event_address": data.event.address,
-        #     "member_email": data.user.email,
-        #     "short_name": f"{connection.schema_name.upper()} Association"
-        # }
-        # thread= threading.Thread(target=send_members_event_confirmation_mail,args=[data])
-        # thread.start()
-        # thread.join()
+        return custom_response.Success_response(msg='Saved due payment details', data=[], status_code=status.HTTP_201_CREATED)
 
-        return custom_response.Success_response(msg='Saved due payment details',data=[],status_code=status.HTTP_201_CREATED)
+    def get(self, request, *args, **kwargs):
+        due_id = request.query_params.get('id')
+        if due_id:
+            # Retrieve the specific due payment by ID
+            due_payment = get_object_or_404(models.DueUser, id=due_id)
+            clean_data = serializers.DueUserSerializer(due_payment)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
+        else:
+            # Return all due payments
+            due_payments = models.DueUser.objects.all()
+            clean_data = serializers.DueUserSerializer(due_payments, many=True)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
 
 class SaveDeactivatingDuesPayment(APIView):
-
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, *args, **kwargs):
@@ -195,17 +198,20 @@ class SaveDeactivatingDuesPayment(APIView):
         serialzed.is_valid(raise_exception=True)
         data = serialzed.save(user=request.user, is_paid=True)
 
-        # data = {
-        #     "event_name": data.event.name,
-        #     "event_address": data.event.address,
-        #     "member_email": data.user.email,
-        #     "short_name": f"{connection.schema_name.upper()} Association"
-        # }
-        # thread= threading.Thread(target=send_members_event_confirmation_mail,args=[data])
-        # thread.start()
-        # thread.join()
+        return custom_response.Success_response(msg='Saved deactivating due payment details', data=[], status_code=status.HTTP_201_CREATED)
 
-        return custom_response.Success_response(msg='Saved deactivating due payment details',data=[],status_code=status.HTTP_201_CREATED)
+    def get(self, request, *args, **kwargs):
+        due_id = request.query_params.get('id')
+        if due_id:
+            # Retrieve the specific deactivating due payment by ID
+            deactivating_due_payment = get_object_or_404(models.DeactivatingDueUser, id=due_id)
+            clean_data = serializers.DeactivatingDueUserSerializer(deactivating_due_payment)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
+        else:
+            # Return all deactivating due payments
+            deactivating_due_payments = models.DeactivatingDueUser.objects.all()
+            clean_data = serializers.DeactivatingDueUserSerializer(deactivating_due_payments, many=True)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
 
         # # since the payment was a success then we reduce the amount owing in memeber profile
         # member_profile = Memeber.objects.get(user=user)
