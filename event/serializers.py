@@ -59,7 +59,7 @@ class EventSerializer(serializers.Serializer):
     is_special = serializers.BooleanField(required=False)
     chapter = serializers.SerializerMethodField(read_only=True)
 
-    def get_chpater(self, obj):
+    def get_chapter(self, obj):
         return obj.chapters.name
     
     
