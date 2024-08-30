@@ -9,15 +9,41 @@ from ..models import DeactivatingDue, DeactivatingDue_User, Due_User
 from account.models import user as  user_related_models
 from account.serializers import user as user_serializer
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+
 
 
 class DuesView(APIView):
     permission_classes = [permissions.IsAuthenticated, custom_permissions.IsMemberOrProspectiveMember]
+    
     def get(self, request, *args, **kwargs):
-        # dues = 
-        # serializer = serializers.DueSerializer()
-        pass
+        due_id = kwargs.get('id', None)
+        if due_id:
+            # Retrieve the specific due by ID
+            due = get_object_or_404(models.Due, id=due_id)
+            clean_data = serializers.DueCleanSerialier(due)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
+        else:
+            # Return all dues
+            dues = models.Due.objects.all()
+            clean_data = serializers.DueCleanSerialier(dues, many=True)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
 
+class DeactivatingDuesView(APIView):
+    permission_classes = [permissions.IsAuthenticated, custom_permissions.IsMemberOrProspectiveMember]
+    
+    def get(self, request, *args, **kwargs):
+        due_id = kwargs.get('id', None)
+        if due_id:
+            # Retrieve the specific deactivating due by ID
+            due = get_object_or_404(models.DeactivatingDue, id=due_id)
+            clean_data = serializers.DeactivatingDueCleanSerialier(due)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
+        else:
+            # Return all deactivating dues
+            dues = models.DeactivatingDue.objects.all()
+            clean_data = serializers.DeactivatingDueCleanSerialier(dues, many=True)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
 
 
 class AdminManageDue(viewsets.ViewSet):
