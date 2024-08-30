@@ -22,6 +22,8 @@ from django.conf import settings
 from utils.usefulFunc import convert_naira_to_kobo
 from django.db import connection
 from mymailing.EmailConfirmation import send_members_event_confirmation_mail
+        from Rel8Tenant import models as rel8tenant_related_models
+
 
 
 class EventsResultPagination(PageNumberPagination):
@@ -222,13 +224,21 @@ class EventPaymentView(APIView):
                 "event_id": 1,
             }
         """
+
+        schema_name = request.tenant.schema_name
+        client_tenant = rel8tenant_related_models.Client.objects.get(schema_name=schema_name)
+        if client_tenant.paystack_secret == 'null' or client_tenant.paystack_publickey == 'null':
+            raise CustomError({'error':'Paystack Key not active please reach out to the developer'})
+
+        TENANT_PAYSTACK_SECRET = client_tenant.paystack_secret
         
         url = 'https://api.paystack.co/transaction/initialize/' #later be added to env
         headers = {
-            'Authorization': f'Bearer {settings.PAYSTACK_SECRET}',
+            'Authorization': f'Bearer {TENANT_PAYSTACK_SECRET}',
             'Content-Type' : 'application/json',
             'Accept': 'application/json'
         }
+        
         body = {
             "email": request.user.email,
             "amount": convert_naira_to_kobo(request.data.get('amount')),
@@ -264,10 +274,17 @@ class EventPaymentForPublicView(APIView):
                 "callback_url": ""
             }
         """
+
+        schema_name = request.tenant.schema_name
+        client_tenant = rel8tenant_related_models.Client.objects.get(schema_name=schema_name)
+        if client_tenant.paystack_secret == 'null' or client_tenant.paystack_publickey == 'null':
+            raise CustomError({'error':'Paystack Key not active, please reach out to the developer'})
+
+        TENANT_PAYSTACK_SECRET = client_tenant.paystack_secret
         
         url = 'https://api.paystack.co/transaction/initialize/' #later be added to env
         headers = {
-            'Authorization': f'Bearer {settings.PAYSTACK_SECRET}',
+            'Authorization': f'Bearer {TENANT_PAYSTACK_SECRET}',
             'Content-Type' : 'application/json',
             'Accept': 'application/json'
         }
