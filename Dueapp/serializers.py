@@ -75,6 +75,7 @@ class DueCleanSerialier(serializers.ModelSerializer):
             "scheduletype",
             "schedule",
             'chapter',
+            'paystack_key',
             'id',
             'is_deactivate_users'
         ]
