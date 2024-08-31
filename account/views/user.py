@@ -420,7 +420,7 @@ class MemberShipGradeViewSet(viewsets.ViewSet):
 
                 if members.exists():
                     # Add all members to the MemberShipGrade
-                    membership_grade.member.add(*members)
+                    membership_grade.member.update(*members)
                     membership_grade.save()
 
             return Response(serializer.data)
