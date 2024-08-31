@@ -416,7 +416,7 @@ class MemberShipGradeViewSet(viewsets.ViewSet):
 
             if member_ids:
                 # Fetch all valid members whose IDs are in the list
-                members = user_models.Member.objects.filter(id__in=member_ids)
+                members = user_models.Memeber.objects.filter(id__in=member_ids)
 
                 if members.exists():
                     # Add all members to the MemberShipGrade
@@ -445,7 +445,7 @@ class MemberShipGradeViewSet(viewsets.ViewSet):
 
             if member_ids:
                 # Fetch all valid members whose IDs are in the list
-                members = user_models.Member.objects.filter(id__in=member_ids)
+                members = user_models.Memeber.objects.filter(id__in=member_ids)
 
                 if members.exists():
                     # Add all members to the MemberShipGrade
