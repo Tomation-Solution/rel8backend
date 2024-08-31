@@ -1,7 +1,8 @@
 from django import views
 from rest_framework import viewsets,generics
 import threading
-
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
 from rest_framework import permissions
 from rest_framework.decorators import action,api_view,permission_classes
 from Dueapp.models import Due_User,DeactivatingDue_User
@@ -386,3 +387,78 @@ class ForgotPasswordViewSet(viewsets.ViewSet):
         serialzier.is_valid(raise_exception=True)
         serialzier.save()
         return custom_response.Success_response('Password Rest Successfully')
+
+
+
+class MemberShipGradeViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated, custom_permissions.IsAdminOrSuperAdmin, custom_permissions.IsMemberOrProspectiveMember]
+
+    # LIST all MemberShipGrade
+    def list(self, request):
+        grades = user_models.MemberShipGrade.objects.all()
+        serializer = user.MemberShipGradeSerializer(grades, many=True)
+        return Response(serializer.data)
+
+    # RETRIEVE a specific MemberShipGrade by ID
+    def retrieve(self, request, pk=None):
+        grade = get_object_or_404(user_models.MemberShipGrade, pk=pk)
+        serializer = user.MemberShipGradeSerializer(grade)
+        return Response(serializer.data)
+
+    # CREATE a new MemberShipGrade
+    def create(self, request):
+        serializer = user.MemberShipGradeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # UPDATE a specific MemberShipGrade by ID
+    def update(self, request, pk=None):
+        grade = get_object_or_404(user_models.MemberShipGrade, pk=pk)
+        serializer = user.MemberShipGradeSerializer(grade, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # PARTIAL UPDATE a specific MemberShipGrade by ID
+    def partial_update(self, request, pk=None):
+        grade = get_object_or_404(user_models.MemberShipGrade, pk=pk)
+        serializer = user.MemberShipGradeSerializer(grade, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # DELETE a specific MemberShipGrade by ID
+    def destroy(self, request, pk=None):
+        grade = get_object_or_404(user_models.MemberShipGrade, pk=pk)
+        grade.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def create(self, request):
+        serializer = user.MemberShipGradeSerializer(data=request.data)
+        
+        # Validate the MemberShipGrade data
+        if serializer.is_valid():
+            # Save the new grade
+            membership_grade = serializer.save()
+
+            # Get the list of member IDs from the request data
+            member_ids = request.data.get('member_ids')
+
+            if member_ids:
+                # Fetch all valid members whose IDs are in the list
+                members = user_models.Member.objects.filter(id__in=member_ids)
+
+                if members.exists():
+                    # Add all members to the MemberShipGrade
+                    membership_grade.member.add(*members)
+                    membership_grade.save()
+
+            # Return the created grade with a success response
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        # Return validation errors if the data is invalid
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

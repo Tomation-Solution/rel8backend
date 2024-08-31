@@ -7,6 +7,7 @@ from .. models import user as user_models
 from account.serializers import user as user_related_serializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import json
+
 # this gets tge current user model which has been set in the setting useing "AUTH_USER_MODEL"
 User = get_user_model()
 
@@ -207,3 +208,4 @@ class ManageChapters(serializers.ModelSerializer):
     class Meta:
         model = auth_models.Chapters
         fields= '__all__'
+

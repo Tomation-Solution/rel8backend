@@ -546,3 +546,9 @@ class PasswordResetConfirmationSerializer(serializers.Serializer):
         user = self.validated_data['user']
         user.set_password(self.validated_data.get('new_password'))
         user.save()
+
+
+class MemberShipGradeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = user_models.MemberShipGrade
+        fields = '__all__'
