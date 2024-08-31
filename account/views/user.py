@@ -405,14 +405,6 @@ class MemberShipGradeViewSet(viewsets.ViewSet):
         serializer = user.MemberShipGradeSerializer(grade)
         return Response(serializer.data)
 
-    # CREATE a new MemberShipGrade
-    def create(self, request):
-        serializer = user.MemberShipGradeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     # UPDATE a specific MemberShipGrade by ID
     def update(self, request, pk=None):
         grade = get_object_or_404(user_models.MemberShipGrade, pk=pk)
