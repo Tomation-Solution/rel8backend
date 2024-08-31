@@ -391,7 +391,7 @@ class ForgotPasswordViewSet(viewsets.ViewSet):
 
 
 class MemberShipGradeViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, custom_permissions.IsAdminOrSuperAdmin, custom_permissions.IsMemberOrProspectiveMember]
+    permission_classes = [permissions.IsAuthenticated]
 
     # LIST all MemberShipGrade
     def list(self, request):
