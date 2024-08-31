@@ -549,11 +549,11 @@ class PasswordResetConfirmationSerializer(serializers.Serializer):
 
 
 class MemberShipGradeSerializer(serializers.ModelSerializer):
-    members = serializers.SerializerMethodField()
+    members = serializers.SerializerMethodField(read_only=True)
 
     def get_members(self, obj):
         # Ensure to access the 'name' attribute of the related 'Member' objects correctly
-        return [member.name for member in obj.members.all()]
+        return [member.name for member in obj.member.all()]
 
     class Meta:
         model = user_models.MemberShipGrade
