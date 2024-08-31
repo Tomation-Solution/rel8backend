@@ -410,16 +410,19 @@ class MemberShipGradeViewSet(viewsets.ViewSet):
         grade = get_object_or_404(user_models.MemberShipGrade, pk=pk)
         serializer = user.MemberShipGradeSerializer(grade, data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            membership_grade = serializer.save()
+            # Get the list of member IDs from the request data
+            member_ids = request.data.get('member_ids')
 
-    # PARTIAL UPDATE a specific MemberShipGrade by ID
-    def partial_update(self, request, pk=None):
-        grade = get_object_or_404(user_models.MemberShipGrade, pk=pk)
-        serializer = user.MemberShipGradeSerializer(grade, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
+            if member_ids:
+                # Fetch all valid members whose IDs are in the list
+                members = user_models.Member.objects.filter(id__in=member_ids)
+
+                if members.exists():
+                    # Add all members to the MemberShipGrade
+                    membership_grade.member.add(*members)
+                    membership_grade.save()
+
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
