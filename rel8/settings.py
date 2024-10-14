@@ -19,6 +19,8 @@ import cloudinary_storage
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+from dotenv import load_dotenv
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -207,7 +209,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -218,7 +219,6 @@ CELERY_TIMEZONE=TIME_ZONE
 USE_I18N = True
 CELERY_ENABLE_UTC = False
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
@@ -260,7 +260,6 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
-
 PAYSTACK_SECRET=os.environ['PAYSTACK_SECRET']
 PAYSTACK_PUBLICKEY=os.environ['PAYSTACK_PUBLICKEY']
 PAYMENT_FOR_PROJECT_CALLBACK=os.environ.get('PAYSTACK_PAYMENT_FOR_PROJECT_CALLBACK', "")
@@ -269,7 +268,6 @@ PAYMENT_FOR_EVENT_CALLBACK=os.environ.get('PAYSTACK_PAYMENT_FOR_EVENT_CALLBACK',
 if os.environ.get('REDIS_URL',None):
     "if u have a redis url u can always put it in the venv...."
     CELERY_BROKER_URL =os.environ.get('REDIS_URL')
-
 
 sentry_sdk.init(
     dsn="https://a587ed04d437497199ba62aececdc5ed@o930234.ingest.sentry.io/6394255",
@@ -284,7 +282,6 @@ sentry_sdk.init(
     # django.contrib.auth) you may enable sending PII data.
     send_default_pii=True
 )
-
 
 # Read trusted URLs from the environment variable
 trusted_urls = os.environ['trusted_urls'].split(',')
@@ -324,14 +321,11 @@ CORS_ALLOW_HEADERS = [
 'x-requested-with',
 ]
 
-
-
 # cloudinary settings
 "usiing cloudinary for storage"
 CLOUDINARY_URL = os.environ["CLOUDINARY_URL"]
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 ASGI_APPLICATION = "rel8.routing.application"
-
 
 if os.environ.get('REDIS_URL'):
     CHANNEL_LAYERS = {
@@ -381,7 +375,8 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'DEBUG',
+            'level': 'WARNING',  # Only log warnings and errors to file
+            # 'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'debug.log'),
             'formatter': 'verbose',
@@ -389,24 +384,27 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
+            'level': 'WARNING',  # Suppress debug and info logs in console
         },
     },
     'loggers': {
         'django': {
             'handlers': ['file', 'console'],
-            'level': 'DEBUG',
+            'level': 'WARNING',  # Suppress debug messages
+            # 'level': 'DEBUG',
             'propagate': True,
         },
         'django.request': {
             'handlers': ['file', 'console'],
-            'level': 'DEBUG',
+            'level': 'ERROR',  # Log only errors related to requests
+            # 'level': 'DEBUG',
             'propagate': False,
         },
         'relbackend': {
             'handlers': ['file', 'console'],
-            'level': 'DEBUG',
+            'level': 'WARNING',  # Log warnings and errors only
+            # 'level': 'DEBUG',
             'propagate': False,
         },
     },
 }
-
