@@ -161,8 +161,7 @@ class MemberDues(viewsets.ViewSet):
     # custom_permissions.IsMember, custom_permissions.IsAdminOrSuperAdmin]
 
     permission_classes = [permissions.IsAuthenticated,
-        custom_permissions.IsMember, custom_permissions.IsSuperAdmin,
-        custom_permissions.IsAdmin,]
+        custom_permissions.IsMember, custom_permissions.IsAdminOrSuperAdmin]
     # permission_classes = [permissions.IsAuthenticated, custom_permissions.IsSuperAdmin,]
 
     def list(self,request,format=None):
