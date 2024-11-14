@@ -160,15 +160,16 @@ class MemberDues(viewsets.ViewSet):
     # permission_classes = [permissions.IsAuthenticated,
     # custom_permissions.IsMember, custom_permissions.IsAdminOrSuperAdmin]
 
-    permission_classes = [permissions.IsAuthenticated,
-        custom_permissions.IsMember, custom_permissions.IsSuperAdmin,
-        custom_permissions.IsAdmin,]
+    # permission_classes = [permissions.IsAuthenticated,
+    #     custom_permissions.IsMember, custom_permissions.IsSuperAdmin,
+    #     custom_permissions.IsAdmin,]
+    permission_classes = [permissions.IsAuthenticated,]
 
     def list(self,request,format=None):
         my_dues = Due_User.objects.all().filter(user=request.user)
         clean_data= serializers.MemberDueUSerSerializer(instance=my_dues,many=True)
         return custom_response.Success_response(msg='Success', data=clean_data.data)
-                        
+
     @action(detail=False,methods=['get'])
     def get_due_detail(self,request,format=None):
         dues = Due_User.objects.all().filter(user=request.user)
