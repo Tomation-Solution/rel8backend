@@ -6,5 +6,5 @@ urlpatterns = [
     path('create_superadmin/',auth_view.RegisterSuperAdmin.as_view()),
     path('create_alumn/',user_view.CreateAlumni.as_view(),name='create-alumni'),
     path('login/',auth_view.Login.as_view(),),
-
 ]
+

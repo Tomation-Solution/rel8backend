@@ -8,3 +8,4 @@ from LatestUpdate import models as lastest_update_models
 def update_latest_updatemodel(sender,**kwargs):
     pub  = kwargs['instance']
     lastest_update_models.LastestUpdates.objects.manage_publication(pub)
+

@@ -80,7 +80,7 @@ class EventViewSet(viewsets.ViewSet):
 
         instance.delete()
         return custom_response.Success_response(msg='Deleted',data=pk,status_code=status.HTTP_204_NO_CONTENT)
-    
+
     def list(self, request, *args, **kwargs):
         'this code let chapter see thier news'
         all_events = self.queryset
@@ -92,7 +92,7 @@ class EventViewSet(viewsets.ViewSet):
             all_events=all_events.filter(chapters =None)
         clean_data = self.serializer_class(all_events,many=True,context={'request':request})
         return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
-          
+
     def create(self,request,format=None):
         'create event'
         serialize =  self.serializer_class(data=request.data,context={"request":request})
@@ -175,7 +175,7 @@ class EventViewSet(viewsets.ViewSet):
             all_events = all_events.filter(chapters=chapter)
         else:
             'get global event'
-            # all_events=all_events.filter(chapters=request.user.chapter)
+            all_events=all_events.filter(chapters=request.user.chapter)
         clean_data = serializers.EventDataSerializer(all_events, many=True)
         return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
 

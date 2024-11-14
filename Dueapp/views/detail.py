@@ -157,7 +157,8 @@ class AdminManageDeactivatingDue(viewsets.ViewSet):
 
 
 class MemberDues(viewsets.ViewSet):
-    permission_classes =[permissions.IsAuthenticated,custom_permissions.IsMember]
+    permission_classes = [permissions.IsAuthenticated,
+    custom_permissions.IsMember, custom_permissions.IsAdminOrSuperAdmin]
 
 
     def list(self,request,format=None):
