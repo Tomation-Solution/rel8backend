@@ -239,3 +239,11 @@ class RescheduleEventRequest(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)
     startDate =models.DateField(null=True, blank=True)
     startTime = models.TimeField(null=True, blank=True)
+
+class PublicEvent(models.Model):
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "event_publicevent"
