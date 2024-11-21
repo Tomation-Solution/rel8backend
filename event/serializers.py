@@ -1,5 +1,6 @@
 from rest_framework import serializers
-
+from mymailing.EmailConfirmation import send_event_confirmation
+import threading
 from utils.custom_exceptions import CustomError
 from . import models
 from account.models import auth as auth_related_models
@@ -12,6 +13,22 @@ class RescheduleEventRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.RescheduleEventRequest
         fields = '__all__'
+
+
+class UnauthorizedEventSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Event
+        fields = "__all__"
+
+
+class EventDataSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Event
+        fields = "__all__"
+
+
 class EventSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     image =  serializers.ImageField(required=False)
@@ -19,7 +36,7 @@ class EventSerializer(serializers.Serializer):
     is_paid_event =serializers.BooleanField(required=True)
     re_occuring= serializers.BooleanField(required=True)# due_type Once  Re-occuring|
     is_virtual=serializers.BooleanField(required=True)
-    # is_for_excos = serializers.BooleanField(required=True)#embers | excos
+    is_for_excos = serializers.BooleanField(required=True)#embers | excos
     commitee_id = serializers.IntegerField(required=False)
     exco_id = serializers.IntegerField(required=False)
     amount=  serializers.CharField(required=True)
@@ -33,26 +50,21 @@ class EventSerializer(serializers.Serializer):
     'for only write only... we want to control the adress so only paid users can access it'
     address = serializers.CharField(write_only=True)
     event_access = serializers.SerializerMethodField()
-
-
+    public = serializers.CharField(required=True)
     organiser_extra_info = serializers.CharField(required=False)
     organiser_name = serializers.CharField(required=False)
     event_extra_details = serializers.CharField(required=False)
     event_docs = serializers.FileField(required=False)
     organiserImage = serializers.ImageField(required=False)
     is_special = serializers.BooleanField(required=False)
-    # for_chapters=serializers.BooleanField(default=False,)
-    # def validate(self, attrs):
-        
-    #     return super().validate(attrs)
-    # def get_address(self,event)
+    
+    
     def get_event_access(self,event):
         link=''
         has_paid=False
-        requests = self.context.get('request')
-        user = self.context.get('request').user
+        request = self.context.get('request')
 
-        if requests.user.user_type in ['admin','super_admin']:
+        if request.user.user_type in ['admin','super_admin']:
             return {
                 'link':event.address,
                 'has_paid':True
@@ -60,7 +72,7 @@ class EventSerializer(serializers.Serializer):
         else:
             "u have to be register before u see a event"
             if event.is_paid_event==False:
-                if models.EventDue_User.objects.filter(user=user,event=event,is_paid=True).exists():
+                if models.EventDue_User.objects.filter(user=request.user,event=event,is_paid=True).exists():
                     link=event.address
                     has_paid=True
                 else:
@@ -69,8 +81,8 @@ class EventSerializer(serializers.Serializer):
                     has_paid=False
             else:
                 'this is a paid event and wee need to do some check'
-                if  models.EventDue_User.objects.filter(user=user,event=event,is_paid=True).exists():
-                    event_due_user = models.EventDue_User.objects.get(user=user,event=event)
+                if  models.EventDue_User.objects.filter(user=request.user,event=event,is_paid=True).exists():
+                    event_due_user = models.EventDue_User.objects.get(user=request.user,event=event)
                     has_paid= event_due_user.is_paid
                     link=event.address
 
@@ -129,12 +141,38 @@ class EventSerializer(serializers.Serializer):
         event =  models.Event.objects.create(
             **validated_data,chapters=chapter,commitee=commitee,
             is_paid_event=is_paid_event,
-            is_special=is_special,
+            is_special=is_special
         )
 
         event.exco=exco
         event.save()
         return event
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.image = validated_data.get('image', instance.image)
+        instance.is_for_excos = validated_data.get('is_for_excos', instance.is_for_excos)
+        instance.is_paid_event = validated_data.get('is_paid_event', instance.is_paid_event)
+        instance.re_occuring = validated_data.get('re_occuring', instance.re_occuring)
+        instance.is_virtual = validated_data.get('is_virtual', instance.is_virtual)
+        instance.commitee_id = validated_data.get('commitee_id', instance.commitee_id)
+        instance.exco_id = validated_data.get('exco_id', instance.exco_id)
+        instance.amount = validated_data.get('amount', instance.amount)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.startDate = validated_data.get('startDate', instance.startDate)
+        instance.startTime = validated_data.get('startTime', instance.startTime)
+        instance.scheduletype = validated_data.get('scheduletype', instance.scheduletype)
+        instance.schedule = validated_data.get('schedule', instance.schedule)
+        instance.address = validated_data.get('address', instance.address)
+        instance.public = validated_data.get('public', instance.public)
+        instance.organiser_extra_info = validated_data.get('organiser_extra_info', instance.organiser_extra_info)
+        instance.organiser_name = validated_data.get('organiser_name', instance.organiser_name)
+        instance.event_extra_details = validated_data.get('event_extra_details', instance.event_extra_details)
+        instance.event_docs = validated_data.get('event_docs', instance.event_docs)
+        instance.organiserImage = validated_data.get('organiserImage', instance.organiserImage)
+        instance.is_special = validated_data.get('is_special', instance.is_special)
+        instance.save()
+        return instance
 
 
 
@@ -145,7 +183,7 @@ class AdminManageEventActiveStatus(serializers.Serializer):
     def validate(self, attrs):
         if attrs.get('event_id') is None:raise CustomError({'event_id':'Invalid event_id'})
         if not models.Event.objects.filter(id=attrs.get('event_id')).exists():
-            raise CustomError({'event_id':'Invalid event_id'})
+            raise CustomError({'event_id':'Event is not found'})
         return super().validate(attrs)
 
 
@@ -165,45 +203,99 @@ class AdminManageEventActiveStatus(serializers.Serializer):
     def update(self, instance, validated_data):
         raise  CustomError({'error':'Not Available '})
 
+# class EventProxyAttendiesSerializer(serializers.Serializer):
+#     full_name = serializers.CharField()
+#     email = serializers.EmailField()
 
-class EventProxyAttendiesSerializer(serializers.Serializer):
+
+class PublicEventRegisterationSerializer(serializers.Serializer):
+    event_id =serializers.IntegerField()
     full_name = serializers.CharField()
     email = serializers.EmailField()
+    paystack_key = serializers.CharField(required=False)
+
+    def validate_email(self, value):
+        """
+        Check that the email is not already registered for the event.
+        """
+        if models.PublicEvent.objects.filter(email=value).exists():
+            raise serializers.ValidationError("This email is already registered for the event.")
+        return value
+
+    def create(self, validated_data):
+        event_id =validated_data.get('event_id')
+        try:
+            event = models.Event.objects.get(id=event_id)
+        except models.Event.DoesNotExist:
+            raise  CustomError({'error':'Event Does Not Exists'})
+
+        if event.is_paid_event == True and validated_data.get('paystack_key') == '':
+             raise CustomError({'error':'Not a free event anymore.'})
+
+        public_registration, created = models.PublicEvent.objects.get_or_create(
+            event=event,
+            full_name=validated_data['full_name'],
+            email=validated_data['email']
+        )
+
+        # public_payment_instance = models.PublicEventPayment.objects.create(
+        #     event=public_registration,
+        #     paystack_key=validated_data.get('paystack_key')
+        # )
+        
+        data = {
+            "event_name": event.name,
+            "event_address": event.address,
+            "guest_email": validated_data.get('email'),
+            "short_name": "BUKAA Association"
+        }
+        thread= threading.Thread(target=send_event_confirmation,args=[data])
+        thread.start()
+        thread.join()
+
+        return public_registration
+
+
+class PublicEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.PublicEvent
+        fields = "__all__"
+
 
 class RegiterForFreeEvent(serializers.Serializer):
     event_id =serializers.IntegerField()
-    proxy_participants = EventProxyAttendiesSerializer(many=True,required=False)
-
-
 
     def create(self, validated_data):
-        proxy_participants = validated_data.get('proxy_participants',[])
-        event_id =validated_data.get('event_id')
-        if not models.Event.objects.filter(id=event_id,).exists():
+        event_id = validated_data.get('event_id')
+        user =  self.context.get('request').user
+        try:
+            event = models.Event.objects.get(id=event_id)
+        except models.Event.DoesNotExist:
             raise  CustomError({'error':'Event Does Not Exists'})
+                  
+        if event.is_paid_event == True:
+             raise CustomError({'error':'Not a free event anymore.'})
 
-        event = models.Event.objects.get(id=event_id)        
-        if event.is_paid_event == True: raise CustomError({'error':'You Need to pay cus this event is paid'})
         if models.EventDue_User.objects.filter(event=event, user = self.context.get('request').user,).exists():
             raise CustomError({'error':'You have registered already'})
-        # is_paid_event=True
+
         registration = models.EventDue_User.objects.create(
-            user = self.context.get('request').user,
+            user = user,
             event=event,
             amount=0.00,
-            paystack_key="free_evnt",
+            paystack_key="free_event",
             is_paid=True
         )
-        if len(proxy_participants)!=0:
-            event_proxy_attendies,created= models.EventProxyAttendies.objects.get_or_create(
-                participants= proxy_participants,
-                event_due_user=registration
-            )
-            mailing_tasks.send_event_invitation_mail(
-                user_id=self.context.get('request').user.id,
-                event_id = event.id,
-                event_proxy_attendies_id=event_proxy_attendies.id
-            )
+
+        data = {
+            "event_name": event.name,
+            "event_address": event.address,
+            "guest_email": user.email,
+            "short_name": "BUKAA Association"
+        }
+        thread= threading.Thread(target=send_event_confirmation,args=[data])
+        thread.start()
+        thread.join()
 
         return registration
     
@@ -211,24 +303,30 @@ class RegiterForFreeEvent(serializers.Serializer):
 
 
 class RegisteredEventMembersSerializerCleaner(serializers.ModelSerializer):
-    proxy_participants = serializers.SerializerMethodField()
-    memeber = serializers.SerializerMethodField()
+    member = serializers.SerializerMethodField(read_only=True)
 
-    def get_memeber(self,instance:models.EventDue_User):
-        member =user_related_models.Memeber.objects.get(user=instance.user)
-        return {
-            'full_name':member.full_name,
-            'email':instance.user.email,
-            'member_id':member.id
-        }
-
-    def get_proxy_participants(self,instance:models.EventDue_User):
-        meeting_proxy_attendies = models.EventProxyAttendies.objects.get(event_due_user=instance)
-        return meeting_proxy_attendies.participants
-
+    def get_member(self, obj):
+        return obj.user.memeber.name or obj.user.email
 
     class Meta:
         model =models.EventDue_User
-        fields = [
-            'proxy_participants','memeber','id'
-        ]
+        fields = "__all__"
+
+
+class EventPaymentSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField(read_only=True)
+    event_name = serializers.SerializerMethodField(read_only=True)
+    event_payment_id = serializers.SerializerMethodField(read_only=True)
+
+    def get_event_payment_id(self, obj):
+        return obj.id
+
+    def get_event_name(self, obj):
+        return obj.event.name 
+
+    def get_user(self, obj):
+        return obj.user.memeber.name or obj.user.email
+
+    class Meta:
+        model = models.EventDue_User
+        fields = ['event_payment_id', 'user', 'amount', 'event', 'event_name', 'is_paid', 'paystack_key']

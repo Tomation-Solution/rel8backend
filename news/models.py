@@ -19,8 +19,8 @@ class News(models.Model):
     commitee_name = models.ForeignKey(user_models.CommiteeGroup,null=True,on_delete=models.CASCADE,blank=True,default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)   
-    likes = models.IntegerField(null=True)
-    dislikes = models.IntegerField(null=True)
+    likes = models.IntegerField(default=0)
+    dislikes = models.IntegerField(default=0)
     chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True,blank=True)
     body = models.TextField(default=" ")
     image = models.ImageField(upload_to="newsImage/%d/",null=True,default=None)
@@ -28,8 +28,10 @@ class News(models.Model):
     danload = models.FileField(upload_to='newsFileDanload/%d/',null=True,default=None)
     exco = models.ForeignKey(user_models.ExcoRole,on_delete=models.SET_NULL,null=True,default=None,blank=True) 
     dues_for_membership_grade  =models.ForeignKey(user_models.MemberShipGrade,on_delete=models.SET_NULL,null=True,default=None,blank=True)
-    
-    def __str__(self):return self.name
+    # writer = models.ForeignKey(user_realted_models.Admin, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
     
     def save(self, *args,**kwargs) -> None:
         if self.is_committe:

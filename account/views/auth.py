@@ -1,5 +1,6 @@
 import json
 from account.task import regiter_user_to_chat,charge_new_member_dues__fornimn
+from django.shortcuts import get_object_or_404
 from mymailing import tasks as mymailing_task
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -28,6 +29,8 @@ from mymailing.EmailConfirmation import activateEmail
 from utils.notification import NovuProvider
 # create Super user of the Alumni which is the owner
 from pusher_push_notifications import PushNotifications
+from rest_framework.views import APIView
+
 
 
 # beams_client = PushNotifications(
@@ -57,29 +60,23 @@ class EmailValidateView(GenericAPIView):
         key = request.data.get("key", None)
 
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-                
-            if   EmailInvitation.objects.filter(key=key).exists():
-                email_activation_query = EmailInvitation.objects.filter(
-                    key=key
-                )
-                print("helo ")
-                confirm_query = email_activation_query.confirmable()
-                if confirm_query.count() == 1:
-                    email_activation_object: EmailInvitation = (
-                        confirm_query.first()
-                    )
-                    email_activation_object.activate()
+        serializer.is_valid(raise_exception=True)
 
-                    return Success_response(msg="Validated Successfully ",data=[],status_code=status.HTTP_200_OK)
-                else:
-                    activated_query = email_activation_query.filter(activated=True)
-                    if activated_query.exists():
-                        return Success_response(msg= "Your email has already been confirmed",data=[],status_code=status.HTTP_200_OK)
-                
-            raise CustomError({"error":"Bad Key"})
-
+        email_activation_query = EmailInvitation.objects.filter(key=key)
             
+        if not email_activation_query.exists():
+            raise CustomError({"error":"Key provided does not exist"})
+
+        confirm_query = email_activation_query.confirmable()
+        if confirm_query.count() == 1:
+            first_email_activation_object = confirm_query.first()
+            first_email_activation_object.activate()
+            return Success_response(msg="Email Validated Successfully ",data=[],status_code=status.HTTP_200_OK)
+        else:
+            activated_query = email_activation_query.filter(activated=True)
+            if activated_query.exists():
+                return Success_response(msg= "Your email has already been confirmed",data=[],status_code=status.HTTP_200_OK)
+        
 class RegisterSuperAdmin(CreateAPIView):
     serializer_class  =auth_serializers.RegisterAdminUser
     permission_classes =[AllowAny]
@@ -255,74 +252,82 @@ class ManageMemberValidation(viewsets.ViewSet):
         
         if user_models.UserMemberInfo.objects.filter(value=MEMBERSHIP_NO).exists():
             raise CustomError({'error':'Membership info has been registered already'})
+
         chapter=None
         chapter_instance=None
         for key in request.data.keys():
             if key == 'chapter':
                 chapter = request.data[key]
+                break
         # if chapter is None:
         #     raise CustomError({'error':'Chapter not found please reach out to admin'})
-        if(len(alum_db['usersInfo'][0].keys())==len(request.data.keys())):
-            if get_user_model().objects.filter(email=email).exists():raise CustomError({'error':'email already exists'})
-            if chapter:
-                if  auth_models.Chapters.objects.filter(name__icontains=chapter):
-                    chapter_instance = auth_models.Chapters.objects.filter(name__icontains=chapter).first()
-                # raise CustomError({'error':'chapter not found'})
-            user = get_user_model().objects.create_user(
-                email=email,
-                user_type='members',
-                password =password,
-                
-            )
-            if chapter_instance:
-                "we going to add chapters if there is"
-                user.chapter  = chapter_instance
-                user.save()
+        # if(len(alum_db['usersInfo'][0].keys())==len(request.data.keys())):
+        if get_user_model().objects.filter(email=email).exists():raise CustomError({'error':'email already exists'})
+        if chapter:
+            if  auth_models.Chapters.objects.filter(name__icontains=chapter):
+                chapter_instance = auth_models.Chapters.objects.filter(name__icontains=chapter).first()
+            # raise CustomError({'error':'chapter not found'})
+        user = get_user_model().objects.create_user(
+            email=email,
+            user_type='members',
+            password = password
+            
+        )
+        if chapter_instance:
+            "we going to add chapters if there is"
+            user.chapter  = chapter_instance
+            user.save()
 
-            member = user_models.Memeber.objects.create(
-                user =user,
-                alumni_year=alumni_year
-            )
-        
-      
-
-            for key in request.data.keys():
-                if not key =='password' and  not key == 'alumni_year':
-                    user_models.UserMemberInfo.objects.create(
-                        name= key,
-                        value= request.data[key],
-                        member=member
-                    )
-            thread= threading.Thread(target=activateEmail,args=[user,user.email,connection.schema_name])
-            thread.start()
-            thread.join()
-
-            # regiter_user_to_chat.delay(member.id)
-            # if connection.schema_name == 'nimn':
-            "this is not for nimn specific any more view the function for more info"
-            print({'user_id':user.id})
-            thread= threading.Thread(target=charge_new_member_dues__fornimn,args=[user.id,connection.schema_name])
-            thread.start()
-            thread.join()
-            # if connection.schema_name == 'man':
-            #     for key in request.data.keys():
-            #         if key == 'SECTOR':
-            #             exco_name = request.data[key]
-            #             thread= threading.Thread(target=acct_task.group_MAN_subSector_and_sector,args=(exco_name,member.id,'sector'))
-            #         if key == 'SUB-SECTOR':
-            #             exco_name = request.data[key]
-            #             acct_task.group_MAN_subSector_and_sector.delay(
-            #                 exco_name,member.id,type='sub-sector'
-            #             )
-            try:
-                novu = NovuProvider()
-                novu.subscribe(
-                userID=user.id,
-                email=user.email
+        member = user_models.Memeber.objects.create(
+            user =user,
+            alumni_year=alumni_year,
+            name=request.data.get('fullname', ''),
+            department=request.data.get('programme', ''),
+            yog=request.data.get('yog', '')
+            # origin_state = request.data.get('state_of_origin', ''),
+            # residential_country = request.data.get('residential_country', ''),
+            # residential_state = request.data.get('residential_state', ''),
+            # physical_address = request.data.get('physical_address', ''),
+            # title = request.data.get('title', '')
+        )
+    
+        for key in request.data.keys():
+            if not key =='password' and  not key == 'alumni_year':
+                user_models.UserMemberInfo.objects.create(
+                    name=key,
+                    value=request.data[key],
+                    member=member
                 )
-            except:pass  
-            return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
-        raise CustomError({"error":"Data is not complete"})
+        thread= threading.Thread(target=activateEmail,args=[user,user.email,connection.schema_name])
+        thread.start()
+        thread.join()
+
+        # regiter_user_to_chat.delay(member.id)
+        # if connection.schema_name == 'nimn':
+        "this is not for nimn specific any more view the function for more info"
+        print({'user_id':user.id})
+        thread= threading.Thread(target=charge_new_member_dues__fornimn,args=[user.id,connection.schema_name])
+        thread.start()
+        thread.join()
+        # if connection.schema_name == 'man':
+        #     for key in request.data.keys():
+        #         if key == 'SECTOR':
+        #             exco_name = request.data[key]
+        #             thread= threading.Thread(target=acct_task.group_MAN_subSector_and_sector,args=(exco_name,member.id,'sector'))
+        #         if key == 'SUB-SECTOR':
+        #             exco_name = request.data[key]
+        #             acct_task.group_MAN_subSector_and_sector.delay(
+        #                 exco_name,member.id,type='sub-sector'
+        #             )
+        try:
+            novu = NovuProvider()
+            novu.subscribe(
+            userID=user.id,
+            email=user.email
+            )
+        except:pass  
+        return Success_response(msg="Success",data=[],status_code=status.HTTP_201_CREATED)
+        # raise CustomError({"error":"Data is not complete"})
         
 
 class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
@@ -334,7 +339,6 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
     parser_classes = (custom_parsers.NestedMultipartParser,FormParser,)
     queryset = user_models.CommiteeGroup.objects.all()
 
-    # @permission_classes([IsAuthenticated])
 
     @action(['get','post'],detail=False,permission_classes=[IsAuthenticated])
     def get_commitee(self,request,format=None):
@@ -346,8 +350,9 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
             clead_data = self.serializer_class(all_commitee_group,many=True)
         else:
             commitee_id = request.query_params.get('commitee_id',None)
-            if commitee_id is None:raise CustomError({'error':'please provide commitee_id'})
-            commitee = self.queryset.get(id=commitee_id)
+            if commitee_id is None:
+                raise CustomError({'error':'please provide commitee_id'})
+            commitee = get_object_or_404(self.queryset, id=commitee_id)
             clead_data = self.serializer_class(commitee,many=False,context={'detail':True})
         return Success_response(msg="Success",data =clead_data.data)
 
@@ -389,21 +394,56 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
                     curentmember  =  user_models.Memeber.objects.get(id=member_id)
                     commitee.members.add(curentmember)
 
-
-        
-
-
         clean_data = self.serializer_class(commitee)
-        return Success_response(msg='added members successfully',data=[clean_data.data,{'errors':errors}])
-    def partial_update(self, request, *args, **kwargs):
+        return Success_response(msg='Added members successfully',data=[clean_data.data,{'errors':errors}])
+   
+    def update(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
-        print({'pk':pk})
-        if not self.queryset.filter(id=pk).exists():raise CustomError('Commitee does not exits')
-        serialzed_data = self.serializer_class(instance=self.queryset.get(id=pk),data=request.data)
-        serialzed_data.is_valid(raise_exception=True)
-        updatedInstance = serialzed_data.save()
-        clead_data = self.serializer_class(updatedInstance)
-        return Success_response(msg='Updated',data=[clead_data.data])
+        commitee_instance = get_object_or_404(self.queryset, id=pk)
+        
+        serialized_data = self.serializer_class(instance=commitee_instance, data=request.data)
+        serialized_data.is_valid(raise_exception=True)
+        
+        updated_instance = serialized_data.save()
+        clean_data = self.serializer_class(updated_instance)
+        
+        return Success_response(msg='Success', data=[clean_data.data])
+
+    def retrieve(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        commitee = get_object_or_404(self.queryset, id=pk)
+        clead_data = self.serializer_class(commitee)
+        return Success_response(msg='Success', data=[clead_data.data])
+
+    def destroy(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        commitee = get_object_or_404(self.queryset, id=pk)
+        commitee.delete()
+        return Success_response(msg='Success', status_code=status.HTTP_204_NO_CONTENT)
+
+
+
+class MemberCommiteeView(APIView):
+    permission_classes = [custom_permission.IsMember, IsAuthenticated]
+    serializer_class = auth_serializers.AdminManageCommiteeGroupSerializer
+    queryset = user_models.CommiteeGroup.objects.all()
+
+    def get(self, request, format=None):
+        # Get the commitee ID from the query parameters
+        commitee_id = request.query_params.get('commitee_id', None)
+        
+        if commitee_id:
+            # Retrieve a specific committee by its ID
+            commitee = get_object_or_404(self.queryset, id=commitee_id, members__in=[request.user.memeber.id])
+            clead_data = self.serializer_class(commitee, many=False, context={'detail': True})
+        else:
+            # List all committees that the user is a member of
+            user_committees = self.queryset.filter(members__in=[request.user.memeber.id])
+            clead_data = self.serializer_class(user_committees, many=True)
+        
+        return Success_response(msg="Success", data=clead_data.data)
+
+
 
 
 class AdminManageCommiteeGroupPostionsViewSet(viewsets.ModelViewSet):
@@ -415,17 +455,31 @@ class AdminManageCommiteeGroupPostionsViewSet(viewsets.ModelViewSet):
         serialized.is_valid(raise_exception=True)
         updated_instance = serialized.save()
         clean_data = self.serializer_class(updated_instance)
-        return Success_response('created successfull',data=[clean_data.data],status_code=status.HTTP_201_CREATED)
+        return Success_response('Success',data=[clean_data.data],status_code=status.HTTP_201_CREATED)
 
+    def retrieve(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        commitee_position = get_object_or_404(self.queryset, id=pk)
+        clead_data = self.serializer_class(commitee_position)
+        return Success_response(msg='Success', data=[clead_data.data])
+
+    def destroy(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        commitee_position = get_object_or_404(self.queryset, id=pk)
+        commitee_position.delete()
+        return Success_response(msg='Success', status_code=status.HTTP_204_NO_CONTENT)
+
+    def update(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        commitee_position = get_object_or_404(self.queryset, id=pk)
+        serialized = self.serializer_class(commitee_position, data=request.data)
+        serialized.is_valid(raise_exception=True)
+        updated_instance = serialized.save()
+        clean_data = self.serializer_class(updated_instance)
+        return Success_response('Success', data=[clean_data.data], status_code=status.HTTP_200_OK)
 
 class SuperAdminMangeChapters(viewsets.ModelViewSet):
     "the super admin can create update the chapters"
     serializer_class = auth_serializers.ManageChapters
     permission_classes =[IsAuthenticated,custom_permission.IsSuperAdmin]
     queryset = auth_models.Chapters.objects.all()
-
-    @action(detail=False,methods=['get'],permission_classes=[IsAuthenticated])
-    def get_chapters(self,request, pk=None,):
-        "any bodyu can list the chapters"
-
-        return Success_response(msg="Success",data=[*self.queryset.values()])

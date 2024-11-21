@@ -21,6 +21,8 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+from dotenv import load_dotenv
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -31,9 +33,9 @@ SECRET_KEY = os.environ['secret_key']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*',]
+ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS=['http://85.17.209.33:8000',]
+CSRF_TRUSTED_ORIGINS=['http://85.17.209.33:8000']
 
 
 # Application definition
@@ -72,13 +74,11 @@ SHARED_APPS = (
 
     #    "cloudinary_storage",
     "cloudinary",
-     'channels',
-     'chat',
-     'meeting',
-     'prospectivemember'
-
-     # you must list the app where your tenant model resides in
-    #    'mailing',
+    'channels',
+    'chat',
+    'meeting',
+    'prospectivemember'
+    # "notifications"
 
 )
 
@@ -116,8 +116,9 @@ TENANT_APPS = (
      'interswitchapp',
      'LatestUpdate',
      'services',
-'prospectivemember',
-'customservices'
+    'prospectivemember',
+    'customservices',
+    'contactus'
     # my apps
 
 )
@@ -210,7 +211,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -221,7 +221,6 @@ CELERY_TIMEZONE=TIME_ZONE
 USE_I18N = True
 CELERY_ENABLE_UTC = False
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
@@ -263,14 +262,14 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
 }
 
-
 PAYSTACK_SECRET=os.environ['PAYSTACK_SECRET']
 PAYSTACK_PUBLICKEY=os.environ['PAYSTACK_PUBLICKEY']
+PAYMENT_FOR_PROJECT_CALLBACK=os.environ.get('PAYSTACK_PAYMENT_FOR_PROJECT_CALLBACK', "")
+PAYMENT_FOR_EVENT_CALLBACK=os.environ.get('PAYSTACK_PAYMENT_FOR_EVENT_CALLBACK', "")
 
 if os.environ.get('REDIS_URL',None):
     "if u have a redis url u can always put it in the venv...."
     CELERY_BROKER_URL =os.environ.get('REDIS_URL')
-
 
 sentry_sdk.init(
     dsn="https://a587ed04d437497199ba62aececdc5ed@o930234.ingest.sentry.io/6394255",
@@ -286,15 +285,21 @@ sentry_sdk.init(
     send_default_pii=True
 )
 
+# Read trusted URLs from the environment variable
+trusted_urls = os.environ['trusted_urls'].split(',')
 
+# Helper function to remove URLs with paths
+def is_valid_url(url):
+    from urllib.parse import urlparse
+    parsed_url = urlparse(url)
+    return all([parsed_url.scheme, parsed_url.netloc]) and not parsed_url.path
 
-
-
-
-CORS_ALLOWED_ORIGINS = os.environ['trusted_urls'].split(',')
+# Filter valid URLs and remove wildcard
+CORS_ALLOWED_ORIGINS = [
+    url.rstrip('/') for url in trusted_urls if is_valid_url(url) and url != '*'
+]
+ 
 CSRF_TRUSTED_ORIGINS =CORS_ALLOWED_ORIGINS
-# if os.environ.get('databaseName',None):
-#     CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
 CORS_ALLOWED_ORIGINS.append('http://localhost:3000')
 CORS_ALLOW_ALL_ORIGINS=True
 CORS_ALLOW_METHODS = [
@@ -318,14 +323,11 @@ CORS_ALLOW_HEADERS = [
 'x-requested-with',
 ]
 
-
-
 # cloudinary settings
 "usiing cloudinary for storage"
 CLOUDINARY_URL = os.environ["CLOUDINARY_URL"]
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 ASGI_APPLICATION = "rel8.routing.application"
-
 
 if os.environ.get('REDIS_URL'):
     CHANNEL_LAYERS = {
@@ -357,3 +359,54 @@ redis_url = os.environ.get('REDIS_URL',None)
 if redis_url:
     CELERY_BROKER_URL =redis_url
 PERIODIC_TASK_TENANT_LINK_MODEL ='Rel8Tenant.PeriodicTaskTenantLink'
+
+
+# Define your logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'WARNING',  # Only log warnings and errors to file
+            # 'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+            'level': 'WARNING',  # Suppress debug and info logs in console
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'WARNING',  # Suppress debug messages
+            # 'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['file', 'console'],
+            'level': 'ERROR',  # Log only errors related to requests
+            # 'level': 'DEBUG',
+            'propagate': False,
+        },
+        'relbackend': {
+            'handlers': ['file', 'console'],
+            'level': 'WARNING',  # Log warnings and errors only
+            # 'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}

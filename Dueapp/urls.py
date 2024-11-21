@@ -10,11 +10,10 @@ router.register("AdminManageDue",detail_views.AdminManageDue,basename='AdminMana
 router.register("AdminManageDeactivatingDue",detail_views.AdminManageDeactivatingDue,basename='AdminManageDeactivatingDue')
 router.register("memberdue",detail_views.MemberDues,basename='MemberDues')
 
-
-# AdminManageDeactivatingDuesSerializer
-
-
 urlpatterns = [
-    path('process_payment/<str:forWhat>/<int:pk>/',payments_views.InitPaymentTran.as_view(),name='process_payment'),
-    # path('webhook/',payments_views.useWebhook)
+    path('process_payment/<str:forWhat>/<int:pk>/',payments_views.DuesPaymentView.as_view(),name='process_payment'),
+    path('', detail_views.DuesView.as_view(), name="dues"),
+    path('deactivating/', detail_views.DeactivatingDuesView.as_view(), name="dues"),
+    path('save/payments/',payments_views.SaveDuesPayment.as_view(), name="save_dues_payment"),
+    path('deactivating/save/payments/',payments_views.SaveDeactivatingDuesPayment.as_view(), name="save_deactivatingdues_payment"),
 ] +router.urls

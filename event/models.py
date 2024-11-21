@@ -12,6 +12,7 @@ from utils.custom_exceptions import CustomError
 from utils.usefulFunc import get_localized_time
 from cloudinary_storage.storage import RawMediaCloudinaryStorage
 from pytz import timezone
+from django.conf import settings
 # Create your models here.
 
 """
@@ -21,8 +22,15 @@ here is the plan:
     if it is_paid ==true:
             event_user should be created for all the member type to pay
 """
+
+EVENT_CHOICES = (
+    ("yes", "yes"),
+    ("no", "no"),
+    ("both", "both")
+)
 class Event(models.Model):
     name=models.CharField(max_length=355)
+    
     class ScheduleTypes(models.TextChoices):
         day_of_week='day_of_week'
         month_of_year="month_of_year"
@@ -48,7 +56,7 @@ class Event(models.Model):
     # if it for chapters then we filter the event for only users that belongs to that chapter
     chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True,blank=True)
     image = models.ImageField(null=True,default=None,upload_to='events/image/')
-    address = models.TextField(default=" ")
+    address = models.TextField(default="")
 
     organiser_name = models.CharField(max_length=200,default='',blank=True)
     organiser_extra_info = models.CharField(max_length=200,default='',blank=True)
@@ -76,6 +84,7 @@ class Event(models.Model):
     # endDate =models.DateField(null=True, blank=True)
     scheduletype = models.CharField(choices=ScheduleTypes.choices,default='day_of_week',max_length=200)
     schedule = models.JSONField(null=True)
+    public = models.CharField(choices=EVENT_CHOICES, default=EVENT_CHOICES[1][0], max_length=5)
     # mintues  = models.CharField(max_length=30)
     # hour     = models.CharField(max_length=30)
     """
@@ -89,6 +98,9 @@ class Event(models.Model):
             "day_of_week_and_month_of_year":[]
         }
     """
+
+    def __str__(self):
+        return self.name
 
 
     def create_event_job(self):
@@ -195,17 +207,33 @@ class Event(models.Model):
 class EventDue_User(models.Model):
     "this would serve has paymeny history for paid event"
     user=models.ForeignKey(get_user_model(),on_delete=models.SET_NULL,null=True)
-    event =models.ForeignKey(Event,on_delete=models.CASCADE)
+    event = models.ForeignKey(Event,on_delete=models.CASCADE)
     amount= models.DecimalField(decimal_places=2,max_digits=10)
     # payed_for_how_many_people= models.IntegerField(default=1,blank=True)
-    paystack_key = models.TextField(default='')
+    paystack_key = models.TextField(default='', unique=True)
     is_paid = models.BooleanField(default=False)
+
 
 class EventProxyAttendies(models.Model):
     "This is are people invited for a event ... not proxy"
     event_due_user = models.ForeignKey(EventDue_User,on_delete=models.CASCADE)
     # {'participants':[]}
     participants  = models.JSONField(default=dict)
+
+class PublicEvent(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    def __str__(self):
+        return self.event.name
+
+# class PublicEventPayment(models.Model):
+#     paystack_key = models.CharField(max_length=250, default="")
+#     event = models.ForeignKey(PublicEvent, on_delete=models.CASCADE)
+#     paid_at = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return self.paystack_key
 
 class RescheduleEventRequest(models.Model):
     event = models.ForeignKey(Event,on_delete=models.CASCADE)

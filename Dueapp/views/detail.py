@@ -8,8 +8,43 @@ from rest_framework.decorators import action
 from ..models import DeactivatingDue, DeactivatingDue_User, Due_User
 from account.models import user as  user_related_models
 from account.serializers import user as user_serializer
+from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 
-# from 
+
+
+class DuesView(APIView):
+    permission_classes = [permissions.IsAuthenticated, custom_permissions.IsMemberOrProspectiveMember]
+    
+    def get(self, request, *args, **kwargs):
+        due_id = request.query_params.get('id', None)
+        if due_id:
+            # Retrieve the specific due by ID
+            due = get_object_or_404(models.Due, id=due_id)
+            clean_data = serializers.DueCleanSerialier(due)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
+        else:
+            # Return all dues
+            dues = models.Due.objects.all()
+            clean_data = serializers.DueCleanSerialier(dues, many=True)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
+
+class DeactivatingDuesView(APIView):
+    permission_classes = [permissions.IsAuthenticated, custom_permissions.IsMemberOrProspectiveMember]
+    
+    def get(self, request, *args, **kwargs):
+        due_id = request.query_params.get('id', None)
+        if due_id:
+            # Retrieve the specific deactivating due by ID
+            due = get_object_or_404(models.DeactivatingDue, id=due_id)
+            clean_data = serializers.DeactivatingDueCleanSerialier(due)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
+        else:
+            # Return all deactivating dues
+            dues = models.DeactivatingDue.objects.all()
+            clean_data = serializers.DeactivatingDueCleanSerialier(dues, many=True)
+            return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
+
 
 class AdminManageDue(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin,
@@ -96,24 +131,18 @@ class AdminManageDeactivatingDue(viewsets.ViewSet):
     custom_permissions.Normal_Admin_Must_BelongToACHapter]
     serializer_class = serializers.AdminManageDeactivatingDuesSerializer
 
+    def list(self,request):
+        deactivating_dues = models.DeactivatingDue.objects.all()
+        clean_data  = serializers.DeactivatingDueCleanSerialier(deactivating_dues,many=True)
+        return custom_response.Success_response(msg='Success',data =clean_data.data,status_code=status.HTTP_200_OK)
+
+
     def create(self,request,format=None):
         'an admin is creating Due for the user'
-        # print(request.data)
-        serialized = self.serializer_class(data=request.data,context={"request":request})
-        serialized.is_valid(raise_exception=True)
-        due_id =serialized.save()
-        due = models.DeactivatingDue.objects.get(id=due_id)
-        return custom_response.Success_response(msg='Deactivating Due created successfully',data=[
-        {
-        'id':due.id,
-        'name':due.name,
-        'is_for_excos':due.is_for_excos,
-        'amount':due.amount,
-        'startDate':due.startDate,
-        'startTime':due.startTime,
-        'month':due.month,
-        }
-        ],status_code=status.HTTP_201_CREATED)
+        serializer = self.serializer_class(data=request.data,context={"request":request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return custom_response.Success_response(msg='Deactivating Due created successfully',data=serializer.data,status_code=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk=None):
         if(models.DeactivatingDue.objects.filter(id=pk).exists()):
@@ -128,15 +157,15 @@ class AdminManageDeactivatingDue(viewsets.ViewSet):
 
 
 class MemberDues(viewsets.ViewSet):
-    permission_classes =[permissions.IsAuthenticated,custom_permissions.IsMember]
-
+    permission_classes = [permissions.IsAuthenticated, custom_permissions.IsMember]
+    # permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated, custom_permissions.IsSuperAdmin,]
 
     def list(self,request,format=None):
         my_dues = Due_User.objects.all().filter(user=request.user)
         clean_data= serializers.MemberDueUSerSerializer(instance=my_dues,many=True)
-        return custom_response.Success_response(msg='Success',
-                        data=clean_data.data)
-                        
+        return custom_response.Success_response(msg='Success', data=clean_data.data)
+
     @action(detail=False,methods=['get'])
     def get_due_detail(self,request,format=None):
         dues = Due_User.objects.all().filter(user=request.user)

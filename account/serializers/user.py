@@ -1,4 +1,7 @@
 import datetime 
+import threading
+import os
+
 from rest_framework import serializers
 from Rel8Tenant import models
 from utils.custom_exceptions import CustomError
@@ -7,15 +10,15 @@ from django.contrib.auth import get_user_model
 from ..models import user as user_models
 from account.models import auth as  user_auth_models
 from django.shortcuts import get_object_or_404
-import os
+from ..models import auth as auth_related_models
 from account.serializers import user as user_related_serializer
 from django.utils.encoding import force_str,force_bytes
 from django.utils.http import urlsafe_base64_encode,urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from account.task import send_forgot_password_mail
-import threading
 User = get_user_model()
 WEBSITEURL = os.environ['websiteurl']
+
 def normalize_email(email):
     """
     Normalize the email address by lower-casing the domain part of it.
@@ -110,79 +113,85 @@ class CreateAlumniSerializers(serializers.ModelSerializer):
             raise serializers.ValidationError({'key':_})
         # return super().create(validated_data)
 
-class CreateExcoRole(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    name  = serializers.CharField()
-    about = serializers.CharField()
-    can_upload_min = serializers.BooleanField()
-    member_id = serializers.IntegerField(required=False)
-    is_remove_member = serializers.BooleanField(required=False)
-    chapter_id = serializers.IntegerField(read_only=True)
+class ExcoRoleSerializer(serializers.ModelSerializer):
+    member = serializers.SerializerMethodField(read_only=True)
+
+    def get_member(self, obj):
+        return [member.name for member in obj.member.all()]
+
+    chapter = serializers.SerializerMethodField()
+
+    def get_chapter(self, obj):
+        return obj.chapter.name
+
+    class Meta:
+        model = user_models.ExcoRole
+        fields = '__all__'
 
 
+class CreateExcoRoleSerializer(serializers.ModelSerializer):
+    member_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=user_models.Memeber.objects.all(), source='member')
 
-    def create(self, validated_data):
-        name  = validated_data.get('name')
-        about =validated_data.get('about')
-        can_upload_min = validated_data.get('can_upload_min',False)
+    class Meta:
+        model = user_models.ExcoRole
+        fields = ['id', 'name', 'about', 'can_upload_min', 'chapter', 'member_ids']
 
-        "an exco postion can be for a chapter or global... global exco has None in their chapter column"
-        chapter =None#it only super_user that can create a global exco
-        if(self.context.get('request').user.user_type=='admin'):
-            "if this person creating the role is an admin then the role is for that admins chaper..."
-            chapter=self.context.get('request').user.chapter
-        print({'chapter':chapter})
-        exco_role = user_models.ExcoRole.objects.create(
-            name=name,about=about,can_upload_min=can_upload_min,
-            chapter = chapter
-        )
-        exco_role.save()
-        return exco_role
-    def validate(self, attrs):
-        "here we doing all validation and incase the member_id was sent we wounld include the member in it"
-        if not  attrs.get('member_id',None):
-            if user_models.Memeber.objects.all().filter(id= attrs.get('member_id')).exists():
-                raise CustomError({"error":"this member doesn't exists"})
-        return super().validate(attrs)
 
-    def update(self, instance, validated_data):
+# class CreateExcoRole(serializers.Serializer):
+#     id = serializers.IntegerField(read_only=True)
+#     name = serializers.CharField(required=False)
+#     about = serializers.CharField(required=False)
+#     can_upload_min = serializers.BooleanField(required=False, default=False)
+#     member_ids = serializers.ListField(required=False)
+#     is_remove_member = serializers.BooleanField(required=False, default=False)
+#     chapter_id = serializers.IntegerField(required=False)
 
-        member_id = validated_data.get('member_id',None)
-        if validated_data.get("is_remove_member",None):#this means u want to remove a member from this role
-            member = get_object_or_404(user_models.Memeber,id=member_id)
-            member.is_exco=False
-            member.save()
-            instance.member.remove(member)
-            instance.save()
-        else:
-            previous_member =None
+#     def create(self, validated_data):
+#         name = validated_data.get('name')
+#         about = validated_data.get('about')
+#         can_upload_min = validated_data.get('can_upload_min', False)
+#         chapter_id = validated_data.get('chapter_id')
+#         member_ids = validated_data.get('member_ids', [])
 
-            if member_id:#this means this admin wants add this member as an exco
-                member = get_object_or_404(user_models.Memeber,id=member_id)
+#         chapter = None
+#         if self.context.get('request').user.user_type == 'admin':
+#             chapter = self.context.get('request').user.chapter
 
-                if instance.chapter is not None:
-                    if member.user.chapter is None: raise CustomError({"chapter":'member does not belong to a chapter yet'})
-                    if instance.chapter.id !=member.user.chapter.id:
-                        raise CustomError({'chapter':f'member does not belong to {instance.chapter.name} chapter'})
-                # if instance.member.count() !=0 :
-                #     if instance.member.id !=member_id:
-                #         'this means we are setting a new member we have to set the previous_member exco to fals'
+#         if chapter_id:
+#             chapter = get_object_or_404(auth_related_models.Chapters, id=chapter_id)
 
-                #         previous_member_id=instance.member.id 
-                #         previous_member = user_models.Memeber.objects.get(id=previous_member_id)
-                #         previous_member.is_exco=False
-                #         previous_member.save()
-                member.is_exco=True 
-                member.save()
-                instance.member.add( member)
-        validated_data.get('name',instance.name)
-        instance.name= validated_data.get('name',instance.name)
-        instance.about= validated_data.get('about',instance.about)
-        instance.can_upload_min= validated_data.get('can_upload_min',instance.can_upload_min)
+#         exco_role = user_models.ExcoRole.objects.create(
+#             name=name, about=about, can_upload_min=can_upload_min, chapter=chapter
+#         )
+#         for member_id in member_ids:
+#             member = get_object_or_404(user_models.Memeber, id=member_id)
+#             member.is_exco = True
+#             member.save()
+#             exco_role.member.add(member)
 
-    
-        instance.save()
-        return instance
+#         exco_role.save()
+#         return exco_role
+
+#     # def validate(self, attrs):
+#     #     member_ids = attrs.get('member_ids', [])
+#     #     for member_id in member_ids:
+#     #         if not user_models.Memeber.objects.filter(id=member_id).exists():
+#     #             raise CustomError({"error": f"Member with id {member_id} doesn't exist"})
+#     #     return super().validate(attrs)
+
+#     def update(self, instance, validated_data):
+#         # member_ids = validated_data.get('member_ids', [])
+#         is_remove_member = validated_data.get('is_remove_member', False)
+#         new_chapter_instance = self.context.get('chapter')
+
+#         instance.name = validated_data.get('name', instance.name)
+#         instance.member = validated_data.get('member', instance.member)
+#         instance.chapter = new_chapter_instance if new_chapter_instance else instance.chapter
+#         instance.about = validated_data.get('about', instance.about)
+#         instance.can_upload_min = validated_data.get('can_upload_min', instance.can_upload_min)
+
+#         instance.save()
+#         return instance
 
            
 
@@ -335,9 +344,8 @@ class HandleDeleteMemberBioSerializer(serializers.Serializer):
     membereducation_ids = serializers.ListField(child=serializers.IntegerField())
 
     def create(self, validated_data):
-        print(validated_data)
-
-
+        pass
+    
 class  RegisterUserToChapterView(serializers.Serializer):
     user_id = serializers.IntegerField()
     chapter_id =serializers.IntegerField()
@@ -352,7 +360,7 @@ class  RegisterUserToChapterView(serializers.Serializer):
             raise CustomError({"error":"Chapter Does Not exist"})
 
         user = get_user_model().objects.get(id=user_id)
-        chapter =user_auth_models.Chapters.objects.get(id=chapter_id)
+        chapter = user_auth_models.Chapters.objects.get(id=chapter_id)
         if user.chapter is not None:
             raise CustomError({"error":"You already belong to a chapter"})
         user.chapter  = chapter
@@ -457,15 +465,29 @@ class userInfoSerializer(serializers.Serializer):
     name = serializers.CharField()
     value = serializers.CharField()
     id = serializers.IntegerField()
+
+
 class AdminUpdateMemberInfoCleaner(serializers.Serializer):
     user_info = userInfoSerializer(many=True)
+
+    # def update(self, instance, validated_data):
+    #     user_info = validated_data.get('user_info')
+        
+    #     for eachinfo in user_info:
+    #         user_models.UserMemberInfo.objects.filter(id=eachinfo.get('id')).update(value=eachinfo.get('value'))
+    #     return dict()
 
     def update(self, instance, validated_data):
         user_info = validated_data.get('user_info')
         
         for eachinfo in user_info:
-            user_models.UserMemberInfo.objects.filter(id=eachinfo.get('id')).update(value=eachinfo.get('value'))
-        return dict()
+            user_member_info = user_models.UserMemberInfo.objects.filter(id=eachinfo.get('id')).first()
+            if user_member_info:
+                user_member_info.value = eachinfo.get('value')
+                user_member_info.save()
+        
+        # Returning the instance to follow the convention of update methods
+        return instance
     
 
 
@@ -524,3 +546,20 @@ class PasswordResetConfirmationSerializer(serializers.Serializer):
         user = self.validated_data['user']
         user.set_password(self.validated_data.get('new_password'))
         user.save()
+
+
+class MemberShipGradeSerializer(serializers.ModelSerializer):
+    member_names = serializers.SerializerMethodField(read_only=True)
+    chapter_name = serializers.SerializerMethodField(read_only=True)
+
+    def get_chapter_name(self, obj):
+        return obj.chapter.name
+
+    def get_member_names(self, obj):
+        # Ensure to access the 'name' attribute of the related 'Member' objects correctly
+        return [member.name for member in obj.member.all()]
+
+    class Meta:
+        model = user_models.MemberShipGrade
+        fields = '__all__'
+

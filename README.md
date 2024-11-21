@@ -26,6 +26,8 @@
         source env/bin/activate  # On Windows use `env\Scripts\activate`
     ```
 
+pip install -r requirements.txt
+
 3. **Run and Execute Migration Script**
 
     ```

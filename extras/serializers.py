@@ -60,34 +60,53 @@ class TicketingSerializer(serializers.ModelSerializer):
         model = models.Ticketing
         fields = "__all__"
 
-
-
-
-
 class AdminManagesProjectSerializer(serializers.ModelSerializer):
-    
 
     class Meta:
         model = models.FundAProject
-        fields = ['heading','about','id','image','what_project_needs']
+        fields = ['heading','about','id','image','what_project_needs', 'amount_made']
 
 
 
 class MemberSupportProjectInKindSerializer(serializers.ModelSerializer):
 
+    member = serializers.SerializerMethodField(read_only=True)
+
+    def get_member(self, obj):
+        return obj.member.name
+
     class Meta:
         model = models.SupportProjectInKind
-        fields = ['heading','about','project','delivery_date']
+        fields = ['heading','about','project','delivery_date', 'member']
+
+class MemberSupportProjectInCashSerializer(serializers.ModelSerializer):
+    member = serializers.SerializerMethodField(read_only=True)
+
+    def get_member(self, obj):
+        return obj.member.name
+
+    class Meta:
+        model = models.SupportProjectInCash
+        fields = ['member', 'amount','member_remark','project','is_paid', 'paystack_key']
 
 class MemeberCustomerSupporSerializer(serializers.ModelSerializer):
+    member = serializers.SerializerMethodField()
+
+    def get_member(self, obj):
+        return obj.member.name
 
     class Meta:
         model = models.CustomerSupport
         fields = ['heading','body','status','id']
+
         read_only_fields=['member','status','id',]
 
 class MemberPersonalGallerySerializer(serializers.ModelSerializer):
 
+    member = serializers.SerializerMethodField()
+
+    def get_member(self, obj):
+        return obj.member.name
 
     class Meta:
         model = models.MemberPersonalGallery

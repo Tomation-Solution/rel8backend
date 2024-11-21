@@ -1,6 +1,8 @@
 from django import views
 from rest_framework import viewsets,generics
-
+import threading
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
 from rest_framework import permissions
 from rest_framework.decorators import action,api_view,permission_classes
 from Dueapp.models import Due_User,DeactivatingDue_User
@@ -14,13 +16,31 @@ from ..serializers import user as user_serializer
 from ..models import user as  user_models
 from account.models import auth as  auth_models
 from rest_framework.decorators import action
+from rest_framework.views import APIView
 from event import models
 from rest_framework.parsers import FormParser
 from django.db.models import F
 from utils.custom_parsers import NestedMultipartParser
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
+from ..serializers import auth as auth_serializer
+from rest_framework.response import Response
+from django.db import transaction
+from mymailing.EmailConfirmation import activateEmail
+from django.db import connection
+
+
 # from
+
+
+class GetExistingChapters(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self,request):
+        chapters_instances = auth_models.Chapters.objects.all()
+        serializer_class  = auth_serializer.ManageChapters(chapters_instances, many=True)
+        return custom_response.Success_response(msg="Success",data=serializer_class.data)
+
 
 class RegisterUserToChapter(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]
@@ -28,7 +48,6 @@ class RegisterUserToChapter(viewsets.ViewSet):
 
     def list(self,request,format=None):
         chapters =auth_models.Chapters.objects.all().values()
-        print(chapters)
         return custom_response.Success_response(msg="Success",data=chapters)
 
     def create(self,request,format=None):
@@ -78,68 +97,96 @@ class CreateAnyAdminType(viewsets.ViewSet):
         serialize = self.serializer_class(data=request.data,context={"adminType":"admin"})
         serialize.is_valid(raise_exception=True)
         user = serialize.save()
-        return custom_response.Success_response(msg='Admin created successfully',data=[{
+
+        #Send Activation Email
+        thread= threading.Thread(target=activateEmail,args=[user,user.email,connection.schema_name])
+        thread.start()
+
+        return custom_response.Success_response(msg='Admin created successfully. Check your mail for verification!',data=[{
             "user_id":user.id,
              "email":user.email,
             "user_type":user.user_type
         }],status_code=status.HTTP_201_CREATED)
 
-class ManageAssigningExos(viewsets.ViewSet):
-    # permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdmin]
-    permission_classes = [permissions.IsAuthenticated,]#chnage to admin late
+class ManageAssigningExcos(viewsets.ViewSet):
+    """
+    A ViewSet for CRUD operations on ExcoRole model.
+    """
 
     def get_permissions(self):
         if self.request.method == 'GET':
             self.permission_classes =  [permissions.IsAuthenticated]
         else:
             self.permission_classes=[permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]
-        return super(ManageAssigningExos,self).get_permissions()
-    def create(self,request,format=None):
-        'here admin can create more exco postion type'
-        serialized = user_serializer.CreateExcoRole(data=request.data,context={'request':request})
+        return super(ManageAssigningExcos,self).get_permissions()
 
-        serialized.is_valid(raise_exception=True)
-        data =serialized.save()
-        clead_data = user_serializer.CreateExcoRole(data,many=False)
-        return custom_response.Success_response(msg='Exco Role created successfully',data=[clead_data.data],status_code=status.HTTP_201_CREATED)
+    def list(self, request):
+        """
+        Retrieve all ExcoRole instances.
+        """
+        queryset = user_models.ExcoRole.objects.all()
+        serializer = user_serializer.CreateExcoRoleSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def partial_update(self, request, pk=None):
-        if not user_models.ExcoRole.objects.filter(id=pk).exists():
-            raise CustomError({"error":"ExcoRole Does not exist"})
-        exco_role =user_models.ExcoRole.objects.get(id=pk)
-        serialized = user_serializer.CreateExcoRole(instance=exco_role,data=request.data,context={"request":request})
-        serialized.is_valid(raise_exception=True)
-        updated_instance =serialized.save()
-        clean_data = user_serializer.CreateExcoRole(updated_instance,many=False)
-        return custom_response.Success_response(msg='Exco Role Updated successfully',data=clean_data.data,status_code=status.HTTP_201_CREATED)
+    def create(self, request):
+        """
+        Create a new ExcoRole instance.
+        """
+        chapter = get_object_or_404(auth_models.Chapters, id=request.data.get('chapter_id'))
+        serializer = user_serializer.CreateExcoRoleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        exco_role = serializer.save(chapter=chapter)
 
-    def list(self,request,format=None):
-        data = user_models.ExcoRole.objects.all()
-        clean_data = user_serializer.CreateExcoRole(data,many=True)
-        return custom_response.Success_response(msg='Success',data=clean_data.data,status_code=status.HTTP_200_OK)
-    
-    def destroy(self,request, pk=None):
-        if not user_models.ExcoRole.objects.filter(id=pk).exists():
-            raise CustomError({'exco_role':'This Role does not exist or must have been deleted'})
-        instance = user_models.ExcoRole.objects.get(id=pk)
-        exco_memeber_id = instance.member.id
+        # Handle member associations
+        member_ids = request.data.get('member_ids', [])
+        for member_id in member_ids:
+            member = get_object_or_404(user_models.Memeber, id=member_id)
+            exco_role.member.add(member)
 
-        instance.delete()
-        if exco_memeber_id is not None:
-            "we just checking if there is a exco memeber here if there is one we have to remove the exco badge from him/her"
-            try:
-                "so we would not have a error what if this user has been deleted we dont want to even find out we just pass it"
-                d = user_models.Memeber.objects.get(id=exco_memeber_id)
-                d.is_exco=False
-                d.save()
-            except:pass 
-            
-        return custom_response.Success_response(msg='Deleted',data=[],status_code =status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Success'}, status=status.HTTP_201_CREATED)
 
-    
-    # @action(detail=False,methods=['post'])
-    # def remove_excorole_from_member(self,request, pk=None):
-    #     "think of it like unseating memers from a certain role"
+    def update(self, request, pk=None):
+        """
+        Update an existing ExcoRole instance.
+        """
+        exco_role = get_object_or_404(user_models.ExcoRole, pk=pk)
+        serializer = user_serializer.CreateExcoRoleSerializer(exco_role, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        exco_role = serializer.save()
+
+        # Handle member associations
+        member_ids = request.data.get('member_ids', [])
+        exco_role.member.clear()
+        for member_id in member_ids:
+            member = get_object_or_404(user_models.Memeber, id=member_id)
+            exco_role.member.add(member)
+
+        return Response({'message': 'Success'}, status=status.HTTP_200_OK)
+
+    def destroy(self, request, pk=None):
+        """
+        Delete an existing ExcoRole instance.
+        """
+        exco_role = get_object_or_404(user_models.ExcoRole, pk=pk)
+        exco_role.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+class ListExcoRolesView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        exco_role_id = request.query_params.get('exco_role_id', None)
+
+        if exco_role_id is not None:
+            exco_role = get_object_or_404(user_models.ExcoRole, id=exco_role_id)
+            serializer = user_serializer.ExcoRoleSerializer(exco_role, many=False)
+            return custom_response.Success_response(msg='Success', data=serializer.data, status_code=status.HTTP_200_OK)
+
+        exco_roles = user_models.ExcoRole.objects.all()
+        serializer = user_serializer.ExcoRoleSerializer(exco_roles, many=True)
+        return custom_response.Success_response(msg='Success', data=serializer.data, status_code=status.HTTP_200_OK)
 
 class AdminRelatedViews(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,custom_permissions.IsAdminOrSuperAdmin]#chnage to admin late
@@ -340,3 +387,73 @@ class ForgotPasswordViewSet(viewsets.ViewSet):
         serialzier.is_valid(raise_exception=True)
         serialzier.save()
         return custom_response.Success_response('Password Rest Successfully')
+
+
+
+class MemberShipGradeViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    # LIST all MemberShipGrade
+    def list(self, request):
+        grades = user_models.MemberShipGrade.objects.all()
+        serializer = user.MemberShipGradeSerializer(grades, many=True)
+        return Response(serializer.data)
+
+    # RETRIEVE a specific MemberShipGrade by ID
+    def retrieve(self, request, pk=None):
+        grade = get_object_or_404(user_models.MemberShipGrade, pk=pk)
+        serializer = user.MemberShipGradeSerializer(grade)
+        return Response(serializer.data)
+
+    # UPDATE a specific MemberShipGrade by ID
+    def update(self, request, pk=None):
+        grade = get_object_or_404(user_models.MemberShipGrade, pk=pk)
+        serializer = user.MemberShipGradeSerializer(grade, data=request.data)
+        if serializer.is_valid():
+            membership_grade = serializer.save()
+            # Get the list of member IDs from the request data
+            member_ids = request.data.get('member_ids')
+
+            if member_ids:
+                # Fetch all valid members whose IDs are in the list
+                members = user_models.Memeber.objects.filter(id__in=member_ids)
+
+                if members.exists():
+                    # Add all members to the MemberShipGrade
+                    membership_grade.member.set(members)
+                    membership_grade.save()
+
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # DELETE a specific MemberShipGrade by ID
+    def destroy(self, request, pk=None):
+        grade = get_object_or_404(user_models.MemberShipGrade, pk=pk)
+        grade.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def create(self, request):
+        serializer = user.MemberShipGradeSerializer(data=request.data)
+        
+        # Validate the MemberShipGrade data
+        if serializer.is_valid():
+            # Save the new grade
+            membership_grade = serializer.save()
+
+            # Get the list of member IDs from the request data
+            member_ids = request.data.get('member_ids')
+
+            if member_ids:
+                # Fetch all valid members whose IDs are in the list
+                members = user_models.Memeber.objects.filter(id__in=member_ids)
+
+                if members.exists():
+                    # Add all members to the MemberShipGrade
+                    membership_grade.member.add(*members)
+                    membership_grade.save()
+
+            # Return the created grade with a success response
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        # Return validation errors if the data is invalid
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

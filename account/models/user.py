@@ -94,7 +94,6 @@ class User(AbstractBaseUser,PermissionsMixin,):
     is_superuser = models.BooleanField(default=False)
     # any user that is in the app must belong to a distric 
     chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True)
-    # chapter = models.OneToOneField(auth_related_models.Chapters,on_delete=models.SET_NULL)
     # temp_password is use to save the owner password tempoary when he sign up but
     #  the moment he creates a alumni organization we would use his details to create an account in his alumni org and set him to super user
     temp_password = models.TextField(null=True)
@@ -149,21 +148,26 @@ class Memeber(models.Model):
     # has_updated means that the the first time they login they need to click o updated
     has_updated = models.BooleanField(default=False)
     bio = models.TextField(default='Bio Update')
+    department = models.CharField(max_length=255, blank=True)
+    name = models.CharField(max_length=100, blank=True)
+    yog = models.CharField(max_length=255, blank=True)
+    # origin_state = models.CharField(max_length=50, blank=True)
+    # residential_country = models.CharField(max_length=100, blank=True)
+    # residential_state = models.CharField(max_length=100, blank=True)
+    # physical_address = models.CharField(max_length=250, blank=True)
+    # title = models.CharField(max_length=50, blank=True)
+
 
 # filter(
 # )
     def __str__(self) -> str:
         return self.full_name
+
     @property
-    def full_name(self,):
-        possible_name_outcomes = self.usermemberinfo_set.filter(
-            Q(name='Name')|Q(name='NAMES') | 
-            Q(name='names')|
-            Q(name='full_name') | Q(name='first') | Q(name='first name')| Q(name='surname')| Q(name='name'))
-        if len(possible_name_outcomes) == 0:
-            return self.user.email
-        name = possible_name_outcomes.first()
-        return name.value
+    def full_name(self):
+        return self.name or self.user.email
+
+        
 
     @property
     def member_education(self):
@@ -188,20 +192,16 @@ class MemberEmploymentHistory(models.Model):
     employment_to = models.DateField(blank=True,null=True,default=None)
     employer_name_and_addresse = models.CharField(max_length=200)
     
-    # def __str__(self) -> str:
-    #     return f'{self.first_name} {self.last_name}'
 
-    # def __str__(self):
-    #     return self
 class UserMemberInfo(models.Model):
     "after the user passes the quetion in the excel uploaded by the aadmin we would fill all the info in the model name and value"
-    name = models.CharField(max_length=250)
     value = models.CharField(max_length=250,null=True)
+    name = models.CharField(max_length=250)
     member = models.ForeignKey(Memeber,on_delete=models.CASCADE)
 
-
+    
 class ExcoRole(models.Model):
-    member = models.ManyToManyField(Memeber,) 
+    member = models.ManyToManyField(Memeber) 
     name = models.CharField(max_length=500)
     about = models.TextField(default=' ')
     can_upload_min= models.BooleanField(default=False)#this means "can upload minute & Report in the exco insights/archieve"
@@ -209,17 +209,13 @@ class ExcoRole(models.Model):
     chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True,default=None,blank=True)
 
     def __str__(self):return self.name
+    
 class MemberShipGrade(models.Model):
-    member = models.ManyToManyField(Memeber,default=None,blank=True,) 
+    member = models.ManyToManyField(Memeber,default=None,blank=True) 
     name = models.CharField(max_length=500)
     chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True,default=None,blank=True)
 
     def __str__(self) -> str:return self.name
-# class PreviousExcoRoles(models.Model):
-#     member = models.OneToOneField(Memeber,on_delete=models.SET_NULL,null=True) #only one member can have a postion at time
-#     name = models.CharField(max_length=500)
-#     about = models.TextField(default=' ')
-#     created_on=models.DateTimeField(auto_now_add=True)
 
 
 class CommiteeGroup(models.Model):

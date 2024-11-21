@@ -30,10 +30,32 @@ class MemberDueUSerSerializer(serializers.ModelSerializer):
         ]
 
 
+class DeactivatingDueCleanSerialier(serializers.ModelSerializer):
+    chapter = serializers.SerializerMethodField()
+    def get_chapter(self,due):
+        if(due.chapters): return {
+            'name':due.chapters.name,
+            'id':due.chapters.id,
+        }
+        return None
+    class Meta:
+        model = models.DeactivatingDue
+        fields = [
+            "name",
+            "amount",
+            "startDate",
+            "startTime",
+            "endDate",
+            "month",
+            'chapter',
+            'id'
+        ]
+
+
 
 class DueCleanSerialier(serializers.ModelSerializer):
     chapter = serializers.SerializerMethodField()
-    
+    is_deactivate_users = serializers.BooleanField(default=True, required=False)
     def get_chapter(self,due):
         if(due.chapters): return {
             'name':due.chapters.name,
@@ -52,7 +74,9 @@ class DueCleanSerialier(serializers.ModelSerializer):
             "endDate",
             "scheduletype",
             "schedule",
-            'chapter','id'
+            'chapter',
+            'id',
+            'is_deactivate_users'
         ]
 
 class AdminManageDuesSerializer(serializers.Serializer):
@@ -190,20 +214,22 @@ class AdminCreateExcoDuesSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         name = validated_data.pop('name')
-        exco_id =validated_data.pop('exco_id','-1')
-        exco = None
-        if   user_related_models.ExcoRole.objects.filter(id=exco_id).exists():
+        exco_id =validated_data.pop('exco_id')
+        try:
             exco = user_related_models.ExcoRole.objects.get(id=exco_id)
-        # validated_data.pop('startDate')
-        # print(validated_data)
+        except user_related_models.ExcoRole.DoesNotExist:
+            raise CustomError(message="Exco does not exist", status_code=404)
+
         due= models.Due.objects.create(
-            **validated_data,is_on_create=False,
+            **validated_data,
+            is_on_create=False,
             Name=name,
             exco = exco
             )
         due.save()
         self.create_perodic_task(due)
-        return due   
+        return due
+        
     def create_perodic_task(self,due):
         tenant = connection.tenant
 
@@ -252,10 +278,12 @@ class AdminCreateMembershipGradeDuesSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         name = validated_data.pop('name')
-        membership_due_id =validated_data.pop('membership_due_id','-1')
-        dues_for_membership_grade =None
-        if user_related_models.MemberShipGrade.objects.filter(id=membership_due_id).exists():
+        membership_due_id =validated_data.pop('membership_due_id')
+        try:
             dues_for_membership_grade = user_related_models.MemberShipGrade.objects.get(id=membership_due_id)
+        except user_related_models.MemberShipGrade.DoesNotExist:
+            raise CustomError(message="Member grade profile does not exist", status_code=404)
+
         due = models.Due.objects.create(
             **validated_data,
             Name=name,
@@ -309,7 +337,7 @@ class AdminCreateGeneralDueSerializer(serializers.Serializer):
     required=True,
     )
     endTime = serializers.TimeField()
-    chapterID= serializers.IntegerField(required=False)
+    chapterID = serializers.IntegerField(required=False)
 
     def create(self, validated_data):
         name = validated_data.pop('name')
@@ -330,52 +358,97 @@ class AdminCreateGeneralDueSerializer(serializers.Serializer):
             )
         due.save()
         return due
+
+
 class AdminManageDeactivatingDuesSerializer(serializers.Serializer):
     name = serializers.CharField()
     is_for_excos = serializers.BooleanField()
     amount = serializers.FloatField()
     month = serializers.IntegerField()
     startDate = serializers.DateField(
-    format="%d-%m-%Y",
-    input_formats=["%d-%m-%Y", "iso-8601"],
-    required=True,
+        format="%d-%m-%Y",
+        input_formats=["%d-%m-%Y", "iso-8601"],
+        required=True,
+    )
+    endDate = serializers.DateField(
+        format="%d-%m-%Y",
+        input_formats=["%d-%m-%Y", "iso-8601"],
+        required=False,
     )
     startTime = serializers.TimeField()
-    # for_chapters=serializers.BooleanField(default=False,)
-
+    chapter_id = serializers.IntegerField(write_only=True, required=True)
 
     def create(self, validated_data):
-        for_chapters=validated_data.pop('for_chapters',None)
-        user = self.context.get('request').user
-        chapter = None
-        if  user.user_type in ['admin']:
-            chapter = auth_related_models.Chapters.objects.get(id=user.chapter.id)
-        if  user.user_type in ['super_admin']:
-            'this is a super admin that has the right only to create a National due'
-            chapter = None
-
-            # if not user_related_models.Super_admin.objects.all().filter(user=user).exists():
-            #     "if this user is not a super admin there is a problem he cant create a national event"
-            #     raise CustomError({"error":"You can't Create A national Event"})
-
-
-
         name = validated_data.get('name')
         is_for_excos = validated_data.get('is_for_excos')
         amount = validated_data.get('amount')
         startDate = validated_data.get('startDate')
-        startTime =  validated_data.get('startTime')
-        month =   validated_data.get('month')
-        if month == 0:
-            raise serializers.ValidationError({"name":'must be 1 or more'})
-        if models.DeactivatingDue.objects.filter(name=name).exists():raise serializers.ValidationError({"name":'Deactivating Due name exists already'})
+        endDate = validated_data.get('endDate')
+        startTime = validated_data.get('startTime')
+        month = validated_data.get('month')
+        chapter_id = validated_data.get('chapter_id')
+        
+        try:
+            chapters = auth_related_models.Chapters.objects.get(id=chapter_id)
+        except auth_related_models.Chapters.DoesNotExist:
+            raise serializers.ValidationError({"chapter": "Chapter does not exist"})
 
+        # Validate month
+        if month <= 0:
+            raise serializers.ValidationError({"month": "must be 1 or more"})
+
+        # Check for duplicate due names within the same chapter
+        if models.DeactivatingDue.objects.filter(name=name, chapters=chapters).exists():
+            raise serializers.ValidationError({"name": "Deactivating Due name exists already in this chapter"})
+
+        # Create DeactivatingDue
         due = models.DeactivatingDue.objects.create(
-            name =name,
-            is_for_excos = is_for_excos,
-            amount =amount,
-            startDate =startDate,
-            startTime =  startTime,
-            month =   str(month),chapters=chapter)
-        due.save()
-        return due.id
+            name=name,
+            is_for_excos=is_for_excos,
+            amount=amount,
+            startDate=startDate,
+            endDate=endDate,
+            startTime=startTime,
+            month=month,
+            chapters=chapters
+        )
+        return due
+
+
+
+class DueSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Due
+        fields = "__all__"
+
+
+class DeactivatingDueSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.DeactivatingDue
+        fields = "__all__"
+
+
+
+class DueUserSerializer(serializers.ModelSerializer):
+
+    user = serializers.SerializerMethodField(read_only=True)
+
+    def get_user(self, obj):
+        return obj.user.memeber.name or obj.user.email
+
+    class Meta:
+        model = models.Due_User
+        fields = "__all__"
+
+
+class DeactivatingDueUserSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField(read_only=True)
+
+    def get_user(self, obj):
+        return obj.user.memeber.name or obj.user.email
+
+    class Meta:
+        model = models.DeactivatingDue_User
+        fields = "__all__"

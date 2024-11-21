@@ -35,12 +35,13 @@ urlpatterns = [
     path("tenant/meeting/",include('meeting.urls')),
     path('tenant/services_request/',include('customservices.urls')),
     path('tenant/latestupdate/',include('LatestUpdate.urls')),
-
+    path('tenant/contactus/', include('contactus.urls')),
     path('tenant/mailing/',include('mailing.urls')),
     path('interswitch_payment/',include('interswitchapp.urls')),
     path('mailing/',include('mymailing.urls')),
 
     path('tenant/prospectivemember/',include('prospectivemember.urls'))
+    # path('inbox/notifications/', include('notifications.urls', namespace='notifications')),
 
 ]
 
