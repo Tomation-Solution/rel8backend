@@ -24,7 +24,8 @@ class Publication(models.Model):
     )
     chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True,blank=True)
     membership_grade  = models.ForeignKey(user_models.MemberShipGrade,null=True ,default=None,on_delete=models.SET_NULL,blank=True)
-
+    is_for_members_only = models.BooleanField(default=False, blank=True)  # New Field
+    
     def __str__(self):return self.name
     
     def save(self, *args,**kwargs) -> None:

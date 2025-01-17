@@ -38,10 +38,36 @@ class AdminManagePublication(viewsets.ModelViewSet):
         clean_data = self.serializer_class(instance, many=False)
         return custom_response.Success_response(msg='Publication created successfully', data=[clean_data.data], status_code=status.HTTP_201_CREATED)
 
+    # def list(self, request, *args, **kwargs):
+    #     queryset = models.Publication.objects.all()
+    #     clean_data = self.serializer_class(queryset, many=True)
+    #     return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
+    
     def list(self, request, *args, **kwargs):
+        # Check if the user is authenticated
+        if not request.user.is_authenticated:
+            return custom_response.Success_response(msg='Authentication required', data=[], status_code=status.HTTP_401_UNAUTHORIZED)
+        
+        # Get all publications
         queryset = models.Publication.objects.all()
+        
+        # Filter publications for logged-in users based on the 'is_for_members_only' flag
+        if not request.user.is_authenticated:
+            queryset = queryset.filter(is_for_members_only=False)
+        
+        # If the user is logged in, include the publications with is_for_members_only=True
+        else:
+            # Optionally, filter publications based on the user's chapter or role if needed
+            if request.user.user_type == 'admin':
+                queryset = queryset.filter(chapters=request.user.chapter)
+            elif request.user.user_type == 'super_admin':
+                queryset = queryset.all()  # No chapter filter for super_admin
+            
+            # You can also add additional filters based on user attributes or roles
+        
         clean_data = self.serializer_class(queryset, many=True)
         return custom_response.Success_response(msg='Success', data=clean_data.data, status_code=status.HTTP_200_OK)
+
 
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
@@ -116,13 +142,41 @@ class GetUnauthorizedPublications(views.APIView):
     # def _return_newsInDIct(self,publication):
     #     return {"name":publication.name,}
 
-    def get(self, request):
-        "this wil get the publication based on the news specs"
+    # def get(self, request):
+    #     "this wil get the publication based on the news specs"
 
-        all_publication=models.Publication.objects.all().order_by('-created_at')
-        filter_set = custom_filter.PublicationLookUp(request.query_params,queryset=all_publication)
-        serialized = serializers.AdminManagePublicationSerializer(filter_set.qs,many=True,context={"request":request})
-        return custom_response.Success_response(msg='success',data=serialized.data,status_code=status.HTTP_200_OK)
+    #     all_publication=models.Publication.objects.all().order_by('-created_at')
+    #     filter_set = custom_filter.PublicationLookUp(request.query_params,queryset=all_publication)
+    #     serialized = serializers.AdminManagePublicationSerializer(filter_set.qs,many=True,context={"request":request})
+    #     return custom_response.Success_response(msg='success',data=serialized.data,status_code=status.HTTP_200_OK)
+
+    def get(self, request):
+        """
+        This will get the publications based on the news specs.
+        Filters out publications based on the `is_for_members_only` field and user's authentication status.
+        """
+
+        # Fetch all publications
+        all_publication = models.Publication.objects.all().order_by('-created_at')
+
+        # Apply the `is_for_members_only` filter
+        if not request.user.is_authenticated:
+            all_publication = all_publication.filter(is_for_members_only=False)
+
+        # Apply additional query parameter-based filtering
+        filter_set = custom_filter.PublicationLookUp(request.query_params, queryset=all_publication)
+
+        # Serialize the filtered queryset
+        serialized = serializers.AdminManagePublicationSerializer(
+            filter_set.qs, many=True, context={"request": request}
+        )
+
+        # Return the response
+        return custom_response.Success_response(
+            msg='success',
+            data=serialized.data,
+            status_code=status.HTTP_200_OK
+        )
 
 
 
