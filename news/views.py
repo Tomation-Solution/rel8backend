@@ -166,10 +166,36 @@ class GetUnAuthorizedNews(APIView):
 
 
 
+# class GetAllUnAuthorizedNews(APIView):
+#     permission_classes = [permissions.AllowAny]
+#     def get(self, request): 
+#         news_instances = News.objects.all().order_by('-created_at')
+#         serializer = NewsSerializer(news_instances,many=True)
+#         return custom_response.Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
+    
+
 class GetAllUnAuthorizedNews(APIView):
     permission_classes = [permissions.AllowAny]
-    def get(self, request): 
-        news_instances = News.objects.all().order_by('-created_at')
-        serializer = NewsSerializer(news_instances,many=True)
-        return custom_response.Success_response(msg="Success",data=serializer.data,status_code=status.HTTP_200_OK)
+    
+    def get(self, request):
+        """
+        Fetches news based on the `is_for_members_only` field and the user's authentication status.
+        """
+        # Fetch all news instances
+        all_news = News.objects.all().order_by('-created_at')
+
+        # Apply the `is_for_members_only` filter for unauthenticated users
+        if not request.user.is_authenticated:
+            all_news = all_news.filter(is_for_members_only=False)
+
+        # Serialize the filtered queryset
+        serializer = NewsSerializer(all_news, many=True, context={"request": request})
+
+        # Return the response
+        return custom_response.Success_response(
+            msg="Success",
+            data=serializer.data,
+            status_code=status.HTTP_200_OK
+        )
+
 

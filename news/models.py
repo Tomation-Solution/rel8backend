@@ -29,6 +29,7 @@ class News(models.Model):
     exco = models.ForeignKey(user_models.ExcoRole,on_delete=models.SET_NULL,null=True,default=None,blank=True) 
     dues_for_membership_grade  =models.ForeignKey(user_models.MemberShipGrade,on_delete=models.SET_NULL,null=True,default=None,blank=True)
     # writer = models.ForeignKey(user_realted_models.Admin, on_delete=models.CASCADE)
+    is_for_members_only = models.BooleanField(default=False, blank=True)  # New Field
 
     def __str__(self):
         return self.name
