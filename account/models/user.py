@@ -11,8 +11,7 @@ from django.db.models import Q
 
 class MyUserManager(BaseUserManager):
     "this class helps manage the Custom user Model"
-    def create_user(self,email,user_type,
-    password=None,) -> "User":
+    def create_user(self,email,user_type,password=None,) -> "User":
         if not password:
             raise ValueError("Password is missing")
 
@@ -74,8 +73,7 @@ class MyUserManager(BaseUserManager):
         )
         admin.save()
         return user
-        
-        
+              
 
 class User(AbstractBaseUser,PermissionsMixin,):
     class UserType(models.TextChoices):
@@ -112,8 +110,6 @@ class User(AbstractBaseUser,PermissionsMixin,):
         return f'{self.email}'
 
 
-
-
 class Admin(models.Model):
     user  = models.OneToOneField(User,on_delete=models.CASCADE)
     first_name = models.CharField(max_length=250)
@@ -122,6 +118,7 @@ class Admin(models.Model):
 
     def __str__(self) -> str:
         return f'{self.first_name} {self.last_name}'
+
 
 class Super_admin(models.Model):
     "this is the owner of the Alumni"
@@ -157,9 +154,6 @@ class Memeber(models.Model):
     # physical_address = models.CharField(max_length=250, blank=True)
     # title = models.CharField(max_length=50, blank=True)
 
-
-# filter(
-# )
     def __str__(self) -> str:
         return self.full_name
 
@@ -167,14 +161,13 @@ class Memeber(models.Model):
     def full_name(self):
         return self.name or self.user.email
 
-        
-
     @property
     def member_education(self):
         return self.membereducation_set.all()
     @property
     def member_employment_history(self):
         return self.memberemploymenthistory_set.all()
+
 
 class MemberEducation(models.Model):
     member = models.ForeignKey(Memeber,on_delete=models.CASCADE)
@@ -185,6 +178,8 @@ class MemberEducation(models.Model):
     reading = models.CharField(max_length=50,default='')
     speaking = models.CharField(max_length=50,default='')
     date   = models.DateField(blank=True,null=True,default=None)
+
+
 class MemberEmploymentHistory(models.Model):
     member = models.ForeignKey(Memeber,on_delete=models.CASCADE,null=True,default=None)
     postion_title = models.CharField(max_length=200)
@@ -209,7 +204,8 @@ class ExcoRole(models.Model):
     chapter = models.ForeignKey(auth_related_models.Chapters,on_delete=models.SET_NULL,null=True,default=None,blank=True)
 
     def __str__(self):return self.name
-    
+
+
 class MemberShipGrade(models.Model):
     member = models.ManyToManyField(Memeber,default=None,blank=True) 
     name = models.CharField(max_length=500)
