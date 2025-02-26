@@ -223,13 +223,8 @@ class MemberListInfo(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated,]
     serializer_class = user.MemberSerializer
 
-
-
-
-
     @action(detail=False,methods=['get'])
     def get_all_members(self,request,pk=None):
-
         members  = user_models.Memeber.objects.all()
         serialized = self.serializer_class(members,many=True)
         return  custom_response.Success_response(msg='successful',data=serialized.data,status_code=status.HTTP_200_OK)
@@ -238,15 +233,14 @@ class MemberListInfo(viewsets.ViewSet):
     def get_all_exco(self,request,pk=None):
         exco_members = user_models.Memeber.objects.all().filter(is_exco=True)
         # exco_members = user_models.ExcoRole.objects.all()
-
         serialized = self.serializer_class(exco_members,many=True)
         return custom_response.Success_response(msg='successful',data=serialized.data,status_code=status.HTTP_200_OK)
+    
     @action(detail=False,methods=['post'])
     def delete_member_bio(self,request,pk=None):
         serializer = user.HandleDeleteMemberBioSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
         return custom_response.Success_response(msg='deleted successfully',status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -266,6 +260,7 @@ class MemberListInfo(viewsets.ViewSet):
         serialized = self.serializer_class(filterterd_user_instance,many=True)
         return custom_response.Success_response(msg='successful',data=serialized.data,status_code=status.HTTP_200_OK)
    
+    
     @action(detail=False,methods=['post'],permission_classes =[permissions.IsAuthenticated,custom_permissions.IsMember],
     parser_classes=(NestedMultipartParser,FormParser,))
     def update_profile_img(self,request,format=False):
@@ -278,6 +273,8 @@ class MemberListInfo(viewsets.ViewSet):
         if logged_in_user.photo:url = logged_in_user.photo.url
         else:url = ''
         return  custom_response.Success_response(msg="Success",data=[url],status_code=status.HTTP_200_OK)
+    
+    
     @action(detail=False,methods=['post'],permission_classes =[permissions.IsAuthenticated,custom_permissions.IsMember])
     def update_profile(self,request,format=False):
         logged_in_user = user_models.User.objects.get(id=request.user.id)
@@ -307,7 +304,6 @@ class MemberBioViewSet(viewsets.ModelViewSet):
         serialized = self.serializer_class(instance=instance,data=request.data,context={'user':request.user})
         serialized.is_valid(raise_exception=True)
         data =serialized.save()
-
         clean_data = user.MemberSerializer(instance=instance,context={'user':request.user})
         return custom_response.Success_response('Updated',data=clean_data.data)
     
@@ -359,15 +355,11 @@ class UpdateMemberInfoViewSet(viewsets.ModelViewSet):
         user = request.user
         loggedinMember = user_models.Memeber.objects.get(user=user.id)
         user_member_info = user_models.UserMemberInfo.objects.filter(member=loggedinMember.id)
-
         serailzer = self.serializer_class(instance=user_member_info,data=request.data)
         serailzer.is_valid(raise_exception=True)
         d=serailzer.save()
         return custom_response.Success_response('Success',data=None )
     
-
-
-
 
 
 class ForgotPasswordViewSet(viewsets.ViewSet):

@@ -27,10 +27,8 @@ from rest_framework.decorators import api_view
 import json,threading
 from mymailing.EmailConfirmation import activateEmail
 from utils.notification import NovuProvider
-# create Super user of the Alumni which is the owner
 from pusher_push_notifications import PushNotifications
 from rest_framework.views import APIView
-
 
 
 # beams_client = PushNotifications(
@@ -56,12 +54,9 @@ class EmailValidateView(GenericAPIView):
     serializer_class = auth_serializers.EmailValidateSerializer
 
     def post(self,request):
-        
         key = request.data.get("key", None)
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         email_activation_query = EmailInvitation.objects.filter(key=key)
             
         if not email_activation_query.exists():
@@ -111,6 +106,8 @@ class Login(ObtainAuthToken):
         exco=None
         commitee = []
         has_updated= False
+        profile_image = ''
+
         if user.user_type == 'prospective_members':
             if connection.schema_name == 'man':
                 'man wants people to pay before the can login'
@@ -122,6 +119,7 @@ class Login(ObtainAuthToken):
                     'has_paid':user.manprospectivememberprofile.has_paid,
                     'prospective_member_id':user.manprospectivememberprofile.id,
                 })
+            
             if connection.schema_name !='man':
                 return Response({
                     "user_type":user.user_type,
@@ -129,6 +127,7 @@ class Login(ObtainAuthToken):
                     'has_paid':user.prospectivememberprofile.has_paid,
                     'prospective_member_id':user.prospectivememberprofile.id,
                 })
+        
         if user.chapter:
             chapter={
                 'name':user.chapter.name,
@@ -141,7 +140,7 @@ class Login(ObtainAuthToken):
                 member= user.memeber
             ).values('name','id','chapter')
             commitee = user_models.CommiteeGroup.objects.filter(members=user.memeber).values('name','id')
-        profile_image = ''
+        
         try:
             profile_image = user.photo.url
         except:
@@ -161,7 +160,6 @@ class Login(ObtainAuthToken):
 class UploadSecondLevelDataBaseView(CreateAPIView):
     serializer_class = auth_serializers.UploadSecondLevelDataBaseSerializer
     permission_classes =[IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
-
 
     def post(self, request, *args, **kwargs):
         serializedData = self.serializer_class(data=request.data)
@@ -422,7 +420,6 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
         return Success_response(msg='Success', status_code=status.HTTP_204_NO_CONTENT)
 
 
-
 class MemberCommiteeView(APIView):
     permission_classes = [custom_permission.IsMember, IsAuthenticated]
     serializer_class = auth_serializers.AdminManageCommiteeGroupSerializer
@@ -444,12 +441,11 @@ class MemberCommiteeView(APIView):
         return Success_response(msg="Success", data=clead_data.data)
 
 
-
-
 class AdminManageCommiteeGroupPostionsViewSet(viewsets.ModelViewSet):
     serializer_class = auth_serializers.AdminManageCommiteePostion
     permission_classes =[IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
     queryset = user_models.CommiteePostion.objects.all()
+    
     def create(self, request, *args, **kwargs):
         serialized = self.serializer_class(data=request.data)
         serialized.is_valid(raise_exception=True)

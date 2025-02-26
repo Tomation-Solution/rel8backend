@@ -24,7 +24,7 @@ class ExtraAuthFucntionMixin:
             raise custom_exceptions.CustomError({"error":"Email is missing"})
         if(User.objects.filter(email=email).exists()):
             raise custom_exceptions.CustomError({"error":"Email Exists Already"})
-        pass
+        
 
 
 class RegisterAdminUser(ExtraAuthFucntionMixin,serializers.Serializer):
