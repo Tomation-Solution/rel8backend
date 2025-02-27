@@ -247,6 +247,8 @@ class MemberEmploymentHistorySerializerCleaner(serializers.ModelSerializer):
             'employment_to','employer_name_and_addresse','id','is_delete'
         ]
         read_only_fields=('member',)
+
+
 class MemberEducationSerilizer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     is_delete = serializers.BooleanField(required=False)
@@ -491,8 +493,6 @@ class AdminUpdateMemberInfoCleaner(serializers.Serializer):
         return instance
     
 
-
-
 class PasswordResetRequestSerializer(serializers.Serializer):
     email =  serializers.EmailField()
     def validate_email(self, email):
@@ -521,6 +521,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         user = get_user_model().objects.get(email=validated_data.get('email'))
         self.send_password_reset_email(user)
         return dict()
+   
     
 class PasswordResetConfirmationSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True)

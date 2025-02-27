@@ -26,7 +26,6 @@ class ExtraAuthFucntionMixin:
             raise custom_exceptions.CustomError({"error":"Email Exists Already"})
         
 
-
 class RegisterAdminUser(ExtraAuthFucntionMixin,serializers.Serializer):
     email = serializers.EmailField()
     first_name = serializers.CharField()
