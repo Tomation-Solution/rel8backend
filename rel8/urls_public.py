@@ -17,9 +17,11 @@ from django.contrib import admin
 from django.urls import path,include
 from Dueapp.views import payments as payment_views
 from django.urls import path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 def trigger_error(request):
     division_by_zero = 1 / 0
+
 urlpatterns = [
     path('sentry-debug/', trigger_error),
     path('admin/', admin.site.urls),
@@ -27,4 +29,7 @@ urlpatterns = [
     path('public/user/',include('account.urls.user.public_user')),
     path('webhook/',payment_views.useWebhook),
     path('webhook-flutterwave/',payment_views.useFlutterWaveWebhook),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+
 ]

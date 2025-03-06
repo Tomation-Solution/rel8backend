@@ -81,6 +81,9 @@ class UploadSecondLevelDataBaseSerializer(serializers.Serializer):
         secDb,created = auth_models.SecondLevelDatabase.objects.get_or_create(
             id=13,
         )
+        if created:
+            print(f'[account-serializer-auth-UploadSecondLevelData..] data already exist: {created}')
+        
         # convertXslsTOJson this convert file to json format
         secDb.data=json.dumps(convertXslsTOJson.run(file=dataBaseFile),indent=4, sort_keys=True, default=str)
         # secDb.data=convertXslsTOJson.run(file=dataBaseFile)

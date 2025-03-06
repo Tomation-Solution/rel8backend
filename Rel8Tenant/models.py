@@ -10,15 +10,16 @@ class Client(TenantTimezoneMixin,TenantMixin):
         organization = 'organization'
 
     name = models.CharField(max_length=100)
+    paid_until =  models.DateTimeField()
+    on_trial = models.BooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
     paystack_publickey = models.TextField(default='null')
     paystack_secret = models.TextField(default='null')
 
     flutterwave_publickey = models.TextField(default='null')
     flutterwave_secret = models.TextField(default='null')
 
-    paid_until =  models.DateTimeField()
-    on_trial = models.BooleanField()
-    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)   
     owner = models.EmailField()
     payment_plan = models.CharField(choices=Plan.choices,max_length=25,default="individual")

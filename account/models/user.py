@@ -81,6 +81,7 @@ class User(AbstractBaseUser,PermissionsMixin,):
         super_admin="super_admin"
         members = "members"
         prospective_members = "prospective_members"
+    
     email = models.EmailField(unique=True)
     is_invited= models.BooleanField(default=False)
     is_active= models.BooleanField(default=False)

@@ -66,11 +66,12 @@ SHARED_APPS = (
     
     # third party apps
     'rest_framework',
-      'rest_framework.authtoken',
-       "django_celery_results",
+    'rest_framework.authtoken',
+    "django_celery_results",
     "django_celery_beat",
     "django_tenants_celery_beat",
     "django_filters",
+    'drf_spectacular', # api docs
 
     #    "cloudinary_storage",
     "cloudinary",
@@ -178,17 +179,18 @@ if os.environ.get('databaseUser',None):
 else:
     db_info = urlparse(os.environ.get('DATABASE_URL',None))
     DATABASES = {
-    "default": {
-    "ENGINE": "django_tenants.postgresql_backend",
-    "NAME": db_info.path[1:],
-    "USER": db_info.username,
-    "PASSWORD": db_info.password,
-    "HOST": db_info.hostname,
-    "PORT": db_info.port,
-    "OPTIONS": {"sslmode": "require"},
-    "CONN_MAX_AGE": 60,
+        "default": {
+        "ENGINE": "django_tenants.postgresql_backend",
+        "NAME": db_info.path[1:],
+        "USER": db_info.username,
+        "PASSWORD": db_info.password,
+        "HOST": db_info.hostname,
+        "PORT": db_info.port,
+        "OPTIONS": {"sslmode": "require"},
+        "CONN_MAX_AGE": 60,
+        }
     }
-    }
+
 DATABASE_ROUTERS = (
     'django_tenants.routers.TenantSyncRouter',
 )
@@ -256,10 +258,11 @@ REST_FRAMEWORK = {
     #     'rest_framework.parsers.JSONParser',
     # ],
     'DEFAULT_AUTHENTICATION_CLASSES':[
-         'rest_framework.authentication.TokenAuthentication'
+        'rest_framework.authentication.TokenAuthentication'
     ],
-      "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema', #api docs
 }
 
 PAYSTACK_SECRET=os.environ['PAYSTACK_SECRET']
@@ -362,51 +365,59 @@ PERIODIC_TASK_TENANT_LINK_MODEL ='Rel8Tenant.PeriodicTaskTenantLink'
 
 
 # Define your logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'WARNING',  # Only log warnings and errors to file
-            # 'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
-            'formatter': 'verbose',
-        },
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-            'level': 'WARNING',  # Suppress debug and info logs in console
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file', 'console'],
-            'level': 'WARNING',  # Suppress debug messages
-            # 'level': 'DEBUG',
-            'propagate': True,
-        },
-        'django.request': {
-            'handlers': ['file', 'console'],
-            'level': 'ERROR',  # Log only errors related to requests
-            # 'level': 'DEBUG',
-            'propagate': False,
-        },
-        'relbackend': {
-            'handlers': ['file', 'console'],
-            'level': 'WARNING',  # Log warnings and errors only
-            # 'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'verbose': {
+#             'format': '{levelname} {asctime} {module} {message}',
+#             'style': '{',
+#         },
+#         'simple': {
+#             'format': '{levelname} {message}',
+#             'style': '{',
+#         },
+#     },
+#     'handlers': {
+#         'file': {
+#             'level': 'WARNING',  # Only log warnings and errors to file
+#             # 'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': os.path.join(BASE_DIR, 'debug.log'),
+#             'formatter': 'verbose',
+#         },
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple',
+#             'level': 'WARNING',  # Suppress debug and info logs in console
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file', 'console'],
+#             'level': 'WARNING',  # Suppress debug messages
+#             # 'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#         'django.request': {
+#             'handlers': ['file', 'console'],
+#             'level': 'ERROR',  # Log only errors related to requests
+#             # 'level': 'DEBUG',
+#             'propagate': False,
+#         },
+#         'relbackend': {
+#             'handlers': ['file', 'console'],
+#             'level': 'WARNING',  # Log warnings and errors only
+#             # 'level': 'DEBUG',
+#             'propagate': False,
+#         },
+#     },
+# }
+
+SPECTACULAR_SETTINGS = {
+    'SCHEMA_PATH_PREFIX': '/api/',  # Your API prefix
+    'SERVE_PUBLIC': False,  # For multi-tenant apps, you need this False
+    'TITLE': 'Tenant API',
+    'DESCRIPTION': 'API Documentation for Tenants',
+    'VERSION': '1.0.0',
 }

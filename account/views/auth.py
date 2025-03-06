@@ -165,7 +165,7 @@ class UploadSecondLevelDataBaseView(CreateAPIView):
         serializedData = self.serializer_class(data=request.data)
         serializedData.is_valid(raise_exception=True)
         # activate the create function
-        print(serializedData.save())
+        print(f'[account-view-auth-uploadSecondLevel]this is uploaded data:{serializedData.save()}')
         return Success_response(msg="Database Created Successfully",data=[],status_code=status.HTTP_200_OK)
 
 
@@ -225,6 +225,8 @@ class ManageMemberValidation(viewsets.ViewSet):
                 return {'isValid':False,"user":None}
         except:
             raise CustomError('Wrong Validation Key')
+    
+    
     @action(detail=False,methods=['post'])
     def create_member(self,request, pk=None):
         """
