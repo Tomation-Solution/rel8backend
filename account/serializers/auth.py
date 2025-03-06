@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model,authenticate
 from utils import  custom_exceptions
+from utils.custom_exceptions import CustomError
 from utils import validators,convertXslsTOJson
 from ..models import auth as auth_models
 from .. models import user as user_models
@@ -77,18 +78,30 @@ class UploadSecondLevelDataBaseSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         dataBaseFile = validated_data.get('file')
-        # no matter what we set the id  to 13 and filll the data with json this would avoid two objects in dataBase
-        secDb,created = auth_models.SecondLevelDatabase.objects.get_or_create(
-            id=13,
-        )
-        if created:
-            print(f'[account-serializer-auth-UploadSecondLevelData..] data already exist: {created}')
         
-        # convertXslsTOJson this convert file to json format
-        secDb.data=json.dumps(convertXslsTOJson.run(file=dataBaseFile),indent=4, sort_keys=True, default=str)
-        # secDb.data=convertXslsTOJson.run(file=dataBaseFile)
-        secDb.save()
+        # Get or create the DB instance
+        secDb, created = auth_models.SecondLevelDatabase.objects.get_or_create(id=13)
 
+        if created:
+            print(f'[UploadSecondLevelDataBaseSerializer] New DB Created: {created}')
+
+        # Convert Excel to JSON
+        new_json_data = convertXslsTOJson.run(file=dataBaseFile)
+
+        # If there's existing data, append to it
+        if secDb.data:
+            try:
+                existing_data = json.loads(secDb.data)
+                # Append new users to the existing usersInfo list
+                existing_data['usersInfo'].extend(new_json_data['usersInfo'])
+                secDb.data = json.dumps(existing_data, indent=4, sort_keys=True, default=str)
+            except json.JSONDecodeError:
+                raise CustomError("Invalid JSON structure in the database")
+        else:
+            # First-time upload
+            secDb.data = json.dumps(new_json_data, indent=4, sort_keys=True, default=str)
+
+        secDb.save()
         return validated_data
 
     def validate_file(self, file):

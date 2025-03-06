@@ -365,54 +365,54 @@ PERIODIC_TASK_TENANT_LINK_MODEL ='Rel8Tenant.PeriodicTaskTenantLink'
 
 
 # Define your logging configuration
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'verbose': {
-#             'format': '{levelname} {asctime} {module} {message}',
-#             'style': '{',
-#         },
-#         'simple': {
-#             'format': '{levelname} {message}',
-#             'style': '{',
-#         },
-#     },
-#     'handlers': {
-#         'file': {
-#             'level': 'WARNING',  # Only log warnings and errors to file
-#             # 'level': 'DEBUG',
-#             'class': 'logging.FileHandler',
-#             'filename': os.path.join(BASE_DIR, 'debug.log'),
-#             'formatter': 'verbose',
-#         },
-#         'console': {
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'simple',
-#             'level': 'WARNING',  # Suppress debug and info logs in console
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file', 'console'],
-#             'level': 'WARNING',  # Suppress debug messages
-#             # 'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#         'django.request': {
-#             'handlers': ['file', 'console'],
-#             'level': 'ERROR',  # Log only errors related to requests
-#             # 'level': 'DEBUG',
-#             'propagate': False,
-#         },
-#         'relbackend': {
-#             'handlers': ['file', 'console'],
-#             'level': 'WARNING',  # Log warnings and errors only
-#             # 'level': 'DEBUG',
-#             'propagate': False,
-#         },
-#     },
-# }
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'WARNING',  # Only log warnings and errors to file
+            # 'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+            'level': 'WARNING',  # Suppress debug and info logs in console
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'WARNING',  # Suppress debug messages
+            # 'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['file', 'console'],
+            'level': 'ERROR',  # Log only errors related to requests
+            # 'level': 'DEBUG',
+            'propagate': False,
+        },
+        'relbackend': {
+            'handlers': ['file', 'console'],
+            'level': 'WARNING',  # Log warnings and errors only
+            # 'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 
 SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX': '/api/',  # Your API prefix
