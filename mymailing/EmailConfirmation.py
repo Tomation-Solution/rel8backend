@@ -28,7 +28,7 @@ def activateEmail(user,to_email,schema_name):
         domain = 'https://members.nimn.com.ng'
     elif connection.schema_name == 'aani':
         domain_mail='rel8@members.nimn.com.ng'
-        sender_email='https://aanilagos.com'
+        sender_email= domain_mail
         domain = 'https://aani.aanilagos.com'
     elif connection.schema_name == 'test':
         domain = 'https://demo.rel8membership.com' 

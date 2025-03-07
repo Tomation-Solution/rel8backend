@@ -1,0 +1,70 @@
+{
+    "useValidation": [
+        "MEMBERSHIP_NO"
+    ],
+    "usersInfo": [
+        {
+            "MEMBERSHIP_NO": "SEC 39, 2017",
+            "NAME": "Omolara BALOGUN",
+            "TITLE": "Ms",
+            "email": "mb.mollie@yahoo.com ",
+            "phone": 8033145824
+        },
+        {
+            "MEMBERSHIP_NO": "SEC 43, 2021",
+            "NAME": "Olufemi AWOYEMI",
+            "TITLE": "Mr.",
+            "email": "femiproshare@gmail.com ",
+            "phone": 8036288637
+        },
+        {
+            "MEMBERSHIP_NO": "always",
+            "NAME": "aboy101",
+            "TITLE": null,
+            "email": "aboy101@gmail.com",
+            "phone": "08020366909"
+        },
+        {
+            "MEMBERSHIP_NO": "aani/Sec46/2025",
+            "NAME": "Francis IRIAH",
+            "TITLE": "Mr.",
+            "email": "franciscreativetouch@gmail.com",
+            "phone": 7031046087
+        },
+        {
+            "MEMBERSHIP_NO": null,
+            "NAME": null,
+            "TITLE": null,
+            "email": null,
+            "phone": null
+        },
+        {
+            "MEMBERSHIP_NO": null,
+            "NAME": null,
+            "TITLE": null,
+            "email": null,
+            "phone": null
+        },
+        {
+            "MEMBERSHIP_NO": null,
+            "NAME": null,
+            "TITLE": null,
+            "email": null,
+            "phone": null
+        },
+        {
+            "MEMBERSHIP_NO": null,
+            "NAME": null,
+            "TITLE": null,
+            "email": null,
+            "phone": null
+        },
+        {
+            "MEMBERSHIP_NO": null,
+            "NAME": null,
+            "TITLE": null,
+            "email": null,
+            "phone": null
+        }
+    ]
+}
