@@ -11,6 +11,7 @@ class AdminManagePublicationSerializer(serializers.ModelSerializer):
 
     paragraphs = serializers.SerializerMethodField()
     publication_paragraph = PublicationParagraphSerializer(many=True,write_only=True)
+    danload = serializers.FileField(required=False)
 
 
     def create(self, validated_data):
