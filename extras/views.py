@@ -149,10 +149,9 @@ class AdminGalleryV2ImagesView(APIView):
             context={'gallery': gallery}
         )
         serializer.is_valid(raise_exception=True)
-        data = serializer.save()
-        cleaned_data = self.serializer_class(data)
+        serializer.save()
 
-        return Success_response('Images added successfully', data=cleaned_data)
+        return Success_response('Images added successfully')
 
     def delete(self, request, id):
         serializer = serializers.GalleryV2ImageDeletionSerializer(data=request.data)
