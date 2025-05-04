@@ -137,7 +137,22 @@ class AdminManageGalleryV2View(GalleryV2View):
         galleyImage.image= image
         galleyImage.save()
         return Success_response('Updated Successfully',data=[])
-    
+
+class AdminGalleryV2ImagesDeletionView(APIView):
+    serializer_class = serializers.GalleryV2ImageDeletionSerializer
+    permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
+
+    def delete(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        image_ids = serializer.validated_data.get('image_ids')
+        images = models.ImagesForGalleryV2.objects.filter(id__in=image_ids)
+        images.delete()
+
+        return Success_response('Images Deleted Successfully')
+
+
 class TicketingView(viewsets.ModelViewSet):
     queryset = models.Ticketing.objects.all()
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsMember]

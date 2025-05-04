@@ -20,6 +20,7 @@ router.register('member_personal_gallery',views.MemberPersonalGallery,basename='
 urlpatterns =[
     path('project/payment/', views.FundAProjectPayment.as_view(), name="fund_project_payment"),
     path('gallery_version2/unauthorized_images/<int:pk>/', views.GetUnAuthorizedGalleryFolder.as_view(), name="get_gallery_folder"),
+    path('admin_gallery_version2/delete_images/', views.AdminGalleryV2ImagesDeletionView.as_view(), name="admin_gallery_v2_images_deletion"),
     path('projects/cash/support', views.AdminProjectSupportByCashView.as_view(), name="project_cash_support"),
     path('projects/kind/support', views.AdminProjectSupportInKindView.as_view(), name="project_kind_support"),
 ] + router.urls
