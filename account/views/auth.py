@@ -443,6 +443,15 @@ class MemberCommiteeView(APIView):
         return Success_response(msg="Success", data=clead_data.data)
 
 
+class DeleteCommitteeMemberView(APIView):
+    permission_classes =[IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
+
+    def delete(self, request, committee_id, member_id):
+        committee = get_object_or_404(user_models.CommiteeGroup, id=committee_id)
+        member_id = get_object_or_404(user_models.Memeber, id=member_id)
+        committee.members.remove(committee)
+        return Success_response('Member successfully removed from committee')
+
 class AdminManageCommiteeGroupPostionsViewSet(viewsets.ModelViewSet):
     serializer_class = auth_serializers.AdminManageCommiteePostion
     permission_classes =[IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
