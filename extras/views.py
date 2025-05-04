@@ -138,9 +138,20 @@ class AdminManageGalleryV2View(GalleryV2View):
         galleyImage.save()
         return Success_response('Updated Successfully',data=[])
 
-class AdminGalleryV2ImagesDeletionView(APIView):
+class AdminGalleryV2ImagesView(APIView):
     serializer_class = serializers.GalleryV2ImageDeletionSerializer
     permission_classes = [permissions.IsAuthenticated,custom_permission.IsAdminOrSuperAdmin]
+
+    def post(self, request, id):
+        gallery = get_object_or_404(models.GalleryV2, id=id)
+        serializer = serializers.UploadGalleryV2ImageSerializer(
+            data=request.data,
+            context={'gallery': gallery}
+        )
+        serializer.is_valid(raise_exception=True)
+        data = serializer.save()
+
+        return Success_response('Images added successfully', data=data)
 
     def delete(self, request):
         serializer = self.serializer_class(data=request.data)
