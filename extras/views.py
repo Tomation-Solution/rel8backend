@@ -153,7 +153,7 @@ class AdminGalleryV2ImagesView(APIView):
 
         return Success_response('Images added successfully', data=data)
 
-    def delete(self, request):
+    def delete(self, request, id):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
