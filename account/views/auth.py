@@ -367,10 +367,11 @@ class AdminManageCommiteeGroupViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         all_commitee_group =self.queryset.all()
-        clead_data = self.serializer_class(all_commitee_group,many=True)
-        print({
-            'clead_data':clead_data.data
-        })
+        clead_data = self.serializer_class(
+            all_commitee_group,
+            many=True,
+            context={ 'detail': True }
+        )
         return Success_response(msg="Success",data =clead_data.data)
 
     @action(['post'],detail=False)
@@ -448,8 +449,8 @@ class DeleteCommitteeMemberView(APIView):
 
     def delete(self, request, committee_id, member_id):
         committee = get_object_or_404(user_models.CommiteeGroup, id=committee_id)
-        member_id = get_object_or_404(user_models.Memeber, id=member_id)
-        committee.members.remove(committee)
+        member = get_object_or_404(user_models.Memeber, id=member_id)
+        committee.members.remove(member)
         return Success_response('Member successfully removed from committee')
 
 class AdminManageCommiteeGroupPostionsViewSet(viewsets.ModelViewSet):
