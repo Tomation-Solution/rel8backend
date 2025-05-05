@@ -286,14 +286,20 @@ class MemberListInfo(viewsets.ViewSet):
         return custom_response.Success_response(msg='Updated',data=[],status_code=status.HTTP_200_OK)
     
 
+class AdminUpdateUserBio(APIView):
+    permission_classes = [custom_permissions.IsAdminOrSuperAdmin]
+
+    def post(self, request, id):
+        instance = get_object_or_404(user_models.Memeber, id=id)
+        instance.bio = request.data.get('bio', instance.bio)
+        instance.save()
+        return custom_response.Success_response('Updated')
+
+
 class MemberBioViewSet(viewsets.ModelViewSet):
     serializer_class =user.MemberUpdateBioSerializer
     queryset = user_models.Memeber.objects.all()
-    permission_classes = [
-        permissions.IsAuthenticated,
-        custom_permissions.IsMember,
-        custom_permissions.IsAdminOrSuperAdmin
-    ]
+    permission_classes = [permissions.IsAuthenticated, custom_permissions.IsMember]
 
     # def create(self, request, *args, **kwargs):
     #     serialized = self.serializer_class(data=request.data,context={'user':request.user})
@@ -302,11 +308,7 @@ class MemberBioViewSet(viewsets.ModelViewSet):
     #     return custom_response.Success_response(msg='Successfull',data=[])
 
     def update(self, request, *args, **kwargs):
-        if args[0] and request.user.user_type in ['super_admin','admin']:
-            member_id = args[0]
-        else:
-            member_id = request.user.memeber.id
-        instance = user_models.Memeber.objects.get(id=member_id)
+        instance = user_models.Memeber.objects.get(id=request.user.memeber.id)
         instance.bio=request.data.get('bio',instance.bio)
         instance.save()
         serialized = self.serializer_class(instance=instance,data=request.data,context={'user':request.user})
