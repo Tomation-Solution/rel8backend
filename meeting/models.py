@@ -14,6 +14,7 @@ class Meeting(models.Model):
     membership_grade  = models.ForeignKey(user_models.MemberShipGrade,null=True ,default=None,on_delete=models.SET_NULL,blank=True)
     date_for = models.DateTimeField(null=True,default=None)
     addresse = models.TextField(default='')
+    url = models.URLField(max_length=200, blank=True, null=True)
     event_date = models.DateTimeField(null=True,default=None)
     commitee = models.ForeignKey(user_models.CommiteeGroup,null=True,on_delete=models.CASCADE,blank=True,default=None)
 
