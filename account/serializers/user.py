@@ -273,7 +273,7 @@ class MemberUpdateBioSerializer(serializers.ModelSerializer):
             'id',
             'amount_owing','is_exco','is_financial',
             'telephone_number','address','dob','citizenship',
-            'memberemploymenthistory','membereducation'
+            'memberemploymenthistory','membereducation', 'bio'
 
         ]
         read_only_fields = ['amount_owing','is_exco','is_financial',]

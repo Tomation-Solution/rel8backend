@@ -289,7 +289,11 @@ class MemberListInfo(viewsets.ViewSet):
 class MemberBioViewSet(viewsets.ModelViewSet):
     serializer_class =user.MemberUpdateBioSerializer
     queryset = user_models.Memeber.objects.all()
-    permission_classes = [permissions.IsAuthenticated,custom_permissions.IsMember]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        custom_permissions.IsMember,
+        custom_permissions.IsAdminOrSuperAdmin
+    ]
 
     # def create(self, request, *args, **kwargs):
     #     serialized = self.serializer_class(data=request.data,context={'user':request.user})
@@ -298,7 +302,11 @@ class MemberBioViewSet(viewsets.ModelViewSet):
     #     return custom_response.Success_response(msg='Successfull',data=[])
 
     def update(self, request, *args, **kwargs):
-        instance = user_models.Memeber.objects.get(id=request.user.memeber.id)
+        if args[0] and request.user.user_type in ['super_admin','admin']:
+            member_id = args[0]
+        else:
+            member_id = request.user.memeber.id
+        instance = user_models.Memeber.objects.get(id=member_id)
         instance.bio=request.data.get('bio',instance.bio)
         instance.save()
         serialized = self.serializer_class(instance=instance,data=request.data,context={'user':request.user})
