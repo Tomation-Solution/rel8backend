@@ -287,7 +287,7 @@ class MemberListInfo(viewsets.ViewSet):
     
 
 class AdminUpdateUserBio(APIView):
-    permission_classes = [custom_permissions.IsAdminOrSuperAdmin]
+    permission_classes = [permissions.IsAuthenticated, custom_permissions.IsAdminOrSuperAdmin]
 
     def post(self, request, id):
         instance = get_object_or_404(user_models.Memeber, id=id)
