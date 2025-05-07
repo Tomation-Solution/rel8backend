@@ -24,7 +24,7 @@ def trigger_error(request):
 
 urlpatterns = [
     path('sentry-debug/', trigger_error),
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     path('public/auth/',include('account.urls.auth.public_auth')),
     path('public/user/',include('account.urls.user.public_user')),
     path('webhook/',payment_views.useWebhook),

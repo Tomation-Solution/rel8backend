@@ -59,7 +59,7 @@ SHARED_APPS = (
     'django.contrib.auth',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.contenttypes',
        'corsheaders',
@@ -90,7 +90,7 @@ TENANT_APPS = (
     'django.contrib.auth',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.staticfiles',
     # your tenant-specific apps
     "Dueapp",
