@@ -286,10 +286,20 @@ class MemberListInfo(viewsets.ViewSet):
         return custom_response.Success_response(msg='Updated',data=[],status_code=status.HTTP_200_OK)
     
 
+class AdminUpdateUserBio(APIView):
+    permission_classes = [permissions.IsAuthenticated, custom_permissions.IsAdminOrSuperAdmin]
+
+    def post(self, request, id):
+        instance = get_object_or_404(user_models.Memeber, id=id)
+        instance.bio = request.data.get('bio', instance.bio)
+        instance.save()
+        return custom_response.Success_response('Updated')
+
+
 class MemberBioViewSet(viewsets.ModelViewSet):
     serializer_class =user.MemberUpdateBioSerializer
     queryset = user_models.Memeber.objects.all()
-    permission_classes = [permissions.IsAuthenticated,custom_permissions.IsMember]
+    permission_classes = [permissions.IsAuthenticated, custom_permissions.IsMember]
 
     # def create(self, request, *args, **kwargs):
     #     serialized = self.serializer_class(data=request.data,context={'user':request.user})

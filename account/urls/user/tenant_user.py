@@ -16,6 +16,7 @@ router.register('forgot-password',user_view.ForgotPasswordViewSet,basename='forg
 router.register('membership-grades', user_view.MemberShipGradeViewSet, basename='membership-grade')
 
 urlpatterns = [
+    path('admin-member-bio/<int:id>/', user_view.AdminUpdateUserBio.as_view(), name="admin_update_user_bio"),
     path('profile/',user_view.profile,name='profile'),
     path('council_members/<int:pk>/',user_view.council_members,name='council_members'),
     path('get_membershipgrade/',user_view.get_membershipgrade,name='get_membershipgrade'),

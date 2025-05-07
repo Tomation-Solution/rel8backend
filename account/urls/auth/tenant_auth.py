@@ -17,7 +17,11 @@ urlpatterns = [
     path( "validate-email/",auth_view.EmailValidateView.as_view(),name="email-validate"),
     path('pusher/beams-auth/',auth_view.beams_auth),
     path('send/',auth_view.send_data),
-    path('member/commitees',auth_view.MemberCommiteeView.as_view(), name='get_commitees_for_members')
+    path('member/commitees',auth_view.MemberCommiteeView.as_view(), name='get_commitees_for_members'),
+    path('manage-committee-members/<int:committee_id>/members/<int:member_id>/',
+        auth_view.DeleteCommitteeMemberView.as_view(),
+        name="delete_committee_members"
+    )
 
 ]+ router.urls
 

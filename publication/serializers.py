@@ -11,6 +11,7 @@ class AdminManagePublicationSerializer(serializers.ModelSerializer):
 
     paragraphs = serializers.SerializerMethodField()
     publication_paragraph = PublicationParagraphSerializer(many=True,write_only=True)
+    danload = serializers.FileField(required=False)
 
 
     def create(self, validated_data):
@@ -27,7 +28,7 @@ class AdminManagePublicationSerializer(serializers.ModelSerializer):
     def get_paragraphs(self,publication):
         return models.PublicationParagraph.objects.filter(publication=publication,).values('id','paragragh','heading')
     def update(self, instance, validated_data):
-
+        super().update(instance, validated_data)
         instance.likes = validated_data.get('likes',instance.likes)
         instance.dislikes = validated_data.get('dislikes',instance.dislikes)
         instance.save()

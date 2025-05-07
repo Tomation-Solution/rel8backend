@@ -30,6 +30,34 @@ class GalleryV2Serializer(serializers.ModelSerializer):
         read_only_fields = ['images']
 
 
+class GalleryV2ImageDeletionSerializer(serializers.Serializer):
+    image_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        required=True,
+        allow_empty=False
+    )
+
+
+class UploadGalleryV2ImageSerializer(serializers.Serializer):
+    upload_images =serializers.ListField(
+        child= serializers.ImageField(max_length=10000000,allow_empty_file=False,use_url=False,write_only=True)
+    )
+
+    def create(self, validated_data):
+        gallery = self.context.get('gallery')
+        upload_images = validated_data.pop('upload_images')
+        images = []
+
+        for image in upload_images:
+            images.append(models.ImagesForGalleryV2.objects.create(
+                image=image,
+                gallery=gallery
+            ))
+
+        return images
+
+
+
 class AdminManageGalleryV2Serializer(serializers.ModelSerializer):
     upload_images =serializers.ListField(
         child= serializers.ImageField(max_length=10000000,allow_empty_file=False,use_url=False,write_only=True)
