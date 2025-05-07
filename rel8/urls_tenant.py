@@ -18,7 +18,7 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     path('tenant/auth/',include('account.urls.auth.tenant_auth')),
     path('tenant/user/',include('account.urls.user.tenant_user')),
     path('tenant/dues/',include('Dueapp.urls')),
