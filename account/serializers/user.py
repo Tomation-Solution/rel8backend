@@ -387,6 +387,23 @@ class MemberProfileUpdateSerializer(serializers.Serializer):
         return dict()
 
 
+class AdminUpdateMemberSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False)
+
+    class Meta:
+        model = user_models.Memeber
+        fields = '__all__'
+        read_only_fields = [ 'id', 'is_exco' ]
+
+    def update(self, instance, validated_data):
+        email = validated_data.pop('email', None)
+        if email:
+            instance.user.email = email
+            instance.user.save()
+
+        return super().update(instance, validated_data)
+
+
 class MemberSerializer(serializers.ModelSerializer):
 
     member_info = serializers.SerializerMethodField()
