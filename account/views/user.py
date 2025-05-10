@@ -288,12 +288,15 @@ class MemberListInfo(viewsets.ViewSet):
 
 class AdminUpdateUserBio(APIView):
     permission_classes = [permissions.IsAuthenticated, custom_permissions.IsAdminOrSuperAdmin]
+    serializer_class = user.AdminUpdateMemberSerializer
 
-    def post(self, request, id):
-        instance = get_object_or_404(user_models.Memeber, id=id)
-        instance.bio = request.data.get('bio', instance.bio)
-        instance.save()
-        return custom_response.Success_response('Updated')
+    def patch(self, request, id):
+        member = get_object_or_404(user_models.Memeber, id=id)
+        serializer = self.serializer_class(instance=member, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return custom_response.Success_response('Update successful')
 
 
 class MemberBioViewSet(viewsets.ModelViewSet):
