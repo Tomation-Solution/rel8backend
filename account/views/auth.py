@@ -491,3 +491,11 @@ class SuperAdminMangeChapters(viewsets.ModelViewSet):
     serializer_class = auth_serializers.ManageChapters
     permission_classes =[IsAuthenticated,custom_permission.IsSuperAdmin]
     queryset = auth_models.Chapters.objects.all()
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            permission_classes = [IsAuthenticated, custom_permission.IsAdminOrSuperAdmin]
+        else:
+            permission_classes = [IsAuthenticated, custom_permission.IsSuperAdmin]
+        
+        return [permission() for permission in permission_classes]
