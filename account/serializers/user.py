@@ -395,6 +395,14 @@ class AdminUpdateMemberSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = [ 'id', 'is_exco' ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Update all text fields to allow blank values
+        if self.instance:
+            for field in self.fields.values():
+                if hasattr(field, 'allow_blank'):
+                    field.allow_blank = True
+
     def update(self, instance, validated_data):
         email = validated_data.pop('email', None)
         if email:
