@@ -21,6 +21,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.conf import settings
 from utils.usefulFunc import convert_naira_to_kobo
 from django.db import connection
+from django.db.models import Q
 from mymailing.EmailConfirmation import send_members_event_confirmation_mail
 from Rel8Tenant import models as rel8tenant_related_models
 
@@ -89,7 +90,7 @@ class EventViewSet(viewsets.ViewSet):
             all_events=all_events.filter(chapters = request.user.chapter)
         else:
             'get global event'
-            all_events=all_events.filter(chapters =None)
+            all_events=all_events.filter(Q(chapters=None) | Q(chapters=request.user.chapter))
         clean_data = self.serializer_class(all_events,many=True,context={'request':request})
         return custom_response.Success_response(msg='success',data=clean_data.data,status_code=status.HTTP_200_OK)
 
