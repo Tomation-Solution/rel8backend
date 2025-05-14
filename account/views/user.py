@@ -171,6 +171,28 @@ class ManageAssigningExcos(viewsets.ViewSet):
         exco_role.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=False, methods=['post'])
+    def add_exco_member(self, request, pk=None):
+        serializer = user_serializer.ManageExcoMemberSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        exco_role = get_object_or_404(user_models.ExcoRole, serializer.validated_data.get('exco_id'))
+        member = get_object_or_404(user_models.Memeber, serializer.validated_data.get('member_id'))
+        exco_role.member.add(member)
+
+        return Response({ 'message': 'Success' }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['put'])
+    def remove_exco_member(self, request, pk=None):
+        serializer = user_serializer.ManageExcoMemberSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        exco_role = get_object_or_404(user_models.ExcoRole, serializer.validated_data.get('exco_id'))
+        member = get_object_or_404(user_models.Memeber, serializer.validated_data.get('member_id'))
+        exco_role.member.remove(member)
+
+        return Response({ 'message': 'Success' }, status=status.HTTP_200_OK)
+
 
 
 class ListExcoRolesView(APIView):

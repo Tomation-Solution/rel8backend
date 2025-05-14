@@ -138,6 +138,10 @@ class CreateExcoRoleSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'about', 'can_upload_min', 'chapter', 'member_ids']
 
 
+class ManageExcoMemberSerializer(serializers.Serializer):
+    exco_id = serializers.IntegerField(read_only=True)
+    member_id = serializers.IntegerField(read_only=True)
+
 # class CreateExcoRole(serializers.Serializer):
 #     id = serializers.IntegerField(read_only=True)
 #     name = serializers.CharField(required=False)
