@@ -256,7 +256,7 @@ class MemberListInfo(viewsets.ViewSet):
 
     @action(detail=False,methods=['get'])
     def get_all_members(self,request,pk=None):
-        members  = user_models.Memeber.objects.all().filter(is_exco=False)
+        members  = user_models.Memeber.objects.all()
         serialized = self.serializer_class(members,many=True)
         return  custom_response.Success_response(msg='successful',data=serialized.data,status_code=status.HTTP_200_OK)
 
