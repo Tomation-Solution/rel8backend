@@ -176,20 +176,29 @@ class ManageAssigningExcos(viewsets.ViewSet):
         serializer = user_serializer.ManageExcoMemberSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        exco_role = get_object_or_404(user_models.ExcoRole, serializer.validated_data.get('exco_id'))
-        member = get_object_or_404(user_models.Memeber, serializer.validated_data.get('member_id'))
+        exco_role = get_object_or_404(user_models.ExcoRole, id=request.data.get('exco_id', None))
+        member = get_object_or_404(user_models.Memeber, id=request.data.get('member_id', None))
+
         exco_role.member.add(member)
+        if not member.is_exco:
+            member.is_exco = True
+            member.save()
 
         return Response({ 'message': 'Success' }, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['put'])
+    @action(detail=False, methods=['post'])
     def remove_exco_member(self, request, pk=None):
         serializer = user_serializer.ManageExcoMemberSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        exco_role = get_object_or_404(user_models.ExcoRole, serializer.validated_data.get('exco_id'))
-        member = get_object_or_404(user_models.Memeber, serializer.validated_data.get('member_id'))
-        exco_role.member.remove(member)
+        exco_role = get_object_or_404(user_models.ExcoRole, id=request.data.get('exco_id', None))
+        member = get_object_or_404(user_models.Memeber, id=request.data.get('member_id', None))
+
+        with transaction.atomic():
+            exco_role.member.remove(member)
+            if not user_models.ExcoRole.objects.filter(member=member).exists():
+                member.is_exco = False
+                member.save()
 
         return Response({ 'message': 'Success' }, status=status.HTTP_200_OK)
 
