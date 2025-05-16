@@ -22,10 +22,10 @@ class CloudinaryMigration:
 
         # Migration state tracking
         self.state_file = os.path.join(settings.BASE_DIR, 'migration_state.json')
-
+        
         # Initialize state
         self.load_state()
-
+        
     def load_state(self):
         """Load migration state from file or initialize if not exists"""
         if os.path.exists(self.state_file):
@@ -35,6 +35,8 @@ class CloudinaryMigration:
             self.state = {
                 'status': 'pending',
                 'last_updated': datetime.now().isoformat(),
+                'field_name': '',
+                'app_label': '',
                 'url_model_map': [],
                 'failed_migrations': []
             }
@@ -45,6 +47,25 @@ class CloudinaryMigration:
         self.state['last_updated'] = datetime.now().isoformat()
         with open(self.state_file, 'w') as f:
             json.dump(self.state, f, indent=2)
+
+    def collect_urls_from_model(self, model, field_name, app_label):
+        """Collect Cloudinary URLs from Django model field"""
+        queryset = model.objects.filter()
+
+        url_model_map = []
+        for obj in queryset:
+            image = getattr(obj, field_name)
+            url_model_map.append({
+                'url': image.url,
+                'instance_id': obj.pk
+            })
+
+        self.state['field_name'] = field_name
+        self.state['app_label'] = app_label
+        self.state['url_model_map'] = url_model_map
+        self.save_state()
+
+        return url_model_map
 
 
 class Command(BaseCommand):
@@ -58,6 +79,8 @@ class Command(BaseCommand):
 
         # Collect URLs from model
         collect_model_parser = subparsers.add_parser('collect-model', help='Collect URLs from Django model')
+        collect_model_parser.add_argument('model', help='Model name (app.ModelName)')
+        collect_model_parser.add_argument('field', help='Field name containing Cloudinary URLs')
 
     def handle(self, *args, **options):
         command = options['command']
@@ -65,3 +88,15 @@ class Command(BaseCommand):
         if command == 'init':
             migration = CloudinaryMigration()
             self.stdout.write(self.style.SUCCESS('Migration initialized'))
+        elif command == 'collect-model':
+            migration = CloudinaryMigration()
+            from django.apps import apps
+            model_path = options['model'].split('.')
+            if len(model_path) != 2:
+                self.stdout.write(self.style.ERROR(''))
+                return
+
+            app_label, model_name = model_path
+            model = apps.get_model(app_label, model_name)
+            url_model_map = migration.collect_urls_from_model(model, options['fields'])
+            self.stdout.write(self.style.SUCCESS(f"Collected {len(url_model_map)} URLs from {model_name}"))
