@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 import cloudinary
+from datetime import datetime
+import json
 import os
 
 class CloudinaryMigration:
@@ -17,6 +19,32 @@ class CloudinaryMigration:
         # Temporary directory for downloads
         self.temp_dir = os.path.join(settings.BASE_DIR, 'temp_cloudinary_images')
         os.makedirs(self.temp_dir, exist_ok=True)
+
+        # Migration state tracking
+        self.state_file = os.path.join(settings.BASE_DIR, 'migration_state.json')
+
+        # Initialize state
+        self.load_state()
+
+    def load_state(self):
+        """Load migration state from file or initialize if not exists"""
+        if os.path.exists(self.state_file):
+            with open(self.state_file, 'r') as f:
+                self.state = json.load(f)
+        else:
+            self.state = {
+                'status': 'pending',
+                'last_updated': datetime.now().isoformat(),
+                'url_model_map': [],
+                'failed_migrations': []
+            }
+        self.save_state()
+
+    def save_state(self):
+        """Save current migration state to file"""
+        self.state['last_updated'] = datetime.now().isoformat()
+        with open(self.state_file, 'w') as f:
+            json.dump(self.state, f, indent=2)
 
 
 class Command(BaseCommand):
