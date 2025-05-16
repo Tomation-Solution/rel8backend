@@ -93,10 +93,10 @@ class Command(BaseCommand):
             from django.apps import apps
             model_path = options['model'].split('.')
             if len(model_path) != 2:
-                self.stdout.write(self.style.ERROR(''))
+                self.stdout.write(self.style.ERROR('Model should be in format app.ModelName'))
                 return
 
             app_label, model_name = model_path
             model = apps.get_model(app_label, model_name)
-            url_model_map = migration.collect_urls_from_model(model, options['fields'])
+            url_model_map = migration.collect_urls_from_model(model, options['field'], app_label)
             self.stdout.write(self.style.SUCCESS(f"Collected {len(url_model_map)} URLs from {model_name}"))
