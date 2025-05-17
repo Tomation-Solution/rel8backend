@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.conf import settings
 import cloudinary
@@ -54,7 +55,7 @@ class CloudinaryMigration:
         with open(self.state_file, 'w') as f:
             json.dump(self.state, f, indent=2)
 
-    def collect_urls_from_model(self, model, field_name, app_label):
+    def collect_urls_from_model(self, model, model_path, field_name):
         """Collect Cloudinary URLs from Django model field"""
         queryset = model.objects.filter()
 
@@ -67,7 +68,7 @@ class CloudinaryMigration:
             })
 
         self.state['field_name'] = field_name
-        self.state['app_label'] = app_label
+        self.state['model_path'] = model_path
         self.state['url_model_map'] = url_model_map
         self.save_state()
 
@@ -238,7 +239,6 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('Migration initialized'))
         elif command == 'collect-model':
             migration = CloudinaryMigration()
-            from django.apps import apps
             model_path = options['model'].split('.')
             if len(model_path) != 2:
                 self.stdout.write(self.style.ERROR('Model should be in format app.ModelName'))
@@ -246,7 +246,7 @@ class Command(BaseCommand):
 
             app_label, model_name = model_path
             model = apps.get_model(app_label, model_name)
-            url_model_map = migration.collect_urls_from_model(model, options['field'], app_label)
+            url_model_map = migration.collect_urls_from_model(model, options['field'], options['model'])
             self.stdout.write(self.style.SUCCESS(f"Collected {len(url_model_map)} URLs from {model_name}"))
 
         elif command == 'migrate-batch':
