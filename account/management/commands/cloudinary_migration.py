@@ -191,11 +191,6 @@ class CloudinaryMigration:
                 self.state['failed_migrations'][instance_id] = self.state['failed_migrations'].get(instance_id, {})
                 self.state['failed_migrations'][field_name] = result['original_url']
 
-        # Update models with new URLs
-        app_label, model_name = self.state['model_path'].split('.')
-        model = apps.get_model(app_label, model_name)
-        self.update_model_instances(model, self.state)
-
         # Update last processed index
         self.state['last_processed_url_index'] = start_index + len(url_model_map)
 
