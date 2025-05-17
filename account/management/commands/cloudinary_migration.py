@@ -248,6 +248,13 @@ class CloudinaryMigration:
 
         return { 'success': updated_count, 'failed': failed_count }
 
+    def cleanup(self):
+        """Clean up temporary files"""
+        if os.path.exists(self.temp_dir):
+            import shutil
+            shutil.rmtree(self.temp_dir)
+            self.stdout(f"Cleaned up temporary directory: {self.temp_dir}")
+
 
 class Command(BaseCommand):
     help = 'Cloudinary migration utility'
@@ -272,6 +279,9 @@ class Command(BaseCommand):
         # Update model instances
         update_models_parser = subparsers.add_parser('update-models', help='Update model instances with new URLs')
         migrate_parser.add_argument('model', help='Model name (app.ModelName)')
+
+        # Cleanup
+        subparsers.add_parser('cleanup', help='Clean up temporary files')
 
     def handle(self, *args, **options):
         command = options['command']
@@ -304,3 +314,11 @@ class Command(BaseCommand):
             result = migration.update_model_instances(model)
 
             self.stdout.write(self.style.SUCCESS(''))
+
+        elif command == 'cleanup':
+            migration = CloudinaryMigration('None.None')
+            migration.cleanup()
+            self.stdout.write(self.style.SUCCESS('Cleanup completed'))
+
+        else:
+            self.stdout.write(self.style.ERROR('Unknown command'))
