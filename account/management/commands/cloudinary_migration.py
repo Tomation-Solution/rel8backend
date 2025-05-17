@@ -13,7 +13,7 @@ class CloudinaryMigration:
     """
     Class to handle the phased migration of Cloudinary images from one acount to another.
     """
-    def __init__(self, batch_size=30):
+    def __init__(self, model_path, batch_size=30):
         cloudinary.config(
             cloud_name=settings.TARGET_CLOUDINARY_CLOUD_NAME,
             api_key=settings.TARGET_CLOUDINARY_API_KEY,
@@ -25,7 +25,8 @@ class CloudinaryMigration:
         os.makedirs(self.temp_dir, exist_ok=True)
 
         # Migration state tracking
-        self.state_file = os.path.join(settings.BASE_DIR, 'migration_state.json')
+        model_path = model_path.replace('.', '_')
+        self.state_file = os.path.join(settings.BASE_DIR, f'{model_path}_migration_state.json')
         self.batch_size = batch_size
 
         # Initialize state
@@ -41,11 +42,10 @@ class CloudinaryMigration:
                 'status': 'pending',
                 'last_processed_url_index': 0,
                 'last_updated': datetime.now().isoformat(),
-                'field_name': '',
-                'app_label': '',
-                'url_model_map': [],
-                'successful_migrations': [],
-                'failed_migrations': []
+                'model_path': '',
+                'urls': [],
+                'successful_migrations': {},
+                'failed_migrations': {}
             }
         self.save_state()
 
@@ -67,9 +67,8 @@ class CloudinaryMigration:
                 'instance_id': obj.pk
             })
 
-        self.state['field_name'] = field_name
         self.state['model_path'] = model_path
-        self.state['url_model_map'] = url_model_map
+        self.state['urls'] = [field_name, url_model_map]
         self.save_state()
 
         return url_model_map
@@ -170,7 +169,8 @@ class CloudinaryMigration:
         """Migrate a batch of URLs"""
         if start_index is None:
             start_index = self.state['last_processed_url_index']
-        url_model_map = self.state['url_model_map'][start_index : start_index + self.batch_size]
+        field_name, urls = self.state['urls']
+        url_model_map = urls[start_index : start_index + self.batch_size]
 
         # Create a list of (index, url_model_map[index]) tuples for parallel processing
         url_data = [(i + start_index, data) for i, data in enumerate(url_model_map)]
@@ -181,13 +181,15 @@ class CloudinaryMigration:
 
         for result in results:
             if result['success']:
-                self.state['successful_migrations'].append({
+                self.state['successful_migrations'][field_name] = self.state['successful_migrations'].get(field_name, [])
+                self.state['successful_migrations'][field_name].append({
                     'instance_id': result['instance_id'],
                     'new_url': result['new_url'],
                     'updated': False
                 })
             else:
-                self.state['failed_migrations'].append({
+                self.state['failed_migrations'][field_name] = self.state['failed_migrations'].get(field_name, [])
+                self.state['failed_migrations'][field_name].append({
                     'instance_id': result['instance_id'],
                     'original_url': result['original_url']
                 })
@@ -201,7 +203,7 @@ class CloudinaryMigration:
         self.state['last_processed_url_index'] = start_index + len(url_model_map)
 
         # Check if all batches are complete
-        if self.state['last_processed_url_index'] >= len(self.state['url_model_map']):
+        if self.state['last_processed_url_index'] >= len(self.state['urls']):
             self.state['status'] = 'completed'
         else:
             self.state['status'] = 'in_progress'
@@ -209,6 +211,10 @@ class CloudinaryMigration:
         self.save_state()
 
         return True
+
+    def update_model_instances(self, model):
+        """Update model instances with new URLs"""
+        updated_count = 0
 
 
 class Command(BaseCommand):
@@ -219,6 +225,7 @@ class Command(BaseCommand):
 
         # Initialize migration
         init_parser = subparsers.add_parser('init', help='Initialize migration')
+        init_parser.add_argument('model', help='Model name (app.ModelName)')
 
         # Collect URLs from model
         collect_model_parser = subparsers.add_parser('collect-model', help='Collect URLs from Django model')
@@ -227,29 +234,29 @@ class Command(BaseCommand):
 
         # Migrate in batches
         migrate_parser = subparsers.add_parser('migrate-batch', help='Migrate a batch of URLs')
+        migrate_parser.add_argument('model', help='Model name (app.ModelName)')
         migrate_parser.add_argument('--start', type=int, help='Start index (default: continue from last batch)')
 
     def handle(self, *args, **options):
         command = options['command']
-
-        if command == 'init':
-            migration = CloudinaryMigration()
-            self.stdout.write(self.style.SUCCESS('Migration initialized'))
-        elif command == 'collect-model':
-            migration = CloudinaryMigration()
-            model_path = options['model'].split('.')
-            if len(model_path) != 2:
+        model_path = options['model'].split('.')
+        if len(model_path) != 2:
                 self.stdout.write(self.style.ERROR('Model should be in format app.ModelName'))
                 return
 
+        if command == 'init':
+            migration = CloudinaryMigration(options['model'])
+            self.stdout.write(self.style.SUCCESS('Migration initialized'))
+        elif command == 'collect-model':
+            migration = CloudinaryMigration(options['model'])
             app_label, model_name = model_path
             model = apps.get_model(app_label, model_name)
             url_model_map = migration.collect_urls_from_model(model, options['field'], options['model'])
             self.stdout.write(self.style.SUCCESS(f"Collected {len(url_model_map)} URLs from {model_name}"))
 
         elif command == 'migrate-batch':
-            migration = CloudinaryMigration()
+            migration = CloudinaryMigration(options['model'])
             start_index = options.get('start')
             success = migration.migrate_batch(start_index)
 
-            self.stdout.write(self.style.SUCCESS(f'Batch migration completed'))
+            self.stdout.write(self.style.SUCCESS('Batch migration completed'))
