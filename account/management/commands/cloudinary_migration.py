@@ -179,17 +179,13 @@ class CloudinaryMigration:
         with ThreadPoolExecutor(max_workers=self.parallel_workers) as executor:
             results = list(executor.map(self.process_single_url, url_data))
 
-        model_updates = []
         for result in results:
             if result['success']:
                 self.state['successful_migrations'].append({
                     'instance_id': result['instance_id'],
-                    'new_url': result['new_url']
+                    'new_url': result['new_url'],
+                    'updated': False
                 })
-                if result['new_url']:
-                    model_updates.append({
-
-                    })
             else:
                 self.state['failed_migrations'].append({
                     'instance_id': result['instance_id'],
@@ -197,12 +193,14 @@ class CloudinaryMigration:
                 })
 
         # Update models with new URLs
-        self.update_model_instances(model_updates)
+        app_label, model_name = self.state['model_path'].split('.')
+        model = apps.get_model(app_label, model_name)
+        self.update_model_instances(model, self.state)
 
         # Update last processed index
         self.state['last_processed_url_index'] = start_index + len(url_model_map)
 
-        # Check if this batch is done
+        # Check if all batches are complete
         if self.state['last_processed_url_index'] >= len(self.state['url_model_map']):
             self.state['status'] = 'completed'
         else:
@@ -254,4 +252,4 @@ class Command(BaseCommand):
             start_index = options.get('start')
             success = migration.migrate_batch(start_index)
 
-
+            self.stdout.write(self.style.SUCCESS(f'Batch migration completed'))
