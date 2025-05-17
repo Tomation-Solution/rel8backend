@@ -1,6 +1,7 @@
 from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.db import transaction
 import cloudinary
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -45,7 +46,8 @@ class CloudinaryMigration:
                 'model_path': '',
                 'urls': [],
                 'successful_migrations': {},
-                'failed_migrations': {}
+                'failed_migrations': {},
+                'model_updates': 0
             }
         self.save_state()
 
@@ -181,18 +183,13 @@ class CloudinaryMigration:
 
         for result in results:
             if result['success']:
-                self.state['successful_migrations'][field_name] = self.state['successful_migrations'].get(field_name, [])
-                self.state['successful_migrations'][field_name].append({
-                    'instance_id': result['instance_id'],
-                    'new_url': result['new_url'],
-                    'updated': False
-                })
+                instance_id = result['instance_id']
+                self.state['successful_migrations'][instance_id] = self.state['successful_migrations'].get(instance_id, {})
+                self.state['successful_migrations'][instance_id][field_name] = result['new_url']
+                self.state['successful_migrations'][instance_id]['updated'] = False
             else:
-                self.state['failed_migrations'][field_name] = self.state['failed_migrations'].get(field_name, [])
-                self.state['failed_migrations'][field_name].append({
-                    'instance_id': result['instance_id'],
-                    'original_url': result['original_url']
-                })
+                self.state['failed_migrations'][instance_id] = self.state['failed_migrations'].get(instance_id, {})
+                self.state['failed_migrations'][field_name] = result['original_url']
 
         # Update models with new URLs
         app_label, model_name = self.state['model_path'].split('.')
@@ -212,9 +209,44 @@ class CloudinaryMigration:
 
         return True
 
-    def update_model_instances(self, model):
+    def update_model_instances(self, model_class):
         """Update model instances with new URLs"""
         updated_count = 0
+        failed_count = 0
+        successful_migrations = self.state['successful_migrations']
+
+        # Fetch all instances at once
+        instance_ids = successful_migrations.values()
+        instance_dict = {
+            str(instance.pk): instance for instance in model_class.objects.filter(pk__in=instance_ids)
+        }
+
+        # Process update as atomic transaction
+        with transaction.atomic():
+            try:
+                to_update = []
+
+                # Group updates for bulk_update
+                for instance_id, data in successful_migrations.items():
+                    instance = instance_dict[instance_id]
+                    for field_name, new_url in data.items():
+                        if field_name == 'updated':
+                            continue
+                        setattr(instance, field_name, new_url)
+                        to_update.append(instance)
+                        data['updated'] = True
+
+                if to_update:
+                    # Bulk update all instances of this model
+                    fields = list(data.keys()).pop('updated')
+                    model_class.objects.bulk_update(to_update, fields)
+            except Exception as e:
+                failed_count += 1
+
+        self.state['model_updates'] += updated_count
+        self.save_state()
+
+        return { 'success': updated_count, 'failed': failed_count }
 
 
 class Command(BaseCommand):
@@ -236,6 +268,10 @@ class Command(BaseCommand):
         migrate_parser = subparsers.add_parser('migrate-batch', help='Migrate a batch of URLs')
         migrate_parser.add_argument('model', help='Model name (app.ModelName)')
         migrate_parser.add_argument('--start', type=int, help='Start index (default: continue from last batch)')
+
+        # Update model instances
+        update_models_parser = subparsers.add_parser('update-models', help='Update model instances with new URLs')
+        migrate_parser.add_argument('model', help='Model name (app.ModelName)')
 
     def handle(self, *args, **options):
         command = options['command']
@@ -260,3 +296,11 @@ class Command(BaseCommand):
             success = migration.migrate_batch(start_index)
 
             self.stdout.write(self.style.SUCCESS('Batch migration completed'))
+
+        elif command == 'update-models':
+            migration = CloudinaryMigration(options['model'])
+            app_label, model_name = self.state['model_path'].split('.')
+            model = apps.get_model(app_label, model_name)
+            result = migration.update_model_instances(model)
+
+            self.stdout.write(self.style.SUCCESS(''))
