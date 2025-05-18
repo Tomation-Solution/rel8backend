@@ -151,21 +151,21 @@ class CloudinaryMigration:
     def process_single_url(self, url_data):
         """Process a single URL, for parallel execution"""
         index, data = url_data
-        temp_path, info = self.download_image(data.url, index)
+        temp_path, info = self.download_image(data['url'], index)
         if temp_path:
-            success, new_url = self.upload_image(temp_path, info, data.url, index)
+            success, new_url = self.upload_image(temp_path, info, data['url'], index)
             return {
                 'index': index,
                 'success': success,
                 'new_url': new_url,
-                'instance_id': data.instance_id
+                'instance_id': data['instance_id']
             }
         
         return {
             'index': index,
             'success': False,
             'new_url': None,
-            'instance_id': data.instance_id
+            'instance_id': data['instance_id']
         }
 
     def migrate_batch(self, start_index=None):
