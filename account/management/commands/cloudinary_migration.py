@@ -14,7 +14,7 @@ class CloudinaryMigration:
     """
     Class to handle the phased migration of Cloudinary images from one acount to another.
     """
-    def __init__(self, model_path, batch_size=30):
+    def __init__(self, model_path, batch_size=30, parallel_workers=5):
         cloudinary.config(
             cloud_name=settings.TARGET_CLOUDINARY_CLOUD_NAME,
             api_key=settings.TARGET_CLOUDINARY_API_KEY,
@@ -29,6 +29,7 @@ class CloudinaryMigration:
         model_path = model_path.replace('.', '_')
         self.state_file = os.path.join(settings.BASE_DIR, f'{model_path}_migration_state.json')
         self.batch_size = batch_size
+        self.parallel_workers = parallel_workers
 
         # Initialize state
         self.load_state()
