@@ -273,7 +273,7 @@ class Command(BaseCommand):
 
         # Update model instances
         update_models_parser = subparsers.add_parser('update-models', help='Update model instances with new URLs')
-        migrate_parser.add_argument('model', help='Model name (app.ModelName)')
+        update_models_parser.add_argument('model', help='Model name (app.ModelName)')
 
         # Cleanup
         subparsers.add_parser('cleanup', help='Clean up temporary files')
