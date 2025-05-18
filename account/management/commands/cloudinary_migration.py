@@ -292,7 +292,7 @@ class Command(BaseCommand):
             migration = CloudinaryMigration(options['model'])
             app_label, model_name = model_path
             model = apps.get_model(app_label, model_name)
-            url_model_map = migration.collect_urls_from_model(model, options['field'], options['model'])
+            url_model_map = migration.collect_urls_from_model(model, options['model'], options['field'])
             self.stdout.write(self.style.SUCCESS(f"Collected {len(url_model_map)} URLs from {model_name}"))
 
         elif command == 'migrate-batch':
