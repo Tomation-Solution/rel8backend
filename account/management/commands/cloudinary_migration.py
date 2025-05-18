@@ -44,7 +44,7 @@ class CloudinaryMigration:
                 'last_processed_url_index': 0,
                 'last_updated': datetime.now().isoformat(),
                 'model_path': '',
-                'urls': [],
+                'urls': ['', {}],
                 'successful_migrations': {},
                 'failed_migrations': {},
                 'model_updates': 0
