@@ -114,7 +114,7 @@ class CloudinaryMigration:
     def download_image(self, url, index):
         """Download an image from a URL"""
         try:
-            info = self.extract_info_from_url()
+            info = self.extract_info_from_url(url)
             temp_path = os.path.join(self.temp_dir, f"{info['public_id']}.{info['extension']}")
 
             response = requests.get(url, stream=True, timeout=30)
@@ -158,13 +158,15 @@ class CloudinaryMigration:
                 'index': index,
                 'success': success,
                 'new_url': new_url,
+                'original_url': data['url'],
                 'instance_id': data['instance_id']
             }
-        
+
         return {
             'index': index,
             'success': False,
             'new_url': None,
+            'original_url': data['url'],
             'instance_id': data['instance_id']
         }
 
@@ -183,14 +185,14 @@ class CloudinaryMigration:
             results = list(executor.map(self.process_single_url, url_data))
 
         for result in results:
+            instance_id = result['instance_id']
             if result['success']:
-                instance_id = result['instance_id']
                 self.state['successful_migrations'][instance_id] = self.state['successful_migrations'].get(instance_id, {})
                 self.state['successful_migrations'][instance_id][field_name] = result['new_url']
                 self.state['successful_migrations'][instance_id]['updated'] = False
             else:
                 self.state['failed_migrations'][instance_id] = self.state['failed_migrations'].get(instance_id, {})
-                self.state['failed_migrations'][field_name] = result['original_url']
+                self.state['failed_migrations'][instance_id][field_name] = result['original_url']
 
         # Update last processed index
         self.state['last_processed_url_index'] = start_index + len(url_model_map)
