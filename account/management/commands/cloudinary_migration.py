@@ -9,10 +9,12 @@ import json
 import os
 import re
 import requests
+import sys
 
 class CloudinaryMigration:
     """
-    Class to handle the phased migration of Cloudinary images from one acount to another.
+    Class to handle the phased migration of Cloudinary images from one account to another,
+    preserving the original folder structure.
     """
     def __init__(self, model_path, batch_size=30, target=False, parallel_workers=5):
         if target:
@@ -78,55 +80,59 @@ class CloudinaryMigration:
         return url_model_map
 
     def extract_info_from_url(self, url):
-        """Extract public ID and extension from Cloudinary URL
-        """
-        parts = url.split('/')
-        filename = parts[-1].split('?')[0] # Remove any query parameters
+        """Extract full path including folders from Cloudinary URL"""
+        match = re.search(r'/upload/v\d+/(.+?)(?:\?|$)', url)
 
-        if '.' not in filename:
-            return {
-                'public_id': filename,
-                'extension': 'jpg' # Default extension if not specified
-            }
-        
-        # Try regex pattern for standard Cloudinary URLs
-        regex = r'/v\d+/([^/]+)\.(\w+)(?:\?|$)'
-        match = re.search(regex, url)
         if match:
+            full_path = match.group(1)
+
+            # Extract filename from path
+            filename = os.path.basename(full_path)
+
+            # Determine extension (default to jpg if not present)
+            if '.' in filename:
+                extension = filename.split('.')[-1]
+            else:
+                extension = 'jpg'
+
             return {
-                'public_id': match.group(1),
-                'extension': match.group(2)
+                'public_id': full_path,
+                'extension': extension,
+                'filename': filename
             }
         
-        # Fallback if regex doesn't match
+        # Fallback for unusual URL formats
+        parts = url.split('/')
+        filename = parts[-1].split('?')[0]
+        
         if '.' in filename:
-            public_id = '.'.join(filename.split('.')[:-1])
             extension = filename.split('.')[-1]
         else:
-            public_id = filename
             extension = 'jpg'
-
+            
+        # Use the filename as public_id as a last resort
         return {
-            'public_id': public_id,
-            'extension': extension
+            'public_id': filename,
+            'extension': extension,
+            'filename': filename
         }
-
 
     def download_image(self, url, index):
         """Download an image from a URL"""
         try:
             info = self.extract_info_from_url(url)
-            temp_path = os.path.join(self.temp_dir, f"{info['public_id']}.{info['extension']}")
+            temp_filename = f"{info['filename']}.{info['extension']}"
+            temp_path = os.path.join(self.temp_dir, temp_filename)
 
             response = requests.get(url, stream=True, timeout=30)
             if response.status_code != 200:
                 raise Exception(f"Failed to download")
             
             with open(temp_path, 'wb') as f:
-                for  chunk in response.iter_content(chunk_size=8192):
+                for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
 
-                return temp_path, info
+            return temp_path, info
         except Exception as e:
             return None, None
         
@@ -134,15 +140,23 @@ class CloudinaryMigration:
         """Upload image to new Cloudinary account"""
         if not temp_path:
             return False, None
-        
+
         try:
+
             upload_result = cloudinary.uploader.upload(
                 temp_path,
                 public_id=info['public_id'],
+                unique_filename=False,
+                overwrite=True,
                 resource_type='auto',
-                overwrite=True
+                use_filename=True,
+                folder=''
             )
-            return True, upload_result['secure_url']
+
+            cloud_name = settings.TARGET_CLOUDINARY_CLOUD_NAME
+            new_url = f"https://res.cloudinary.com/{cloud_name}/image/upload/v1/{info['public_id']}"
+
+            return True, new_url
         except Exception as e:
             return False, None
         finally:
@@ -199,7 +213,7 @@ class CloudinaryMigration:
         self.state['last_processed_url_index'] = start_index + len(url_model_map)
 
         # Check if all batches are complete
-        if self.state['last_processed_url_index'] >= len(self.state['urls']):
+        if self.state['last_processed_url_index'] >= len(self.state['urls'][1]):
             self.state['status'] = 'completed'
         else:
             self.state['status'] = 'in_progress'
@@ -227,16 +241,28 @@ class CloudinaryMigration:
         with transaction.atomic():
             try:
                 to_update = []
-
-                # Group updates for bulk_update
                 for instance_id, data in successful_migrations.items():
-                    instance = instance_dict[instance_id]
+                    if data.get('updated', False):
+                        continue
+
+                    instance = instance_dict.get(str(instance_id))
+                    if not instance:
+                        continue
+
+                    updated = False
+
+                    # Update each field that needs updating
                     for field_name, new_url in data.items():
                         if field_name == 'updated':
                             continue
+
                         setattr(instance, field_name, new_url)
+                        updated = True
+
+                    if updated:
                         to_update.append(instance)
                         data['updated'] = True
+                        updated_count += 1
 
                 if to_update:
                     # Bulk update all instances of this model
@@ -255,7 +281,6 @@ class CloudinaryMigration:
         if os.path.exists(self.temp_dir):
             import shutil
             shutil.rmtree(self.temp_dir)
-            self.stdout(f"Cleaned up temporary directory: {self.temp_dir}")
 
 
 class Command(BaseCommand):
@@ -289,8 +314,8 @@ class Command(BaseCommand):
         command = options['command']
         model_path = options['model'].split('.')
         if len(model_path) != 2:
-                self.stdout.write(self.style.ERROR('Model should be in format app.ModelName'))
-                return
+            self.stdout.write(self.style.ERROR('Model should be in format app.ModelName'))
+            return
 
         if command == 'init':
             migration = CloudinaryMigration(options['model'])
@@ -313,7 +338,7 @@ class Command(BaseCommand):
             migration = CloudinaryMigration(options['model'])
             result = migration.update_model_instances()
 
-            self.stdout.write(self.style.SUCCESS(''))
+            self.stdout.write(self.style.SUCCESS(f"Updated {result['success']} instances, {result['failed']} failed"))
 
         elif command == 'cleanup':
             migration = CloudinaryMigration('None.None')
