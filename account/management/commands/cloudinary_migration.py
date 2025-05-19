@@ -14,12 +14,13 @@ class CloudinaryMigration:
     """
     Class to handle the phased migration of Cloudinary images from one acount to another.
     """
-    def __init__(self, model_path, batch_size=30, parallel_workers=5):
-        cloudinary.config(
-            cloud_name=settings.TARGET_CLOUDINARY_CLOUD_NAME,
-            api_key=settings.TARGET_CLOUDINARY_API_KEY,
-            api_secret=settings.TARGET_CLOUDINARY_API_SECRET
-        )
+    def __init__(self, model_path, batch_size=30, target=False, parallel_workers=5):
+        if target:
+            cloudinary.config(
+                cloud_name=settings.TARGET_CLOUDINARY_CLOUD_NAME,
+                api_key=settings.TARGET_CLOUDINARY_API_KEY,
+                api_secret=settings.TARGET_CLOUDINARY_API_SECRET
+            )
 
         # Temporary directory for downloads
         self.temp_dir = os.path.join(settings.BASE_DIR, 'temp_cloudinary_images')
@@ -299,7 +300,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"Collected {len(url_model_map)} URLs from {model_name}"))
 
         elif command == 'migrate-batch':
-            migration = CloudinaryMigration(options['model'])
+            migration = CloudinaryMigration(options['model'], target=True)
             start_index = options.get('start')
             success = migration.migrate_batch(start_index)
 
