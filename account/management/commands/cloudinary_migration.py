@@ -68,6 +68,8 @@ class CloudinaryMigration:
         url_model_map = []
         for obj in queryset:
             image = getattr(obj, field_name)
+            if not image: # Skip if instance has no image for this field
+                continue
             url_model_map.append({
                 'url': image.url,
                 'instance_id': obj.pk
