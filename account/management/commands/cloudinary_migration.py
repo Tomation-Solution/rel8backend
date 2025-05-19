@@ -256,7 +256,8 @@ class CloudinaryMigration:
                         if field_name == 'updated':
                             continue
 
-                        setattr(instance, field_name, new_url)
+                        match = re.search(r'/upload/v\d+/(.+?)(?:\?|$)', new_url)
+                        setattr(instance, field_name, match.group(1))
                         updated = True
 
                     if updated:
