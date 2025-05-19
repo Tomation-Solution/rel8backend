@@ -208,14 +208,17 @@ class CloudinaryMigration:
 
         return True
 
-    def update_model_instances(self, model_class):
+    def update_model_instances(self):
         """Update model instances with new URLs"""
         updated_count = 0
         failed_count = 0
         successful_migrations = self.state['successful_migrations']
 
+        app_label, model_name = self.state['model_path'].split('.')
+        model_class = apps.get_model(app_label, model_name)
+
         # Fetch all instances at once
-        instance_ids = successful_migrations.values()
+        instance_ids = [int(id) for id in successful_migrations.keys()]
         instance_dict = {
             str(instance.pk): instance for instance in model_class.objects.filter(pk__in=instance_ids)
         }
@@ -308,9 +311,7 @@ class Command(BaseCommand):
 
         elif command == 'update-models':
             migration = CloudinaryMigration(options['model'])
-            app_label, model_name = self.state['model_path'].split('.')
-            model = apps.get_model(app_label, model_name)
-            result = migration.update_model_instances(model)
+            result = migration.update_model_instances()
 
             self.stdout.write(self.style.SUCCESS(''))
 
