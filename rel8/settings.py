@@ -333,6 +333,7 @@ DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 TARGET_CLOUDINARY_CLOUD_NAME = os.environ["TARGET_CLOUDINARY_CLOUD_NAME"]
 TARGET_CLOUDINARY_API_KEY = os.environ["TARGET_CLOUDINARY_API_KEY"]
 TARGET_CLOUDINARY_API_SECRET = os.environ["TARGET_CLOUDINARY_API_SECRET"]
+SCHEMA_NAME = os.environ["SCHEMA_NAME"]
 ASGI_APPLICATION = "rel8.routing.application"
 
 if os.environ.get('REDIS_URL'):

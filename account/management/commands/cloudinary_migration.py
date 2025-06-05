@@ -2,6 +2,7 @@ from django.apps import apps
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.db import transaction
+from django_tenants.utils import schema_context, get_tenant_model
 import cloudinary
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
@@ -326,8 +327,13 @@ class Command(BaseCommand):
         elif command == 'collect-model':
             migration = CloudinaryMigration(options['model'])
             app_label, model_name = model_path
-            model = apps.get_model(app_label, model_name)
-            url_model_map = migration.collect_urls_from_model(model, options['model'], options['field'])
+
+            Client = get_tenant_model()
+            tenant = Client.objects.get(schema_name=settings.SCHEMA_NAME)
+
+            with schema_context(tenant.schema_name):
+                model = apps.get_model(app_label, model_name)
+                url_model_map = migration.collect_urls_from_model(model, options['model'], options['field'])
             self.stdout.write(self.style.SUCCESS(f"Collected {len(url_model_map)} URLs from {model_name}"))
 
         elif command == 'migrate-batch':
