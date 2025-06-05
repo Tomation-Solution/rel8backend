@@ -11,7 +11,18 @@ PROGRESS_FILE="cloudinary_migration_progress.txt"
 
 # Models and their image fields to migrate
 MODELS_AND_FIELDS=(
-
+    account.User:photo
+    event.Event:image
+    event.Event:organiserImage
+    extras.MemberPersonalGallery:photo_file
+    extras.Gallery:photo_file
+    extras.ImagesForGalleryV2:image
+    extras.FundAProject:image
+    meeting.Meeting:organiserImage # No data
+    meeting.Meeting:image # No data
+    news.News:image
+    prospectivemember.ManProspectiveMemberFormOne:upload_signature
+    publication.Publication:image
 )
 
 # Function to run Django management command
@@ -67,6 +78,7 @@ if [ "$CURRENT_STAGE" = "start" ]; then
     done
 
     save_progress "collect"
+    CURRENT_STAGE="collect"
     echo "Initialization complete for all models."
     prompt_continue
 fi
@@ -86,6 +98,7 @@ if [ "$CURRENT_STAGE" = "collect" ]; then
     done
     
     save_progress "migrate"
+    CURRENT_STAGE="migrate"
     echo "URL collection complete for all models."
     prompt_continue
 fi
@@ -139,6 +152,7 @@ if [ "$CURRENT_STAGE" = "migrate" ]; then
     done
 
     save_progress "update"
+    CURRENT_STAGE="update"
     echo "Image migration complete for all models."
     prompt_continue
 fi
@@ -169,6 +183,7 @@ if [ "$CURRENT_STAGE" = "cleanup" ]; then
     run_command "cloudinary_migration" "cleanup"
     
     save_progress "completed"
+    CURRENT_STAGE="completed"
     echo "Cleanup completed."
     echo
 fi
