@@ -22,7 +22,7 @@ class Meeting(models.Model):
     organiserDetails =models.CharField(max_length=400,default='')
     organiserImage = models.ImageField(default=None,null=True,upload_to='meeting_organiser/%d/')
     image = models.ImageField(default=None,null=True,upload_to='meeting_image/%d/')
-    meeting_docs = models.FileField(upload_to='meeting_docs/%d/',null=True,default=None,
+    meeting_docs = models.FileField(upload_to='meeting_docs/%d/', max_length=300, null=True,default=None,
         storage=RawMediaCloudinaryStorage(),
     )
 

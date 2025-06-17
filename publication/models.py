@@ -19,7 +19,7 @@ class Publication(models.Model):
     dislikes = models.IntegerField(null=True)
     body = models.TextField(default=" ")
     image = models.ImageField(upload_to="newsImage/%d/",null=True,default=None)
-    danload = models.FileField(upload_to='newsFileDanload/%d/',null=True,default=None,
+    danload = models.FileField(upload_to='newsFileDanload/%d/', max_length=300, null=True,default=None,
         storage=RawMediaCloudinaryStorage(),
     )
     chapters = models.ForeignKey(auth_realted_models.Chapters,on_delete=models.SET_NULL,null=True,blank=True)
