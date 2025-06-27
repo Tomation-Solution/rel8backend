@@ -41,7 +41,7 @@ class Event(models.Model):
     re_occuring= models.BooleanField(default=False)# due_type Once  Re-occuring|
     is_virtual=models.BooleanField(default=False)
     
-    event_docs = models.FileField(upload_to='meeting_docs/%d/',null=True,default=None,
+    event_docs = models.FileField(upload_to='meeting_docs/%d/', max_length=300, null=True,default=None,
         storage=RawMediaCloudinaryStorage(),
     )
     # 

@@ -123,6 +123,8 @@ class ExcoRoleSerializer(serializers.ModelSerializer):
     chapter = serializers.SerializerMethodField()
 
     def get_chapter(self, obj):
+        if obj.chapter is None:
+            return ''
         return obj.chapter.name
 
     class Meta:

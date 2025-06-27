@@ -25,7 +25,7 @@ class News(models.Model):
     body = models.TextField(default=" ")
     image = models.ImageField(upload_to="newsImage/%d/",null=True,default=None)
     user_that_have_reacted = models.ManyToManyField(user_realted_models.Memeber,blank=True)
-    danload = models.FileField(upload_to='newsFileDanload/%d/',null=True,default=None)
+    danload = models.FileField(upload_to='newsFileDanload/%d/', max_length=300, null=True,default=None)
     exco = models.ForeignKey(user_models.ExcoRole,on_delete=models.SET_NULL,null=True,default=None,blank=True) 
     dues_for_membership_grade  =models.ForeignKey(user_models.MemberShipGrade,on_delete=models.SET_NULL,null=True,default=None,blank=True)
     # writer = models.ForeignKey(user_realted_models.Admin, on_delete=models.CASCADE)
