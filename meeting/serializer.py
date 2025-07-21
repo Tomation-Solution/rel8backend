@@ -12,11 +12,11 @@ class AdminManageMeetingSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Meeting
         fields = '__all__'
-        extra_kwargs  = {
-            'chapters':{
-                'read_only':True
-            }
-        }
+        # extra_kwargs  = {
+        #     'chapters':{
+        #         'read_only':True
+        #     }
+        # }
 
 class MeetingSerializer(serializers.ModelSerializer):
     is_attending= serializers.SerializerMethodField()
