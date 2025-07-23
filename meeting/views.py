@@ -80,7 +80,7 @@ class AdminManagesMeetingViewset(viewsets.ModelViewSet):
         user_chapter = self.request.user.chapter
         if self.request.user.user_type == 'admin':
             return self.queryset.filter(chapters=user_chapter)
-        return self.queryset.filter(chapters=None)
+        return self.queryset.filter()
 
     def list(self,request,format=None):
 
